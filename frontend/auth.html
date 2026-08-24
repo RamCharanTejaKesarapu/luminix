@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#6366f1">
+    <title>Sign In — Luminix</title>
+    <link rel="icon" href="/assets/luminix-logo.svg" type="image/svg+xml">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;600;700&family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/static/styles.css">
+</head>
+<body class="bg-dark text-white font-['Outfit'] min-h-screen">
+    <main id="main-content" class="min-h-screen"></main>
+    <script src="/static/auth.js"></script>
+    <script>
+        window.luminixAuth.handleTokenFromUrl();
+        window.onload = async () => {
+            if (window.luminixAuth.isAuthenticated()) {
+                const user = await window.luminixAuth.fetchMe();
+                if (user) {
+                    window.location.href = '/';
+                    return;
+                }
+            }
+            window.renderAuthView();
+        };
+    </script>
+</body>
+</html>

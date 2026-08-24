@@ -1,0 +1,16 @@
+{
+    "name": "Luminix",
+    "short_name": "Luminix",
+    "description": "AI-powered Health Intelligence Platform",
+    "start_url": "/",
+    "display": "standalone",
+    "background_color": "#0f172a",
+    "theme_color": "#6366f1",
+    "icons": [
+        {
+            "src": "/assets/luminix-logo.svg",
+            "sizes": "any",
+            "type": "image/svg+xml"
+        }
+    ]
+}
