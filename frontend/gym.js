@@ -20,9 +20,12 @@ const GYM_CATEGORIES = [
 
 window.renderGymView = function(container) {
     container.innerHTML = `
-        <div class="mb-6">
-            <h2 style="font-family:var(--font-display);font-size:2rem;font-weight:800">Gym <span class="text-gradient">Module</span></h2>
-            <p style="color:var(--text-dim);font-size:0.85rem">Guided exercises with 3D demos, sets/reps, and rest timers</p>
+        <div class="mb-6 relative overflow-hidden p-8 rounded-xl glass-card" style="background: linear-gradient(90deg, var(--black-1) 30%, transparent), url('/assets/media_1787652701429.jpg') center/cover; background-blend-mode: multiply;">
+            <div class="relative z-10">
+                <div class="text-cyan mb-2" style="font-size: 0.65rem; font-weight: 700; letter-spacing: 0.2em; text-transform: uppercase;">MODULE // PERFORMANCE</div>
+                <h2 style="font-family:var(--font-display);font-size:3rem;font-weight:800;text-transform:uppercase;line-height:1;margin-bottom:0.5rem">Gym <br/><span class="text-yellow" style="font-size:0.5em; letter-spacing:0.1em;">OVERRIDE</span></h2>
+                <p style="color:var(--text-secondary);font-size:0.85rem; max-width: 400px;">Guided exercises with 3D demos, sets/reps, and rest timers. No excuses. Only progress.</p>
+            </div>
         </div>
 
         <!-- Category Tabs -->
@@ -218,12 +221,12 @@ function initGym3D() {
     keyLight.position.set(4, 6, 5);
     keyLight.castShadow = true;
     gymScene.add(keyLight);
-    const blueRim = new THREE.PointLight(0x4F7FFF, 0.3, 10);
-    blueRim.position.set(-4, 3, -3);
-    gymScene.add(blueRim);
-    const violetRim = new THREE.PointLight(0x8B5CF6, 0.2, 8);
-    violetRim.position.set(3, 1, -2);
-    gymScene.add(violetRim);
+    const cyanRim = new THREE.PointLight(0x00E5FF, 0.3, 10);
+    cyanRim.position.set(-3, 3, -3);
+    gymScene.add(cyanRim);
+    const yellowRim = new THREE.PointLight(0xFFC400, 0.2, 8);
+    yellowRim.position.set(3, 1, 2);
+    gymScene.add(yellowRim);
 
     // Floor
     const floorGeo = new THREE.PlaneGeometry(12, 12);
@@ -259,7 +262,7 @@ function initGym3D() {
 function buildHuman() {
     const group = new THREE.Group();
     const skinMat = new THREE.MeshPhongMaterial({ color: 0xCCCCCC, shininess: 20 });
-    const jointMat = new THREE.MeshPhongMaterial({ color: 0x4F7FFF, shininess: 40 });
+    const jointMat = new THREE.MeshPhongMaterial({ color: 0x00E5FF, shininess: 40 });
 
     // Head
     const head = new THREE.Mesh(new THREE.SphereGeometry(0.13, 16, 16), skinMat);

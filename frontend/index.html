@@ -7,10 +7,10 @@
     <meta name="description" content="Luminix — AI-powered health intelligence with real-time pose tracking, yoga, gym workouts, and fitness coaching.">
     <meta name="theme-color" content="#000000">
 
-    <!-- Fonts: Outfit (display) + Inter (body) -->
+    <!-- Fonts: Space Grotesk (display) + Inter (body) -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Outfit:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
     <link rel="stylesheet" href="/static/styles.css">
     <link rel="manifest" href="/manifest.json">
@@ -21,7 +21,12 @@
         tailwind.config = {
             theme: {
                 extend: {
-                    fontFamily: { display: ['Outfit'], body: ['Inter'] },
+                    fontFamily: { display: ['Space Grotesk'], body: ['Inter'] },
+                    colors: {
+                        yellow: { primary: '#FFC400', electric: '#FFE94A', hot: '#FF6A00' },
+                        cyan: { primary: '#00E5FF', bright: '#5FFFFF' },
+                        black: { base: '#050609', pure: '#000000' }
+                    }
                 }
             }
         };
@@ -36,13 +41,10 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 </head>
 <body>
-    <!-- Galaxy Background -->
-    <canvas id="galaxy-canvas" aria-hidden="true"></canvas>
-    <div class="nebula-layer" aria-hidden="true"></div>
-
     <!-- Custom Cursor -->
-    <div class="custom-cursor" id="cursor-dot" aria-hidden="true"></div>
-    <div class="custom-cursor-ring" id="cursor-ring" aria-hidden="true"></div>
+    <div id="cursor-dot" class="custom-cursor" aria-hidden="true"></div>
+    <div id="cursor-ring" class="custom-cursor-ring" aria-hidden="true"></div>
+    <div id="cursor-label" aria-hidden="true">REVEAL</div>
 
     <!-- Warning Overlay (risk alert) -->
     <div id="warning-overlay" class="warning-overlay"></div>
@@ -53,10 +55,9 @@
         <!-- ── Sidebar ─────────────────────────────────── -->
         <nav id="main-sidebar">
             <div class="brand-lockup">
-                <img src="/assets/luminix-logo.svg" alt="Luminix" class="brand-logo">
                 <div>
-                    <div class="brand-name">Luminix</div>
-                    <div class="brand-sub">Health Intelligence</div>
+                    <div class="brand-name" style="text-transform: uppercase; font-size: 1rem; letter-spacing: 0.1em; color: var(--white);">TOJI FUSHIGURO</div>
+                    <div class="brand-sub" style="color: var(--cyan-primary);">× LUMINIX</div>
                 </div>
             </div>
 
@@ -78,6 +79,14 @@
                     <svg class="nav-icon" viewBox="0 0 24 24"><path d="M6.5 6.5h11M2 12h3m14 0h3M5 8v8m14-8v8m-12-6v4m10-4v4"/></svg>
                     Gym Module
                 </li>
+                <li class="nav-item" onclick="nav('bmi')" data-view="bmi">
+                    <svg class="nav-icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/><path d="M8 12a4 4 0 018 0"/></svg>
+                    BMI & Health
+                </li>
+                <li class="nav-item" onclick="nav('food-tracker')" data-view="food-tracker">
+                    <svg class="nav-icon" viewBox="0 0 24 24"><path d="M18 8h1a4 4 0 010 8h-1"/><path d="M2 8h16v9a4 4 0 01-4 4H6a4 4 0 01-4-4V8z"/><line x1="6" y1="1" x2="6" y2="4"/><line x1="10" y1="1" x2="10" y2="4"/><line x1="14" y1="1" x2="14" y2="4"/></svg>
+                    Food Tracker
+                </li>
                 <li class="nav-item" onclick="nav('luna')" data-view="luna">
                     <svg class="nav-icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 1v2m0 18v2M4.22 4.22l1.42 1.42m12.72 12.72l1.42 1.42M1 12h2m18 0h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
                     Luna AI
@@ -88,25 +97,25 @@
                 </li>
             </ul>
 
-            <!-- Luna Widget -->
-            <div class="luna-sidebar-widget" id="luna-mic-widget" onclick="toggleLunaVoice()">
-                <div class="luna-orb" id="luna-orb-sidebar">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1a3 3 0 00-3 3v8a3 3 0 006 0V4a3 3 0 00-3-3z"/><path d="M19 10v2a7 7 0 01-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
+            <!-- Right Side Items -->
+            <div style="display: flex; align-items: center; gap: 1rem;">
+                <!-- Luna Widget -->
+                <div class="luna-sidebar-widget cursor-pointer" id="luna-sidebar-widget" onclick="nav('luna')">
+                    <div class="luna-orb" id="luna-orb-sidebar">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 1v2m0 18v2M4.22 4.22l1.42 1.42m12.72 12.72l1.42 1.42M1 12h2m18 0h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
+                    </div>
+                    <div style="font-size:0.75rem;font-weight:700;color:var(--white-2)">Luna AI</div>
                 </div>
-                <div style="font-size:0.75rem;font-weight:700;color:var(--white-2)">Luna AI</div>
-                <div style="font-size:0.6rem;color:var(--text-dim)">Say "Start Luna"</div>
-            </div>
 
-            <!-- User Profile -->
-            <div id="user-profile" class="hidden">
-                <div class="flex items-center gap-3 mb-2">
+                <!-- User Profile -->
+                <div id="user-profile" class="hidden">
                     <div class="user-avatar" id="profile-avatar">U</div>
                     <div class="user-info">
                         <div id="profile-name">User</div>
                         <div id="profile-email">email@example.com</div>
                     </div>
+                    <button class="sign-out-btn" onclick="luminixAuth.logout()">Sign Out</button>
                 </div>
-                <button class="sign-out-btn" onclick="luminixAuth.logout()">Sign Out</button>
             </div>
         </nav>
 
@@ -125,13 +134,17 @@
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="4" r="2"/><path d="M12 6v4m-4 2l4-2 4 2m-8 0v4l4 4 4-4v-4"/></svg>
                 Live
             </button>
-            <button onclick="nav('yoga')" data-mob="yoga">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="4" r="2"/><path d="M4 20l4-8 4 4 4-4 4 8"/></svg>
-                Yoga
-            </button>
             <button onclick="nav('gym')" data-mob="gym">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M6.5 6.5h11M2 12h3m14 0h3M5 8v8m14-8v8m-12-6v4m10-4v4"/></svg>
                 Gym
+            </button>
+            <button onclick="nav('bmi')" data-mob="bmi">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg>
+                BMI
+            </button>
+            <button onclick="nav('food-tracker')" data-mob="food-tracker">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M18 8h1a4 4 0 010 8h-1"/><path d="M2 8h16v9a4 4 0 01-4 4H6a4 4 0 01-4-4V8z"/></svg>
+                Food
             </button>
             <button onclick="nav('luna')" data-mob="luna">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="3"/><path d="M12 1v2m0 18v2M4.22 4.22l1.42 1.42m12.72 12.72l1.42 1.42M1 12h2m18 0h2"/></svg>
@@ -145,5 +158,6 @@
     <script src="/static/app.js"></script>
     <script src="/static/yoga.js"></script>
     <script src="/static/gym.js"></script>
+    <script src="/static/nutrition.js"></script>
 </body>
 </html>

@@ -408,6 +408,24 @@ def progress_recent(limit: int = 20) -> JSONResponse:
     return JSONResponse({"items": recent_events(limit)})
 
 
+class ProgressLogRequest(BaseModel):
+    user_label: str = "default"
+    bmi: Optional[float] = None
+    pose_score: Optional[float] = None
+    payload: Optional[Dict[str, Any]] = None
+
+
+@app.post("/v1/progress/log")
+def progress_log(req: ProgressLogRequest) -> JSONResponse:
+    log_event(
+        user_label=req.user_label,
+        bmi=req.bmi,
+        pose_score=req.pose_score,
+        payload=req.payload or {},
+    )
+    return JSONResponse({"status": "ok", "message": "Progress logged successfully"})
+
+
 @app.get("/download/video")
 def download_video() -> FileResponse:
     for name in ("luminix_explainer.mp4", "health_explainer.mp4"):

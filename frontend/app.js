@@ -14,60 +14,114 @@ let avatarScene, avatarCamera, avatarRenderer, avatarBody;
 let heroScene, heroCamera, heroRenderer, heroOrb;
 let heroAnimId, avatarAnimId;
 
-// ── Galaxy Star Background ──────────────────────────────────────
-(function initGalaxy() {
-    const canvas = document.getElementById('galaxy-canvas');
+// ── Thunder Environment Engine ──────────────────────────────────
+let thunderAnimId;
+function initThunderEngine() {
+    const canvas = document.getElementById('thunder-canvas');
     if (!canvas) return;
     const ctx = canvas.getContext('2d');
-    let stars = [];
-    const STAR_COUNT = window.innerWidth < 768 ? 60 : 120;
-
+    
     function resize() {
-        canvas.width = window.innerWidth;
-        canvas.height = window.innerHeight;
+        canvas.width = canvas.parentElement.clientWidth;
+        canvas.height = canvas.parentElement.clientHeight;
+    }
+    
+    // Particles (Sparks & Fragments)
+    const particles = [];
+    for (let i = 0; i < 80; i++) {
+        particles.push({
+            x: Math.random() * window.innerWidth,
+            y: Math.random() * window.innerHeight,
+            s: Math.random() * 3 + 1,
+            c: Math.random() > 0.5 ? '#FFE94A' : '#00E5FF',
+            vx: (Math.random() - 0.5) * 1,
+            vy: (Math.random() - 0.5) * 1 - 0.5,
+            life: Math.random()
+        });
     }
 
-    function createStars() {
-        stars = [];
-        for (let i = 0; i < STAR_COUNT; i++) {
-            stars.push({
-                x: Math.random() * canvas.width,
-                y: Math.random() * canvas.height,
-                r: Math.random() * 1.2 + 0.2,
-                a: Math.random() * 0.6 + 0.1,
-                speed: Math.random() * 0.15 + 0.02,
-                phase: Math.random() * Math.PI * 2
-            });
-        }
+    // Lightning branches
+    let lightnings = [];
+    function createLightning() {
+        if (Math.random() > 0.05) return; // Rare controlled bursts
+        const startX = Math.random() > 0.5 ? (Math.random() > 0.5 ? 0 : canvas.width) : Math.random() * canvas.width;
+        const startY = startX === 0 || startX === canvas.width ? Math.random() * canvas.height : 0;
+        
+        lightnings.push({
+            x: startX, y: startY,
+            targetX: canvas.width / 2 + (Math.random() - 0.5) * 200,
+            targetY: canvas.height / 2 + (Math.random() - 0.5) * 200,
+            life: 1.0,
+            color: Math.random() > 0.3 ? '#FFE94A' : '#00E5FF',
+            segments: []
+        });
     }
 
-    let time = 0;
     function draw() {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
-        time += 0.008;
-        for (const s of stars) {
-            const twinkle = 0.5 + 0.5 * Math.sin(time * 2 + s.phase);
+        
+        // Update particles
+        particles.forEach(p => {
+            p.x += p.vx; p.y += p.vy;
+            p.life -= 0.005;
+            if (p.life <= 0 || p.y < 0) {
+                p.y = canvas.height; p.x = Math.random() * canvas.width; p.life = 1;
+            }
+            ctx.globalAlpha = p.life;
+            ctx.fillStyle = p.c;
+            ctx.shadowBlur = 10;
+            ctx.shadowColor = p.c;
             ctx.beginPath();
-            ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
-            ctx.fillStyle = `rgba(255,255,255,${s.a * twinkle})`;
+            ctx.arc(p.x, p.y, p.s, 0, Math.PI * 2);
             ctx.fill();
-            s.y -= s.speed;
-            if (s.y < -2) { s.y = canvas.height + 2; s.x = Math.random() * canvas.width; }
+        });
+        
+        // Update Lightning
+        createLightning();
+        ctx.lineCap = 'round';
+        ctx.lineJoin = 'miter';
+        
+        for (let i = lightnings.length - 1; i >= 0; i--) {
+            let l = lightnings[i];
+            l.life -= 0.08;
+            if (l.life <= 0) { lightnings.splice(i, 1); continue; }
+            
+            // Draw
+            ctx.globalAlpha = l.life;
+            ctx.strokeStyle = '#FFFCE0';
+            ctx.lineWidth = 3;
+            ctx.shadowBlur = 20;
+            ctx.shadowColor = l.color;
+            
+            ctx.beginPath();
+            ctx.moveTo(l.x, l.y);
+            let cx = l.x, cy = l.y;
+            // Fake jagged line to target
+            for (let j = 0; j < 5; j++) {
+                cx += (l.targetX - l.x) / 5 + (Math.random() - 0.5) * 100;
+                cy += (l.targetY - l.y) / 5 + (Math.random() - 0.5) * 100;
+                ctx.lineTo(cx, cy);
+            }
+            ctx.stroke();
         }
-        requestAnimationFrame(draw);
+        
+        ctx.globalAlpha = 1;
+        ctx.shadowBlur = 0;
+        thunderAnimId = requestAnimationFrame(draw);
     }
-
+    
     resize();
-    createStars();
+    window.addEventListener('resize', resize);
     draw();
-    window.addEventListener('resize', () => { resize(); createStars(); });
-})();
+}
+function stopThunderEngine() { if (thunderAnimId) cancelAnimationFrame(thunderAnimId); }
 
-// ── Custom Cursor ───────────────────────────────────────────────
+// ── Custom Cursor & Interaction ───────────────────────────────────────────────
 (function initCursor() {
     if (window.matchMedia('(pointer: coarse)').matches) return;
     const dot = document.getElementById('cursor-dot');
     const ring = document.getElementById('cursor-ring');
+    const label = document.getElementById('cursor-label');
     if (!dot || !ring) return;
     let mx = 0, my = 0, rx = 0, ry = 0;
 
@@ -76,16 +130,40 @@ let heroAnimId, avatarAnimId;
     function animate() {
         rx += (mx - rx) * 0.15;
         ry += (my - ry) * 0.15;
-        dot.style.transform = `translate(${mx - 4}px, ${my - 4}px)`;
-        ring.style.transform = `translate(${rx - 18}px, ${ry - 18}px)`;
+        dot.style.transform = `translate(${mx}px, ${my}px)`;
+        ring.style.transform = `translate(${rx}px, ${ry}px)`;
+        if(label) label.style.transform = `translate(${rx}px, ${ry}px)`;
         requestAnimationFrame(animate);
     }
     animate();
 
     document.addEventListener('mouseover', e => {
-        const t = e.target.closest('button, a, .nav-item, .qa-card, .pose-card, .luna-prompt, .auth-oauth-btn, [onclick]');
-        if (t) document.body.classList.add('cursor-hover');
-        else document.body.classList.remove('cursor-hover');
+        const tHover = e.target.closest('button, a, .nav-item, .qa-card, .pose-card, .luna-prompt, .auth-oauth-btn, [onclick]');
+        const tView = e.target.closest('.hero-character, .feature-image, .hero-section');
+        
+        document.body.classList.remove('cursor-hover', 'cursor-view');
+        if (tView) document.body.classList.add('cursor-view');
+        else if (tHover) document.body.classList.add('cursor-hover');
+    });
+
+    // Two-Layer Hero Interaction
+    document.addEventListener('mousemove', e => {
+        const heroSection = document.getElementById('hero-section');
+        const actionLayer = document.getElementById('hero-action-layer');
+        if (heroSection && actionLayer) {
+            const rect = heroSection.getBoundingClientRect();
+            if (mx >= rect.left && mx <= rect.right && my >= rect.top && my <= rect.bottom) {
+                const relX = mx - rect.left;
+                const relY = my - rect.top;
+                
+                // Show action layer with an organic/soft radial gradient mask
+                actionLayer.style.opacity = '1';
+                actionLayer.style.maskImage = `radial-gradient(circle 350px at ${relX}px ${relY}px, black 30%, transparent 80%)`;
+                actionLayer.style.webkitMaskImage = `radial-gradient(circle 350px at ${relX}px ${relY}px, black 30%, transparent 80%)`;
+            } else {
+                actionLayer.style.opacity = '0';
+            }
+        }
     });
 })();
 
@@ -95,11 +173,10 @@ window.nav = function(view) {
         window.renderAuthView?.();
         return;
     }
-    // Cleanup previous view
     if (currentView === 'live-pose') stopPoseEngine();
     if (currentView === 'gym' && window.stopGym) window.stopGym();
     if (currentView === 'yoga' && window.stopYoga) window.stopYoga();
-    if (currentView === 'dashboard') stopHero3D();
+    stopThunderEngine();
 
     currentView = view;
     const main = document.getElementById('main-content');
@@ -122,6 +199,8 @@ window.nav = function(view) {
         case 'live-pose': renderLivePose(container); break;
         case 'yoga': window.renderYogaView?.(container); break;
         case 'gym': window.renderGymView?.(container); break;
+        case 'bmi': window.renderBMIView?.(container); break;
+        case 'food-tracker': window.renderFoodTrackerView?.(container); break;
         case 'luna': renderLuna(container); break;
         case 'export': renderExport(container); break;
         default: renderDashboard(container);
@@ -142,32 +221,14 @@ document.addEventListener('DOMContentLoaded', async () => {
         window.renderAuthView?.();
     }
 
-    // Voice wake word
-    if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
-        try {
-            const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
-            const wake = new SR();
-            wake.continuous = true; wake.interimResults = false;
-            wake.onresult = e => {
-                const t = e.results[e.results.length - 1][0].transcript.toLowerCase();
-                if (t.includes('start luna') || t.includes('hey luna')) { nav('luna'); startLunaVoice(); }
-            };
-            wake.start();
-        } catch (_) {}
-    }
+    // Luna Assistant - text-focused, voice disabled
 });
 
-// ── TTS ─────────────────────────────────────────────────────────
-window.speak = function(text) {
-    if (!('speechSynthesis' in window)) return;
-    speechSynthesis.cancel();
-    const u = new SpeechSynthesisUtterance(text);
-    u.rate = 1.05; u.pitch = 1.1;
-    speechSynthesis.speak(u);
-};
+// ── Voice disabled (Silent no-op) ───────────────────────────────
+window.speak = function(_) {};
 
 // ══════════════════════════════════════════════════════════════════
-//  DASHBOARD VIEW — Cinematic hero + 3D orb + stats
+//  DASHBOARD VIEW — Cinematic hero + Thunder Engine
 // ══════════════════════════════════════════════════════════════════
 async function renderDashboard(container) {
     // Fetch stats
@@ -182,203 +243,144 @@ async function renderDashboard(container) {
     } catch (_) {}
 
     container.innerHTML = `
-        <!-- Hero Section -->
-        <div class="hero-section">
-            <div class="hero-content">
-                <div class="hero-eyebrow">Health Intelligence Platform</div>
-                <h1 class="hero-title">Welcome to <span class="text-gradient">Luminix</span></h1>
-                <p class="hero-desc">Track your posture live, follow guided yoga & gym routines, and get AI coaching from Luna — all in one place.</p>
-                <div class="flex flex-wrap gap-3">
-                    <button onclick="nav('live-pose')" class="btn-primary">Start Tracking</button>
-                    <button onclick="nav('yoga')" class="btn-secondary">Yoga Library</button>
-                    <button onclick="nav('gym')" class="btn-galaxy">Gym Module</button>
-                </div>
+        <!-- Cinematic Hero Section -->
+        <div class="hero-wrapper" id="hero-section" style="cursor: none; position: relative;">
+            
+            <!-- Layer A: Base Character (Normal Toji) -->
+            <div class="hero-character" id="hero-char-layer">
+                <img src="/assets/toji/hero/normal.jpg" alt="Toji Fushiguro Base" />
             </div>
-            <div class="hero-3d" id="hero-3d-container"></div>
-        </div>
 
-        <!-- Quick Actions -->
-        <div class="qa-grid">
-            <div class="qa-card tilt-card" onclick="nav('live-pose')">
-                <div class="qa-icon-wrap" style="background:rgba(79,127,255,0.08)">
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#4F7FFF" stroke-width="1.5"><circle cx="12" cy="4" r="2"/><path d="M12 6v4m-4 2l4-2 4 2m-8 0v4l4 4 4-4v-4"/></svg>
-                </div>
-                <h4>Live Pose</h4>
-                <p>Real-time tracking with risk alerts</p>
+            <!-- Layer B: Interactive Action Video/Reveal (Muscle Toji) -->
+            <!-- Placeholder structure supports video -> video or image -> video replacements -->
+            <div class="hero-character-reveal" id="hero-action-layer">
+                <video src="/assets/toji/hero/muscle.mp4" autoplay loop muted playsinline 
+                    onerror="this.outerHTML='<img src=\\'https://images.unsplash.com/photo-1574680096145-d05b474e2155?auto=format&fit=crop&w=1920&q=80\\' alt=\\'Toji Action Placeholder\\' style=\\'width:100%;height:100%;object-fit:cover;\\' />'">
+                </video>
             </div>
-            <div class="qa-card tilt-card" onclick="nav('yoga')">
-                <div class="qa-icon-wrap" style="background:rgba(16,185,129,0.08)">
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="1.5"><circle cx="12" cy="4" r="2"/><path d="M4 20l4-8 4 4 4-4 4 8"/></svg>
+
+            <!-- Foreground Content Overlay -->
+            <div class="hero-content" style="position: absolute; inset: 0; z-index: 10; display: flex; flex-direction: column; justify-content: center; align-items: flex-start; padding: 0 6%; pointer-events: none; max-width: 1400px; margin: 0 auto; width: 100%;">
+                
+                <h1 class="hero-title text-white" style="font-family: var(--font-display); font-size: clamp(3.5rem, 8vw, 8rem); font-weight: 800; line-height: 0.9; margin: 0; pointer-events: auto; mix-blend-mode: overlay;">
+                    TOJI FUSHIGURO <br>
+                    <span class="text-cyan" style="font-size: 0.35em; letter-spacing: 0.3em; display: block; margin-top: 1.5rem;">× LUMINIX</span>
+                </h1>
+                
+                <div style="position: absolute; bottom: 8%; left: 6%; right: 6%; display: flex; justify-content: space-between; align-items: flex-end; pointer-events: auto;">
+                    <div class="hero-eyebrow text-white" style="letter-spacing: 0.3em; font-size: 0.75rem; opacity: 0.7;">
+                        DISCIPLINE / PRECISION / MOVEMENT
+                    </div>
+                    <button onclick="nav('live-pose')" class="btn-primary" style="background: transparent; color: white; border: 1px solid rgba(255,255,255,0.2); backdrop-filter: blur(8px); padding: 1rem 2.5rem; font-size: 0.8rem; letter-spacing: 0.2em; border-radius: 2px;">
+                        ENTER →
+                    </button>
                 </div>
-                <h4>Yoga Library</h4>
-                <p>${yogaCount} poses with difficulty levels</p>
-            </div>
-            <div class="qa-card tilt-card" onclick="nav('gym')">
-                <div class="qa-icon-wrap" style="background:rgba(139,92,246,0.08)">
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#8B5CF6" stroke-width="1.5"><path d="M6.5 6.5h11M2 12h3m14 0h3M5 8v8m14-8v8m-12-6v4m10-4v4"/></svg>
-                </div>
-                <h4>Gym Module</h4>
-                <p>${gymCount} categories with 3D demos</p>
-            </div>
-            <div class="qa-card tilt-card" onclick="nav('luna')">
-                <div class="qa-icon-wrap" style="background:rgba(236,72,153,0.08)">
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#EC4899" stroke-width="1.5"><circle cx="12" cy="12" r="3"/><path d="M12 1v2m0 18v2M4.22 4.22l1.42 1.42m12.72 12.72l1.42 1.42M1 12h2m18 0h2"/></svg>
-                </div>
-                <h4>Luna AI</h4>
-                <p>AI health & fitness assistant</p>
             </div>
         </div>
 
-        <!-- Stats Grid -->
-        <div class="stat-grid">
-            <div class="stat-card">
-                <div class="stat-label">Yoga Poses <span class="badge badge-api">API</span></div>
-                <div class="stat-value">${yogaCount}</div>
-                <div class="stat-sub">From /v1/yoga/poses</div>
+        <div class="view-container" style="padding: var(--space-4xl) var(--space-2xl);">
+            <!-- Quick Actions -->
+            <div class="qa-grid grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 mb-12" style="position:relative; z-index:10; margin-top:-3rem;">
+                <div class="qa-card glass-card p-4 rounded-xl cursor-pointer hover:border-yellow/50 transition-all" onclick="nav('live-pose')">
+                    <div class="text-xs text-yellow mb-1 font-bold uppercase tracking-wider">Live Pose</div>
+                    <p class="text-[11px] text-secondary">Real-time form tracking</p>
+                </div>
+                <div class="qa-card glass-card p-4 rounded-xl cursor-pointer hover:border-cyan/50 transition-all" onclick="nav('yoga')">
+                    <div class="text-xs text-cyan mb-1 font-bold uppercase tracking-wider">Yoga</div>
+                    <p class="text-[11px] text-secondary">${yogaCount} guided poses</p>
+                </div>
+                <div class="qa-card glass-card p-4 rounded-xl cursor-pointer hover:border-yellow/50 transition-all" onclick="nav('gym')">
+                    <div class="text-xs text-yellow mb-1 font-bold uppercase tracking-wider">Gym</div>
+                    <p class="text-[11px] text-secondary">${gymCount} categories & 3D</p>
+                </div>
+                <div class="qa-card glass-card p-4 rounded-xl cursor-pointer hover:border-cyan/50 transition-all" onclick="nav('bmi')">
+                    <div class="text-xs text-cyan mb-1 font-bold uppercase tracking-wider">BMI & Health</div>
+                    <p class="text-[11px] text-secondary">Metabolics & macros</p>
+                </div>
+                <div class="qa-card glass-card p-4 rounded-xl cursor-pointer hover:border-yellow/50 transition-all" onclick="nav('food-tracker')">
+                    <div class="text-xs text-yellow mb-1 font-bold uppercase tracking-wider">Food Tracker</div>
+                    <p class="text-[11px] text-secondary">Daily meals & recipes</p>
+                </div>
+                <div class="qa-card glass-card p-4 rounded-xl cursor-pointer hover:border-cyan/50 transition-all" onclick="nav('luna')">
+                    <div class="text-xs text-cyan mb-1 font-bold uppercase tracking-wider">Luna AI</div>
+                    <p class="text-[11px] text-secondary">Health assistant</p>
+                </div>
             </div>
-            <div class="stat-card">
-                <div class="stat-label">Gym Categories <span class="badge badge-api">API</span></div>
-                <div class="stat-value">${gymCount}</div>
-                <div class="stat-sub">Chest · Back · Legs · More</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-label">Posture Score <span class="badge badge-live">LIVE</span></div>
-                <div class="stat-value" id="dash-score">—</div>
-                <div class="stat-sub">Start live tracking</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-label">BMI <span class="badge badge-calc">CALC</span></div>
-                <div class="stat-value" id="dash-bmi">—</div>
-                <div class="stat-sub">Use BMI calculator</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-label">Risk Level <span class="badge badge-live">LIVE</span></div>
-                <div class="stat-value" style="color:var(--success)" id="dash-risk">Safe</div>
-                <div class="stat-sub">Updates during Live Pose</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-label">Activity <span class="badge badge-demo">DEMO</span></div>
-                <div class="stat-value">Moderate</div>
-                <div class="stat-sub">Sample activity level</div>
-            </div>
-        </div>
 
-        <!-- Feature Cards -->
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div class="glass-card feature-card p-6 rounded-xl">
-                <h3 style="font-family:var(--font-display);font-size:1.25rem;font-weight:800;margin-bottom:0.5rem">Live Pose Tracking</h3>
-                <p style="color:var(--text-secondary);font-size:0.85rem;margin-bottom:1rem">Webcam skeleton overlay, real-time scoring, 12-second risk alerts, and a 3D mirror avatar.</p>
-                <button onclick="nav('live-pose')" class="btn-secondary text-sm">Open Live Pose →</button>
+            <div class="energy-line yellow"></div>
+
+            <!-- Cinematic Feature 1 -->
+            <div class="feature-section grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+                <div class="feature-text">
+                    <h2 class="text-4xl mb-4 text-white">LIVE <span class="text-cyan">POSE TRACKING</span></h2>
+                    <p class="text-secondary mb-6 leading-relaxed">Webcam skeleton overlay, real-time scoring, 12-second risk alerts, and a 3D mirror avatar guiding your movements with precision accuracy.</p>
+                    <button onclick="nav('live-pose')" class="btn-secondary">Start Tracking</button>
+                </div>
+                <div class="glass-card rounded-2xl overflow-hidden aspect-video relative feature-image" style="box-shadow: 0 0 50px rgba(0,229,255,0.1)">
+                    <div style="position:absolute;inset:0;background:url('https://images.unsplash.com/photo-1517836357463-d25dfeac3438?auto=format&fit=crop&w=1200&q=80') center/cover; opacity:0.6; mix-blend-mode:luminosity;"></div>
+                    <div style="position:absolute;inset:0;background:linear-gradient(45deg, rgba(0,229,255,0.2), transparent);"></div>
+                </div>
             </div>
-            <div class="glass-card feature-card p-6 rounded-xl">
-                <h3 style="font-family:var(--font-display);font-size:1.25rem;font-weight:800;margin-bottom:0.5rem">BMI Calculator</h3>
-                <p style="color:var(--text-secondary);font-size:0.85rem;margin-bottom:1rem">Calculate BMI, BMR, TDEE, and macro targets. Get personalized nutrition plans.</p>
-                <button onclick="openBMICalc()" class="btn-secondary text-sm">Calculate BMI →</button>
+
+            <div class="energy-line"></div>
+
+            <!-- Stats Grid -->
+            <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-12">
+                <div class="stat-card glass-card p-4 rounded-lg text-center cursor-pointer" onclick="nav('live-pose')">
+                    <div class="text-xs text-dim mb-1">Posture Score <span class="badge badge-cyan">LIVE</span></div>
+                    <div class="text-2xl font-bold text-white">—</div>
+                </div>
+                <div class="stat-card glass-card p-4 rounded-lg text-center cursor-pointer hover:border-yellow/40 transition-all" onclick="nav('bmi')">
+                    <div class="text-xs text-dim mb-1">BMI <span class="badge badge-yellow">CALC</span></div>
+                    <div class="text-2xl font-bold text-white" id="dash-bmi">23.5</div>
+                    <button onclick="event.stopPropagation(); nav('bmi');" class="btn-ghost text-xs mt-2 text-cyan">Open Module →</button>
+                </div>
+                <div class="stat-card glass-card p-4 rounded-lg text-center cursor-pointer hover:border-cyan/40 transition-all" onclick="nav('food-tracker')">
+                    <div class="text-xs text-dim mb-1">Food Tracker <span class="badge badge-cyan">MEALS</span></div>
+                    <div class="text-2xl font-bold text-white" id="dash-calories">Daily Log</div>
+                    <button onclick="event.stopPropagation(); nav('food-tracker');" class="btn-ghost text-xs mt-2 text-yellow">Track Food →</button>
+                </div>
+                <div class="stat-card glass-card p-4 rounded-lg text-center cursor-pointer" onclick="nav('gym')">
+                    <div class="text-xs text-dim mb-1">Gym Categories <span class="badge badge-yellow">API</span></div>
+                    <div class="text-2xl font-bold text-white">${gymCount}</div>
+                </div>
+            </div>
+            
+            <div class="text-center py-20">
+                <h2 class="text-3xl mb-6 text-white">READY TO <span class="text-yellow">EXPERIENCE</span></h2>
+                <button onclick="nav('live-pose')" class="btn-primary text-xl px-12 py-4">GET STARTED</button>
             </div>
         </div>
     `;
 
-    initHero3D();
-    initTiltCards();
+    initThunderEngine();
+    initParallax();
     fetchDemoBMI();
 }
 
-// ── 3D Hero Orb ─────────────────────────────────────────────────
-function initHero3D() {
-    const container = document.getElementById('hero-3d-container');
-    if (!container || typeof THREE === 'undefined') return;
-
-    heroScene = new THREE.Scene();
-    heroCamera = new THREE.PerspectiveCamera(45, 1, 0.1, 100);
-    heroCamera.position.set(0, 0, 5);
-
-    heroRenderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
-    heroRenderer.setSize(280, 280);
-    heroRenderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-    heroRenderer.setClearColor(0x000000, 0);
-    container.appendChild(heroRenderer.domElement);
-
-    // Galaxy-powered orb — glass material
-    const orbGeo = new THREE.IcosahedronGeometry(1.2, 3);
-    const orbMat = new THREE.MeshPhysicalMaterial({
-        color: 0x4F7FFF,
-        metalness: 0.1,
-        roughness: 0.15,
-        transmission: 0.6,
-        thickness: 1.5,
-        transparent: true,
-        opacity: 0.7,
-        wireframe: false
+// ── Mouse Parallax ──────────────────────────────────────────────
+function initParallax() {
+    const heroWrapper = document.getElementById('hero-section');
+    const bgLayer = document.getElementById('hero-bg-layer');
+    const canvasLayer = document.getElementById('thunder-canvas');
+    const charLayer = document.getElementById('hero-char-layer');
+    
+    if (!heroWrapper) return;
+    
+    heroWrapper.addEventListener('mousemove', e => {
+        const x = (e.clientX / window.innerWidth - 0.5);
+        const y = (e.clientY / window.innerHeight - 0.5);
+        
+        // Layer 1: background: 2-4px
+        if (bgLayer) bgLayer.style.transform = `translate(${x * 10}px, ${y * 10}px)`;
+        // Layer 2: lightning: 5-8px
+        if (canvasLayer) canvasLayer.style.transform = `translate(${x * 20}px, ${y * 20}px)`;
+        // Layer 3: character: 8-12px
+        if (charLayer) charLayer.style.transform = `translate(calc(-50% + ${x * 40}px), ${y * 40}px)`;
     });
-    heroOrb = new THREE.Mesh(orbGeo, orbMat);
-    heroScene.add(heroOrb);
-
-    // Wireframe shell
-    const wireMat = new THREE.MeshBasicMaterial({ color: 0x4F7FFF, wireframe: true, transparent: true, opacity: 0.08 });
-    const wireOrb = new THREE.Mesh(new THREE.IcosahedronGeometry(1.6, 2), wireMat);
-    heroScene.add(wireOrb);
-
-    // Orbital ring
-    const ringGeo = new THREE.TorusGeometry(1.8, 0.008, 8, 64);
-    const ringMat = new THREE.MeshBasicMaterial({ color: 0x8B5CF6, transparent: true, opacity: 0.25 });
-    const ring = new THREE.Mesh(ringGeo, ringMat);
-    ring.rotation.x = Math.PI / 3;
-    heroScene.add(ring);
-
-    // Particles around orb
-    const particleCount = 60;
-    const pGeo = new THREE.BufferGeometry();
-    const pPositions = new Float32Array(particleCount * 3);
-    for (let i = 0; i < particleCount; i++) {
-        const theta = Math.random() * Math.PI * 2;
-        const phi = Math.acos(Math.random() * 2 - 1);
-        const r = 1.8 + Math.random() * 1.2;
-        pPositions[i * 3] = r * Math.sin(phi) * Math.cos(theta);
-        pPositions[i * 3 + 1] = r * Math.sin(phi) * Math.sin(theta);
-        pPositions[i * 3 + 2] = r * Math.cos(phi);
-    }
-    pGeo.setAttribute('position', new THREE.BufferAttribute(pPositions, 3));
-    const pMat = new THREE.PointsMaterial({ color: 0x22D3EE, size: 0.03, transparent: true, opacity: 0.6 });
-    heroScene.add(new THREE.Points(pGeo, pMat));
-
-    // Lighting
-    heroScene.add(new THREE.AmbientLight(0x404080, 0.4));
-    const keyLight = new THREE.DirectionalLight(0xffffff, 0.6);
-    keyLight.position.set(3, 4, 5);
-    heroScene.add(keyLight);
-    const rimLight = new THREE.PointLight(0x8B5CF6, 0.4, 10);
-    rimLight.position.set(-3, 2, -3);
-    heroScene.add(rimLight);
-    const accentLight = new THREE.PointLight(0x22D3EE, 0.3, 8);
-    accentLight.position.set(2, -2, 3);
-    heroScene.add(accentLight);
-
-    // Cursor interaction
-    let mouseX = 0, mouseY = 0;
-    document.addEventListener('mousemove', e => {
-        mouseX = (e.clientX / window.innerWidth - 0.5) * 0.3;
-        mouseY = (e.clientY / window.innerHeight - 0.5) * 0.3;
-    });
-
-    let t = 0;
-    function animate() {
-        heroAnimId = requestAnimationFrame(animate);
-        t += 0.008;
-        // Slow floating + cursor reaction
-        heroOrb.rotation.y = t * 0.3 + mouseX * 0.5;
-        heroOrb.rotation.x = Math.sin(t * 0.5) * 0.15 + mouseY * 0.5;
-        heroOrb.position.y = Math.sin(t) * 0.08;
-        wireOrb.rotation.y = -t * 0.15;
-        wireOrb.rotation.z = t * 0.1;
-        ring.rotation.z = t * 0.2;
-        heroRenderer.render(heroScene, heroCamera);
-    }
-    animate();
 }
 
-function stopHero3D() {
-    if (heroAnimId) cancelAnimationFrame(heroAnimId);
-}
+
 
 // ── Tilt Cards ──────────────────────────────────────────────────
 function initTiltCards() {
@@ -395,62 +397,41 @@ function initTiltCards() {
     });
 }
 
-// ── BMI Calculator ──────────────────────────────────────────────
+// ── BMI & Nutrition Dashboard Integration ────────────────────────
 async function fetchDemoBMI() {
     try {
-        const res = await fetch(API_BASE + '/v1/nutrition/metrics', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ age: 25, gender: 'male', height_cm: 175, weight_kg: 72, activity_level: 'moderate', fitness_goal: 'maintenance', diet_preference: 'non_vegetarian', allergies: [] })
-        });
-        const d = await res.json();
-        const el = document.getElementById('dash-bmi');
-        if (el) el.textContent = d.bmi?.toFixed(1) || '—';
+        const savedProfile = localStorage.getItem('luminix_nutrition_profile');
+        if (savedProfile) {
+            const p = JSON.parse(savedProfile);
+            const h = (p.height_cm || 175) / 100;
+            const bmi = (p.weight_kg || 72) / (h * h);
+            const el = document.getElementById('dash-bmi');
+            if (el) el.textContent = bmi.toFixed(1);
+        } else {
+            const res = await fetch(API_BASE + '/v1/nutrition/metrics', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ age: 25, gender: 'male', height_cm: 175, weight_kg: 72, activity_level: 'moderate', fitness_goal: 'maintenance', diet_preference: 'non_vegetarian', allergies: [] })
+            });
+            const d = await res.json();
+            const el = document.getElementById('dash-bmi');
+            if (el) el.textContent = d.bmi?.toFixed(1) || '23.5';
+        }
+
+        // Also check today's food log totals
+        const todayStr = new Date().toISOString().split('T')[0];
+        const foodLogs = JSON.parse(localStorage.getItem('luminix_food_logs') || '{}');
+        if (foodLogs[todayStr]) {
+            const allItems = [...(foodLogs[todayStr].breakfast || []), ...(foodLogs[todayStr].lunch || []), ...(foodLogs[todayStr].dinner || []), ...(foodLogs[todayStr].snacks || [])];
+            const totalKcal = allItems.reduce((acc, it) => acc + (it.kcal || 0), 0);
+            const calEl = document.getElementById('dash-calories');
+            if (calEl && totalKcal > 0) calEl.textContent = `${totalKcal} kcal`;
+        }
     } catch (_) {}
 }
 
 window.openBMICalc = function() {
-    const main = document.getElementById('main-content');
-    const existing = document.getElementById('bmi-modal');
-    if (existing) { existing.remove(); return; }
-
-    const modal = document.createElement('div');
-    modal.id = 'bmi-modal';
-    modal.style.cssText = 'position:fixed;inset:0;z-index:200;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,0.7);backdrop-filter:blur(8px)';
-    modal.innerHTML = `
-        <div class="glass-card p-8 rounded-2xl" style="max-width:420px;width:90%;border:1px solid rgba(255,255,255,0.08)">
-            <div class="flex justify-between items-center mb-6">
-                <h3 style="font-family:var(--font-display);font-size:1.5rem;font-weight:800">BMI Calculator</h3>
-                <button onclick="document.getElementById('bmi-modal').remove()" class="btn-ghost text-xl">✕</button>
-            </div>
-            <div class="grid grid-cols-2 gap-4 mb-4">
-                <div>
-                    <label class="block text-xs font-semibold mb-1" style="color:var(--text-dim)">AGE</label>
-                    <input type="number" id="bmi-age" value="25" class="auth-input">
-                </div>
-                <div>
-                    <label class="block text-xs font-semibold mb-1" style="color:var(--text-dim)">GENDER</label>
-                    <select id="bmi-gender" class="auth-input"><option value="male">Male</option><option value="female">Female</option></select>
-                </div>
-            </div>
-            <label class="block text-xs font-semibold mb-1" style="color:var(--text-dim)">HEIGHT (cm)</label>
-            <input type="number" id="bmi-height" value="175" class="auth-input mb-3">
-            <label class="block text-xs font-semibold mb-1" style="color:var(--text-dim)">WEIGHT (kg)</label>
-            <input type="number" id="bmi-weight" value="72" class="auth-input mb-3">
-            <label class="block text-xs font-semibold mb-1" style="color:var(--text-dim)">ACTIVITY</label>
-            <select id="bmi-activity" class="auth-input mb-4">
-                <option value="sedentary">Sedentary</option>
-                <option value="light">Light</option>
-                <option value="moderate" selected>Moderate</option>
-                <option value="active">Active</option>
-                <option value="very_active">Very Active</option>
-            </select>
-            <button onclick="calcBMI()" class="btn-primary w-full">Calculate</button>
-            <div id="bmi-result" class="mt-4"></div>
-        </div>
-    `;
-    document.body.appendChild(modal);
-    modal.addEventListener('click', e => { if (e.target === modal) modal.remove(); });
+    nav('bmi');
 };
 
 window.calcBMI = async function() {
@@ -484,9 +465,12 @@ window.calcBMI = async function() {
 // ══════════════════════════════════════════════════════════════════
 function renderLivePose(container) {
     container.innerHTML = `
-        <div class="mb-6">
-            <h2 style="font-family:var(--font-display);font-size:2rem;font-weight:800">Live Pose <span class="text-gradient">Tracking</span></h2>
-            <p style="color:var(--text-dim);font-size:0.85rem">Live tracking · Risk detection · 3D mirror avatar</p>
+        <div class="mb-6 relative overflow-hidden p-8 rounded-xl glass-card" style="background: linear-gradient(90deg, var(--black-1) 30%, transparent), url('/assets/media_1787652686705.jpg') center/cover; background-blend-mode: multiply; background-position: center 20%;">
+            <div class="relative z-10">
+                <div class="text-cyan mb-2" style="font-size: 0.65rem; font-weight: 700; letter-spacing: 0.2em; text-transform: uppercase;">MODULE // ANALYSIS</div>
+                <h2 style="font-family:var(--font-display);font-size:3rem;font-weight:800;text-transform:uppercase;line-height:1;margin-bottom:0.5rem">Live <span class="text-yellow" style="font-size:0.5em; letter-spacing:0.1em;">POSE</span></h2>
+                <p style="color:var(--text-secondary);font-size:0.85rem; max-width: 400px;">Real-time form tracking and risk detection. Precision over everything.</p>
+            </div>
         </div>
 
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-6">
@@ -634,8 +618,8 @@ function drawBoldSkeleton(ctx, landmarks, w, h) {
         const la = landmarks[a], lb = landmarks[b];
         if (!la || !lb || la.visibility < 0.3 || lb.visibility < 0.3) continue;
         const grad = ctx.createLinearGradient(la.x * w, la.y * h, lb.x * w, lb.y * h);
-        grad.addColorStop(0, 'rgba(79,127,255,0.9)');
-        grad.addColorStop(1, 'rgba(139,92,246,0.9)');
+        grad.addColorStop(0, 'rgba(0,229,255,0.9)');
+        grad.addColorStop(1, 'rgba(255,196,0,0.9)');
         ctx.strokeStyle = grad;
         ctx.beginPath();
         ctx.moveTo(la.x * w, la.y * h);
@@ -651,14 +635,14 @@ function drawBoldSkeleton(ctx, landmarks, w, h) {
         // Outer glow
         ctx.beginPath();
         ctx.arc(x, y, 8, 0, Math.PI * 2);
-        ctx.fillStyle = 'rgba(79,127,255,0.25)';
+        ctx.fillStyle = 'rgba(0,229,255,0.25)';
         ctx.fill();
         // Inner node
         ctx.beginPath();
         ctx.arc(x, y, 5, 0, Math.PI * 2);
         ctx.fillStyle = '#FFFFFF';
         ctx.fill();
-        ctx.strokeStyle = '#4F7FFF';
+        ctx.strokeStyle = '#00E5FF';
         ctx.lineWidth = 2;
         ctx.stroke();
     }
@@ -668,7 +652,7 @@ function drawBoldSkeleton(ctx, landmarks, w, h) {
     if (nose && nose.visibility > 0.3) {
         ctx.beginPath();
         ctx.arc(nose.x * w, nose.y * h, 12, 0, Math.PI * 2);
-        ctx.fillStyle = 'rgba(79,127,255,0.3)';
+        ctx.fillStyle = 'rgba(0,229,255,0.3)';
         ctx.fill();
         ctx.strokeStyle = 'rgba(255,255,255,0.8)';
         ctx.lineWidth = 2;
@@ -761,7 +745,7 @@ function init3DAvatar() {
     const light = new THREE.DirectionalLight(0xffffff, 0.8);
     light.position.set(3, 5, 4);
     avatarScene.add(light);
-    const rimLight = new THREE.PointLight(0x4F7FFF, 0.3, 8);
+    const rimLight = new THREE.PointLight(0x00E5FF, 0.3, 8);
     rimLight.position.set(-3, 2, -2);
     avatarScene.add(rimLight);
 
@@ -773,8 +757,8 @@ function init3DAvatar() {
 
     // Avatar body
     avatarBody = new THREE.Group();
-    const mat = new THREE.MeshPhongMaterial({ color: 0x4F7FFF, shininess: 30 });
-    const jointMat = new THREE.MeshPhongMaterial({ color: 0xffffff, shininess: 50 });
+    const mat = new THREE.MeshPhongMaterial({ color: 0x00E5FF, shininess: 30 });
+    const jointMat = new THREE.MeshPhongMaterial({ color: 0xFFC400, shininess: 50 });
 
     const parts = [
         { name: 'head', geo: new THREE.SphereGeometry(0.12, 12, 12), mat: jointMat, pos: [0, 1.7, 0] },
@@ -828,9 +812,12 @@ let lunaRecognition = null;
 
 function renderLuna(container) {
     container.innerHTML = `
-        <div class="mb-6">
-            <h2 style="font-family:var(--font-display);font-size:2rem;font-weight:800">Luna AI <span class="text-gradient">Assistant</span></h2>
-            <p style="color:var(--text-dim);font-size:0.85rem">Health & fitness coaching — not medical advice. Say "Start Luna" or type below.</p>
+        <div class="mb-6 relative overflow-hidden p-8 rounded-xl glass-card" style="background: linear-gradient(90deg, var(--black-1) 30%, transparent), url('/assets/media_1787652701377.jpg') center/cover; background-blend-mode: multiply; background-position: center 30%;">
+            <div class="relative z-10">
+                <div class="text-cyan mb-2" style="font-size: 0.65rem; font-weight: 700; letter-spacing: 0.2em; text-transform: uppercase;">MODULE // INTELLIGENCE</div>
+                <h2 style="font-family:var(--font-display);font-size:3rem;font-weight:800;text-transform:uppercase;line-height:1;margin-bottom:0.5rem">Luna <span class="text-cyan" style="font-size:0.5em; letter-spacing:0.1em;">AI</span></h2>
+                <p style="color:var(--text-secondary);font-size:0.85rem; max-width: 400px;">Analyze. Adapt. Improve. Say "Start Luna" or type below.</p>
+            </div>
         </div>
 
         <div class="glass-card rounded-xl" style="display:flex;flex-direction:column;height:calc(100vh - 220px);min-height:400px">
@@ -843,9 +830,9 @@ function renderLuna(container) {
             <div class="p-4 border-t" style="border-color:rgba(255,255,255,0.04)">
                 <div class="flex flex-wrap gap-2 mb-3">
                     <button class="luna-prompt" onclick="lunaAsk('What exercises help build chest?')">Chest workout</button>
-                    <button class="luna-prompt" onclick="lunaAsk('How much protein do I need?')">Protein needs</button>
-                    <button class="luna-prompt" onclick="lunaAsk('What yoga pose helps back pain?')">Yoga for back</button>
-                    <button class="luna-prompt" onclick="lunaAsk('How to calculate BMI?')">BMI info</button>
+                    <button class="luna-prompt" onclick="lunaAsk('How much protein and calories do I need daily?')">Protein & Macros</button>
+                    <button class="luna-prompt" onclick="lunaAsk('Suggest a healthy high-protein meal plan')">Meal Plan</button>
+                    <button class="luna-prompt" onclick="lunaAsk('How to calculate and improve my BMI?')">BMI & Metabolism</button>
                 </div>
                 <div class="flex gap-2">
                     <input type="text" id="luna-input" placeholder="Ask Luna..." class="auth-input flex-1" onkeydown="if(event.key==='Enter')lunaAsk()">
@@ -933,9 +920,12 @@ window.startLunaVoice = window.toggleLunaVoice;
 // ══════════════════════════════════════════════════════════════════
 function renderExport(container) {
     container.innerHTML = `
-        <div class="mb-6">
-            <h2 style="font-family:var(--font-display);font-size:2rem;font-weight:800">Export & <span class="text-gradient">Share</span></h2>
-            <p style="color:var(--text-dim);font-size:0.85rem">Download health reports or send them via email</p>
+        <div class="mb-6 relative overflow-hidden p-8 rounded-xl glass-card" style="background: linear-gradient(90deg, var(--black-1) 30%, transparent), url('/assets/media_1787652701395.jpg') center/cover; background-blend-mode: multiply; background-position: center 10%;">
+            <div class="relative z-10">
+                <div class="text-yellow mb-2" style="font-size: 0.65rem; font-weight: 700; letter-spacing: 0.2em; text-transform: uppercase;">MODULE // DATA</div>
+                <h2 style="font-family:var(--font-display);font-size:3rem;font-weight:800;text-transform:uppercase;line-height:1;margin-bottom:0.5rem">Export <span class="text-yellow" style="font-size:0.5em; letter-spacing:0.1em;">REPORT</span></h2>
+                <p style="color:var(--text-secondary);font-size:0.85rem; max-width: 400px;">Extract your health intelligence data. Download or share securely.</p>
+            </div>
         </div>
 
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">

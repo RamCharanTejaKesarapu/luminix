@@ -4,9 +4,12 @@
 
 window.renderYogaView = function(container) {
     container.innerHTML = `
-        <div class="mb-6">
-            <h2 style="font-family:var(--font-display);font-size:2rem;font-weight:800">Yoga <span class="text-gradient">Library</span></h2>
-            <p style="color:var(--text-dim);font-size:0.85rem">Guided poses with difficulty levels, benefits, and instructions</p>
+        <div class="mb-6 relative overflow-hidden p-8 rounded-xl glass-card" style="background: linear-gradient(90deg, var(--black-1) 30%, transparent), url('/assets/media_1787652701397.jpg') center/cover; background-blend-mode: multiply; background-position: center 20%;">
+            <div class="relative z-10">
+                <div class="text-cyan mb-2" style="font-size: 0.65rem; font-weight: 700; letter-spacing: 0.2em; text-transform: uppercase;">MODULE // FOCUS</div>
+                <h2 style="font-family:var(--font-display);font-size:3rem;font-weight:800;text-transform:uppercase;line-height:1;margin-bottom:0.5rem">Yoga <br/><span class="text-cyan" style="font-size:0.5em; letter-spacing:0.1em;">DISCIPLINE</span></h2>
+                <p style="color:var(--text-secondary);font-size:0.85rem; max-width: 400px;">Guided poses with difficulty levels, benefits, and instructions. Calm the mind.</p>
+            </div>
         </div>
 
         <div class="flex flex-wrap gap-2 mb-6" id="yoga-filters">
