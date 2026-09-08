@@ -1,0 +1,54 @@
+# Netlify Configuration for Luminix
+# https://docs.netlify.com/configure-builds/file-based-configuration/
+
+[build]
+  # Base directory where frontend code lives
+  base = "frontend"
+  # Publish directory relative to base
+  publish = "."
+
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Frame-Options = "DENY"
+    X-Content-Type-Options = "nosniff"
+    Referrer-Policy = "strict-origin-when-cross-origin"
+    Permissions-Policy = "camera=(self), microphone=(self)"
+
+# Cache static assets (images, audio, fonts) for performance
+[[headers]]
+  for = "/assets/*"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
+# Static path rewrite (maps /static/* to root frontend files)
+[[redirects]]
+  from = "/static/*"
+  to = "/:splat"
+  status = 200
+
+# Clean URL routing for HTML pages
+[[redirects]]
+  from = "/auth"
+  to = "/auth.html"
+  status = 200
+
+[[redirects]]
+  from = "/privacy"
+  to = "/privacy.html"
+  status = 200
+
+[[redirects]]
+  from = "/terms"
+  to = "/terms.html"
+  status = 200
+
+[[redirects]]
+  from = "/accessibility"
+  to = "/accessibility.html"
+  status = 200
+
+[[redirects]]
+  from = "/companion"
+  to = "/companion.html"
+  status = 200

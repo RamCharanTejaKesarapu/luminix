@@ -1,0 +1,6 @@
+/static/*          /:splat                 200
+/auth              /auth.html              200
+/privacy           /privacy.html           200
+/terms             /terms.html             200
+/accessibility     /accessibility.html     200
+/companion         /companion.html         200
