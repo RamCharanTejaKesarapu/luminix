@@ -2902,6 +2902,9 @@ window.switchCreatorTab = function(tabId) {
             pane.style.display = (t === tabId) ? 'block' : 'none';
         }
     });
+    const overlay = document.getElementById('creator-modal-overlay');
+    const modalBody = overlay ? overlay.querySelector('.creator-modal-body') : null;
+    if (modalBody) modalBody.scrollTop = 0;
 };
 
 window.selectDonationTier = function(amount, cardElem) {
@@ -3176,3 +3179,23 @@ window.submitCreatorDonation = async function(event) {
         }
     }
 };
+
+/* ── Proactively Suppress Netlify Edge-Injected HUD & Badges ─────────── */
+(function suppressNetlifyBadge() {
+    const purge = () => {
+        const frames = document.querySelectorAll('#nl-badge-frame, #nl-hud-frame, iframe[id^="nl-"]');
+        frames.forEach(f => {
+            f.style.setProperty('display', 'none', 'important');
+            f.style.setProperty('visibility', 'hidden', 'important');
+            f.remove();
+        });
+    };
+    purge();
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', purge);
+    }
+    if (window.MutationObserver && document.documentElement) {
+        const obs = new MutationObserver(purge);
+        obs.observe(document.documentElement, { childList: true, subtree: true });
+    }
+})();

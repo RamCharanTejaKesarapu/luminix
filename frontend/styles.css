@@ -3667,6 +3667,26 @@ select option {
     transform: scale(1.03);
 }
 
+/* ── Netlify Edge Injected HUD & Badge Suppression ─────────── */
+#nl-badge-frame,
+#nl-hud-frame,
+iframe[id^="nl-"],
+[data-netlify-badge],
+div[class*="netlify"],
+iframe[src*="netlify"],
+.netlify-badge {
+    display: none !important;
+    visibility: hidden !important;
+    opacity: 0 !important;
+    pointer-events: none !important;
+    width: 0 !important;
+    height: 0 !important;
+    position: absolute !important;
+    left: -9999px !important;
+    top: -9999px !important;
+    z-index: -9999 !important;
+}
+
 /* ── Creator Full Dossier Modal ─────────────────────────────── */
 #creator-modal-overlay {
     position: fixed;
@@ -3674,7 +3694,7 @@ select option {
     background: rgba(5, 7, 10, 0.88);
     backdrop-filter: blur(14px);
     -webkit-backdrop-filter: blur(14px);
-    z-index: 99999;
+    z-index: 100000;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -3717,19 +3737,30 @@ select option {
     border-bottom: 1px solid rgba(223, 231, 224, 0.12);
     position: relative;
     z-index: 11;
+    flex-shrink: 0 !important;
 }
 
 .creator-modal-tabs {
     display: flex;
+    align-items: stretch;
     position: sticky;
     top: 0;
     z-index: 10;
     background: #0b0e14 !important;
     border-bottom: 1px solid rgba(223, 231, 224, 0.12);
     overflow-x: auto;
+    overflow-y: hidden;
     padding: 0 16px;
     gap: 8px;
     backdrop-filter: blur(10px);
+    flex-shrink: 0 !important;
+    min-height: 46px !important;
+    scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
+}
+
+.creator-modal-tabs::-webkit-scrollbar {
+    display: none;
 }
 
 .creator-tab-btn {
@@ -3745,6 +3776,12 @@ select option {
     border-bottom: 2px solid transparent;
     transition: all 0.2s ease;
     white-space: nowrap;
+    flex-shrink: 0 !important;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 1.2;
+    box-sizing: border-box;
 }
 
 .creator-tab-btn:hover {
@@ -3760,9 +3797,11 @@ select option {
 .creator-modal-body {
     padding: 24px;
     overflow-y: auto;
-    flex-grow: 1;
+    flex: 1 1 auto !important;
+    min-height: 0 !important;
     position: relative;
     z-index: 1;
+    -webkit-overflow-scrolling: touch;
 }
 
 .donation-tier-card {
@@ -6478,11 +6517,17 @@ body.light-theme .wearable-metric-card {
     }
 
     /* Hide Netlify floating badge on mobile so it doesn't cover navigation tabs */
+    #nl-badge-frame,
+    #nl-hud-frame,
+    iframe[id^="nl-"],
     [data-netlify-badge],
     div[class*="netlify"],
     iframe[src*="netlify"],
     .netlify-badge {
         display: none !important;
+        visibility: hidden !important;
+        opacity: 0 !important;
+        pointer-events: none !important;
     }
 
     /* ── M. Mobile Views & Modals Refinement ─────────────────────── */
@@ -6509,6 +6554,48 @@ body.light-theme .wearable-metric-card {
     .drawer-panel,
     .mobile-drawer-panel {
         width: min(320px, 86vw) !important;
+    }
+
+    /* Creator Dossier & Donation Modal Mobile Responsiveness */
+    #creator-modal-overlay {
+        padding: 10px 8px !important;
+        align-items: center !important;
+    }
+    .creator-modal-card {
+        max-height: calc(100vh - 24px) !important;
+        max-height: calc(100dvh - 24px) !important;
+        width: 100% !important;
+        max-width: calc(100vw - 16px) !important;
+        border-radius: 12px !important;
+        margin: 0 auto !important;
+    }
+    .creator-modal-header {
+        padding: 12px 14px !important;
+        flex-shrink: 0 !important;
+    }
+    .creator-modal-tabs {
+        padding: 0 8px !important;
+        gap: 4px !important;
+        min-height: 44px !important;
+        height: 44px !important;
+        flex-shrink: 0 !important;
+        overflow-x: auto !important;
+        -webkit-overflow-scrolling: touch !important;
+        scrollbar-width: none !important;
+    }
+    .creator-tab-btn {
+        padding: 10px 10px !important;
+        font-size: 10.5px !important;
+        letter-spacing: 0.04em !important;
+        flex-shrink: 0 !important;
+        white-space: nowrap !important;
+    }
+    .creator-modal-body {
+        padding: 14px 12px calc(24px + env(safe-area-inset-bottom, 0px)) !important;
+        flex: 1 1 auto !important;
+        min-height: 0 !important;
+        overflow-y: auto !important;
+        -webkit-overflow-scrolling: touch !important;
     }
 }
 
