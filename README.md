@@ -15,7 +15,8 @@
   <b>A zero-latency, private, client-side biomechanics telemetry platform merging ancient Kyoto temple aesthetics with mathematical kinematics and multi-model AI.</b>
 </p>
 
-[Explore Features](#-key-innovations--engineering-breakthroughs) •
+[About](#-about-luminix) •
+[Features](#-key-innovations--engineering-breakthroughs) •
 [Architecture](#-system-architecture) •
 [Quick Start](#-quick-start) •
 [API Documentation](#-rest-api-reference) •
@@ -23,6 +24,32 @@
 [Contributing](#-contributing)
 
 </div>
+
+---
+
+## 📖 About Luminix
+
+**Luminix** is an autonomous, open-source biomechanical intelligence sanctuary engineered to merge computer vision kinematics with orthopedic risk detection and multi-model AI.
+
+### 🎯 The Problem
+Commercial fitness platforms today compromise user trust in three critical ways:
+1. **Cloud Privacy Invasions:** Proprietary platforms stream live webcam and mobile video feeds to remote cloud servers, exposing private living spaces and telemetry to third-party data breaches.
+2. **Artificial Paywalls:** Elementary movement analytics, rep counters, and posture feedback are locked behind aggressive recurring subscription paywalls.
+3. **Imprecise Movement Tracking:** Most digital workout tools rely on coarse device accelerometers rather than true mathematical joint trigonometry, failing to detect dangerous lifting mechanics.
+
+### 💡 The Solution
+Luminix re-architects physical conditioning from mathematical first principles:
+- **100% Client-Side In-Browser Inference:** All 33-point body landmark extraction, vector dot-product angles, and state transitions are computed strictly inside your browser using **MediaPipe WebAssembly (WASM)** and **WebGL**. Zero camera frames or video bytes ever touch an external network.
+- **Clinical Kinematic Guardrails:** Instant mathematical detection of **knee valgus (inward collapse)**, **lumbar hyperextension**, and **forward cervical tilt** across squats, deadlifts, and 17 traditional yoga asanas.
+- **Procedural Kyoto Aesthetic:** An interactive 3D procedural temple sanctuary built with **Three.js** provides a cinematic, focused training atmosphere inspired by ancient Kyoto architecture (*Kage*) and relentless physical discipline (*Heavenly Restriction*).
+- **Physiologically Grounded AI ("Luna"):** A conversational AI companion powered by **Google Gemini** that interprets real-time kinematic angles, rep speeds, and validated metabolic formulas (Mifflin-St Jeor & Revised Harris-Benedict) with offline fallbacks.
+- **Privacy Fortress:** Enterprise-grade security featuring **Argon2id** password hashing, stateless dual-channel JWT/cookie transport, token-version session invalidation, and one-click data erasure complying with India's DPDP Act and GDPR.
+
+### 👥 Who Luminix Is For
+- **Lifters & Athletes:** Real-time form coaching, discrete rep counting, and joint fatigue monitoring during heavy compound lifts.
+- **Yogis & Movement Artists:** 17 sacred asana posture guides with alignment scoring and hold-duration tracking.
+- **Physical Therapy & Ergonomics Practitioners:** Cervical and lumbar tilt warnings for desk workers and rehabilitation patients.
+- **Developers & Researchers:** An extensible, high-concurrency Python 3.11+ FastAPI backend with pluggable computer vision pipelines.
 
 ---
 
