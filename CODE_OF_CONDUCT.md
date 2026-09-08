@@ -51,5 +51,5 @@ an individual is officially representing the community in public spaces.
 ## Contact
 
 Instances of abusive, harassing, or otherwise unacceptable behavior may be
-reported to the project maintainer at **ramcharantejak396@gmail.com**.
+reported to the project maintainer at **luno97802@gmail.com**.
 All complaints will be reviewed and investigated promptly and fairly.

@@ -6,7 +6,7 @@
 - **Name**: Luminix
 - **Domain**: AI Health, Physical Biomechanics, Computer Vision, Functional Longevity
 - **Author & Creator**: Ram Charan Teja (@LUNO895)
-- **Contact**: ramcharantejak396@gmail.com
+- **Contact**: luno97802@gmail.com
 - **Repository**: https://github.com/LUNO895
 - **Architecture**: Client-side MediaPipe WebAssembly (kinematics/angles) + Asynchronous FastAPI (Python 3.11) + Three.js WebGL (procedural sanctuary environment) + Google Gemini multi-model intelligence fallback.
 

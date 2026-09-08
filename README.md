@@ -284,7 +284,7 @@ All 20 tests pass out of the box with zero external infrastructure required.
 **Ram Charan Teja** ([@LUNO895](https://github.com/LUNO895))  
 *Sole Creator, Full-Stack AI Architect & Computer Vision Practitioner*  
 📍 Hyderabad, India  
-✉️ Contact: [ramcharantejak396@gmail.com](mailto:ramcharantejak396@gmail.com)
+✉️ Contact: [luno97802@gmail.com](mailto:luno97802@gmail.com)
 
 ---
 

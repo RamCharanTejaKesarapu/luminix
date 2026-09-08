@@ -647,7 +647,7 @@ const SEARCH_INDEX = [
     { id: 'cr-story', title: 'Creator Dossier: Ram Charan Teja', category: 'Creator', desc: 'The story and vision behind Luminix (@LUNO895)', action: () => window.openCreatorModal('story') },
     { id: 'cr-tech', title: 'Architect Tech Arsenal', category: 'Creator', desc: 'FastAPI, MediaPipe, Three.js, WebGL & Gemini Architecture', action: () => window.openCreatorModal('story') },
     { id: 'cr-donate', title: 'Support & Donate to Architect', category: 'Creator', desc: 'Contribute to autonomous open-source health intelligence', action: () => window.openCreatorModal('donate') },
-    { id: 'cr-contact', title: 'Encrypted Contact Channel', category: 'Creator', desc: 'Direct message to Ram Charan Teja (ramcharantejak396@gmail.com)', action: () => window.toggleContactModal() }
+    { id: 'cr-contact', title: 'Encrypted Contact Channel', category: 'Creator', desc: 'Direct message to Ram Charan Teja (luno97802@gmail.com)', action: () => window.toggleContactModal() }
 ];
 
 let searchActiveIdx = 0;
@@ -1327,9 +1327,9 @@ async function renderDashboard(container) {
                             <div class="flex items-center gap-3 flex-wrap">
                                 <h3 class="creator-name">Ram Charan Teja</h3>
                                 <span class="creator-handle font-mono">@LUNO895</span>
-                                <button type="button" onclick="event.stopPropagation(); window.copyToClipboard('ramcharantejak396@gmail.com', this);" style="display:inline-flex; align-items:center; gap:6px; font-family:var(--font-mono); font-size:11px; color:var(--bone-sub); background:rgba(255,255,255,0.04); border:1px solid rgba(223,231,224,0.15); padding:3px 10px; border-radius:4px; text-decoration:none; cursor:pointer; transition:all 0.2s ease;" title="Click to copy email address">
+                                <button type="button" onclick="event.stopPropagation(); window.copyToClipboard('luno97802@gmail.com', this);" style="display:inline-flex; align-items:center; gap:6px; font-family:var(--font-mono); font-size:11px; color:var(--bone-sub); background:rgba(255,255,255,0.04); border:1px solid rgba(223,231,224,0.15); padding:3px 10px; border-radius:4px; text-decoration:none; cursor:pointer; transition:all 0.2s ease;" title="Click to copy email address">
                                     <span>✉️</span>
-                                    <span>ramcharantejak396@gmail.com</span>
+                                    <span>luno97802@gmail.com</span>
                                 </button>
                             </div>
                             <p class="creator-tagline">
@@ -2804,7 +2804,7 @@ window.openCreatorModal = function(initialTab = 'story') {
                                 <button type="button" onclick="window.switchCreatorTab('connect')" class="creator-copy-btn" style="font-size:11px; padding:8px 14px; text-transform:uppercase; display:inline-flex; align-items:center; gap:6px; background:rgba(224,35,28,0.2); border-color:var(--vermilion); color:#ffffff; cursor:pointer;">
                                     <span>📬</span> Open Connect Tab
                                 </button>
-                                <a href="mailto:ramcharantejak396@gmail.com" class="creator-copy-btn" style="font-size:11px; padding:8px 14px; text-transform:uppercase; display:inline-flex; align-items:center; gap:6px; text-decoration:none;">
+                                <a href="mailto:luno97802@gmail.com" class="creator-copy-btn" style="font-size:11px; padding:8px 14px; text-transform:uppercase; display:inline-flex; align-items:center; gap:6px; text-decoration:none;">
                                     <span>✉️</span> Direct Email
                                 </a>
                                 <a href="https://github.com/LUNO895" target="_blank" rel="noopener noreferrer" class="creator-copy-btn" style="font-size:11px; padding:8px 14px; text-transform:uppercase; display:inline-flex; align-items:center; gap:6px; text-decoration:none;">
@@ -2845,16 +2845,16 @@ window.openCreatorModal = function(initialTab = 'story') {
                         </div>
 
                         <div style="display:flex; flex-direction:column; gap:12px; margin-bottom:20px;">
-                            <a href="mailto:ramcharantejak396@gmail.com" target="_blank" style="display:flex; align-items:center; justify-content:space-between; background:rgba(16,21,29,0.8); border:1px solid rgba(223,231,224,0.15); border-radius:6px; padding:14px 18px; text-decoration:none; color:inherit; transition:border-color 0.2s ease;">
+                            <a href="mailto:luno97802@gmail.com" target="_blank" style="display:flex; align-items:center; justify-content:space-between; background:rgba(16,21,29,0.8); border:1px solid rgba(223,231,224,0.15); border-radius:6px; padding:14px 18px; text-decoration:none; color:inherit; transition:border-color 0.2s ease;">
                                 <div style="display:flex; align-items:center; gap:12px;">
                                     <span style="font-size:20px;">✉️</span>
                                     <div>
                                         <div style="font-size:13px; font-weight:600; color:var(--bone);">Personal & Engineering Email</div>
-                                        <div style="font-size:11px; font-family:var(--font-mono); color:var(--vermilion);">ramcharantejak396@gmail.com</div>
+                                        <div style="font-size:11px; font-family:var(--font-mono); color:var(--vermilion);">luno97802@gmail.com</div>
                                     </div>
                                 </div>
                                 <div style="display:flex; align-items:center; gap:8px;">
-                                    <button type="button" class="creator-copy-btn" onclick="event.preventDefault(); event.stopPropagation(); window.copyCreatorAddress('ramcharantejak396@gmail.com', this)">COPY EMAIL</button>
+                                    <button type="button" class="creator-copy-btn" onclick="event.preventDefault(); event.stopPropagation(); window.copyCreatorAddress('luno97802@gmail.com', this)">COPY EMAIL</button>
                                     <span style="font-family:var(--font-mono); font-size:11px; color:var(--bone-dim);">COMPOSE →</span>
                                 </div>
                             </a>
@@ -3015,7 +3015,7 @@ window.submitCreatorDonation = async function(event) {
                 <div style="color: #ef4444; font-weight: 700; font-size: 13px; margin-bottom: 6px; font-family: var(--font-mono);">⚠️ DAILY LIMIT REACHED (5 / 5 Today)</div>
                 <div style="color: var(--bone); font-size: 12px; line-height: 1.6;">
                     You have sent 5 notes today to Ram Charan Teja's email.
-                    Direct email is always reachable at: <a href="mailto:ramcharantejak396@gmail.com" style="color: #60a5fa; text-decoration: underline; font-weight: 600;">ramcharantejak396@gmail.com</a>
+                    Direct email is always reachable at: <a href="mailto:luno97802@gmail.com" style="color: #60a5fa; text-decoration: underline; font-weight: 600;">luno97802@gmail.com</a>
                 </div>
             `;
             gratitudeBox.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
@@ -3054,7 +3054,7 @@ window.submitCreatorDonation = async function(event) {
             if (e.message && e.message.includes('Daily rate limit')) throw e;
         }
 
-        // Channel 2: Direct Email Forwarding via FormSubmit API to Ram Charan Teja (ramcharantejak396@gmail.com)
+        // Channel 2: Direct Email Forwarding via FormSubmit API to Ram Charan Teja (luno97802@gmail.com)
         try {
             const emailFormData = {
                 "Donor Name": name,
@@ -3067,7 +3067,7 @@ window.submitCreatorDonation = async function(event) {
                 "_captcha": "false",
                 "_template": "table"
             };
-            await fetch('https://formsubmit.co/ajax/ramcharantejak396@gmail.com', {
+            await fetch('https://formsubmit.co/ajax/luno97802@gmail.com', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -3123,7 +3123,7 @@ window.submitCreatorDonation = async function(event) {
         // Success: Render Gratitude & Direct Mailto Link
         const mailtoSub = encodeURIComponent(`Luminix Donation Note: $${amount.toFixed(2)} from ${name}`);
         const mailtoBody = encodeURIComponent(`Hi Ram Charan Teja,\n\nI just pledged $${amount.toFixed(2)} to support Luminix!\n\nMessage / Note:\n${note || '(None)'}\n\nFrom: ${name} (${email || 'No email provided'})\nPlatform: Luminix AI (luminixi.netlify.app)`);
-        const directMailto = `mailto:ramcharantejak396@gmail.com?subject=${mailtoSub}&body=${mailtoBody}`;
+        const directMailto = `mailto:luno97802@gmail.com?subject=${mailtoSub}&body=${mailtoBody}`;
 
         if (gratitudeBox && gratitudeMsg) {
             gratitudeBox.style.display = 'block';
@@ -3133,7 +3133,7 @@ window.submitCreatorDonation = async function(event) {
                 <div style="font-size: 26px; margin-bottom: 4px;">🎉</div>
                 <h4 style="margin: 0 0 6px; font-size: 15px; color: #10b981; font-family: var(--font-mono); font-weight: 700;">THANK YOU, ${name.toUpperCase()}!</h4>
                 <p style="margin: 0 0 8px; font-size: 12px; color: var(--bone); line-height: 1.6;">
-                    Your generous pledge of <b>$${amount.toFixed(2)}</b> has been recorded and an instant notification dispatch was sent to <b>Ram Charan Teja</b> (<span style="color: #60a5fa;">ramcharantejak396@gmail.com</span>)!
+                    Your generous pledge of <b>$${amount.toFixed(2)}</b> has been recorded and an instant notification dispatch was sent to <b>Ram Charan Teja</b> (<span style="color: #60a5fa;">luno97802@gmail.com</span>)!
                 </p>
                 ${note ? `<div style="font-style: italic; color: #e5e7eb; font-size: 12px; margin: 8px 0; background: rgba(0,0,0,0.3); border-left: 2px solid var(--vermilion); padding: 8px 12px; border-radius: 4px; text-align: left;">"${note}"</div>` : ''}
                 <div style="margin: 10px 0;">
@@ -3164,7 +3164,7 @@ window.submitCreatorDonation = async function(event) {
                     <div style="font-size: 26px; margin-bottom: 4px;">🎉</div>
                     <h4 style="margin: 0 0 6px; font-size: 15px; color: #10b981; font-family: var(--font-mono); font-weight: 700;">THANK YOU, ${name.toUpperCase()}!</h4>
                     <p style="margin: 0 0 8px; font-size: 12px; color: var(--bone); line-height: 1.6;">
-                        Your pledge of <b>$${amount.toFixed(2)}</b> has been recorded for <b>Ram Charan Teja</b> (<span style="color: #60a5fa;">ramcharantejak396@gmail.com</span>).
+                        Your pledge of <b>$${amount.toFixed(2)}</b> has been recorded for <b>Ram Charan Teja</b> (<span style="color: #60a5fa;">luno97802@gmail.com</span>).
                     </p>
                 `;
                 gratitudeBox.scrollIntoView({ behavior: 'smooth', block: 'nearest' });

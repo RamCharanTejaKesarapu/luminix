@@ -176,10 +176,10 @@ def send_donation_notification_email(
     client_ip: str = "127.0.0.1",
 ) -> tuple[bool, str]:
     """
-    Sends an immediate donation notification email to Ram Charan Teja (ramcharantejak396@gmail.com).
+    Sends an immediate donation notification email to Ram Charan Teja (luno97802@gmail.com).
     Uses SendGrid or SMTP (Gmail TLS) if configured, with resilient logging fallback.
     """
-    to_email = "ramcharantejak396@gmail.com"
+    to_email = "luno97802@gmail.com"
     subject = f"🎉 New Luminix Donation Pledge: ${amount:.2f} from {donor_name}"
 
     body_text = f"""New Donation / Support Pledge Received for Luminix!

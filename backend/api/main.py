@@ -1512,7 +1512,7 @@ def submit_creator_donation(
     """
     Submits a donation pledge and note to creator Ram Charan Teja.
     Strictly caps notifications to maximum 5 per user/IP per 24 hours.
-    Sends an immediate email notification to ramcharantejak396@gmail.com
+    Sends an immediate email notification to luno97802@gmail.com
     and records the record into local SQLite and Cloud Firestore.
     """
     client_ip = "127.0.0.1"
@@ -1558,7 +1558,7 @@ def submit_creator_donation(
     except Exception:
         pass
 
-    # 4. Dispatch notification email to Ram Charan Teja (ramcharantejak396@gmail.com)
+    # 4. Dispatch notification email to Ram Charan Teja (luno97802@gmail.com)
     email_sent, email_status = send_donation_notification_email(
         donor_name=req.name.strip(),
         donor_email=email_val,

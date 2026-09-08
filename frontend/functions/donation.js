@@ -1,6 +1,6 @@
 /**
  * Netlify Serverless Function for Luminix Creator Donations & Notes
- * Receives donation note pledges and forwards instant alerts to Ram Charan Teja (ramcharantejak396@gmail.com).
+ * Receives donation note pledges and forwards instant alerts to Ram Charan Teja (luno97802@gmail.com).
  */
 
 exports.handler = async function(event, context) {
@@ -32,9 +32,9 @@ exports.handler = async function(event, context) {
         const note = (body.note || "").trim();
         const channel = body.channel || "Direct Support / Netlify";
 
-        // Dispatch email notification to Ram Charan Teja (ramcharantejak396@gmail.com)
+        // Dispatch email notification to Ram Charan Teja (luno97802@gmail.com)
         try {
-            await fetch("https://formsubmit.co/ajax/ramcharantejak396@gmail.com", {
+            await fetch("https://formsubmit.co/ajax/luno97802@gmail.com", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
