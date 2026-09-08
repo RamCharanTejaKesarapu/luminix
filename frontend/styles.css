@@ -5899,6 +5899,628 @@ body.light-theme .wearable-metric-card {
     color: var(--vermilion);
 }
 
+/* ═══════════════════════════════════════════════════════════════════
+   18. ANDROID & MOBILE OPTIMIZATION (CLEAN SPACING & TEXT FLOW)
+   Strictly scoped to <= 768px viewports so desktop is 100% untouched.
+   ═══════════════════════════════════════════════════════════════════ */
+@media (max-width: 768px) {
+    /* ── A. Fixed Header & Compact Controls ─────────────────────── */
+    #main-header {
+        height: 56px !important;
+    }
+    #main-nav {
+        padding: 0 12px !important;
+    }
+    .header-left .brand-name {
+        font-size: 1.05rem !important;
+        letter-spacing: 0.1em !important;
+    }
+    .header-right {
+        gap: 0.35rem !important;
+    }
+    #header-search-btn {
+        padding: 6px 8px !important;
+    }
+    #header-search-btn .search-kbd {
+        display: none !important; /* Hide keyboard shortcut chip on touch devices */
+    }
+    .theme-toggle-btn {
+        padding: 6px 8px !important;
+    }
+    .profile-pill {
+        padding: 4px 8px !important;
+        font-size: 9.5px !important;
+        max-width: 105px !important;
+    }
+    .profile-pill #profile-name {
+        max-width: 55px !important;
+        overflow: hidden !important;
+        text-overflow: ellipsis !important;
+        white-space: nowrap !important;
+    }
+    .mobile-menu-toggle {
+        display: flex !important;
+        width: 36px !important;
+        height: 36px !important;
+    }
 
+    /* ── B. Eliminate Massive Vertical Module Gaps ──────────────── */
+    /* Remove large clamp(80px, 14vh, 170px) voids across all sections */
+    .sec {
+        padding: 34px 16px 26px !important;
+    }
+    .sec::before, #pathways::before, #eternity::before {
+        inset: -8% -4% !important;
+    }
+    .sec-head {
+        margin-bottom: 16px !important;
+        gap: 8px !important;
+        flex-wrap: wrap !important;
+    }
+    .sec-head .k {
+        font-size: 9.5px !important;
+        letter-spacing: 0.18em !important;
+    }
+    .sec-head .rule {
+        min-width: 24px !important;
+    }
 
+    /* ── C. Chapter 00: Hero Chamber ───────────────────────────── */
+    .hero {
+        min-height: auto !important;
+        padding: 0 16px 20px !important;
+        justify-content: flex-start !important;
+        gap: 16px !important;
+    }
+    .hero-top {
+        padding-top: 68px !important;
+        max-width: 100% !important;
+    }
+    .hero-top .eyebrow {
+        margin-bottom: 10px !important;
+        font-size: 9.5px !important;
+        line-height: 1.4 !important;
+    }
+    .hero h1.display.h-hero {
+        font-size: clamp(1.85rem, 8vw, 2.5rem) !important;
+        line-height: 1.06 !important;
+        margin-bottom: 12px !important;
+        letter-spacing: -0.02em !important;
+    }
+    .hero-sub {
+        font-size: 13px !important;
+        line-height: 1.5 !important;
+        margin-bottom: 16px !important;
+        max-width: 100% !important;
+    }
+    .hero-actions-bar {
+        gap: 8px !important;
+        margin-bottom: 16px !important;
+        flex-direction: column !important;
+        align-items: stretch !important;
+    }
+    .hero-actions-bar button,
+    .hero-actions-bar .btn-editorial-primary,
+    .hero-actions-bar .btn-editorial-secondary {
+        width: 100% !important;
+        justify-content: center !important;
+        text-align: center !important;
+        padding: 11px 16px !important;
+        font-size: 11px !important;
+    }
+    /* Eliminate huge blank spacer */
+    .hero-spacer {
+        display: none !important;
+    }
+    .hero-foot {
+        padding-bottom: 6px !important;
+    }
+    .hero-cue {
+        margin-bottom: 10px !important;
+        justify-content: space-between !important;
+    }
+    .chapters {
+        grid-template-columns: repeat(2, 1fr) !important;
+        gap: 10px !important;
+        padding-top: 12px !important;
+    }
+    .chip {
+        padding: 10px !important;
+        background: rgba(10, 14, 18, 0.78) !important;
+        border: 1px solid rgba(223, 231, 224, 0.12) !important;
+        border-radius: 8px !important;
+        backdrop-filter: blur(12px) !important;
+        -webkit-backdrop-filter: blur(12px) !important;
+        gap: 8px !important;
+    }
+    .chip .num {
+        font-size: 13px !important;
+        font-weight: 700 !important;
+        color: var(--vermilion) !important;
+    }
+    .chip b {
+        font-size: 11px !important;
+        margin-bottom: 4px !important;
+        letter-spacing: 0.12em !important;
+        color: var(--bone) !important;
+    }
+    .chip p {
+        font-size: 10px !important;
+        line-height: 1.35 !important;
+        color: #8b9690 !important;
+        max-width: 100% !important;
+    }
 
+    /* ── D. Chapter I: The Sanmon (Vision & Biomechanics) ──────── */
+    #gate.sec {
+        padding: 34px 16px 26px !important;
+    }
+    .gate-grid {
+        grid-template-columns: 1fr !important;
+        gap: 12px !important;
+        margin-bottom: 0 !important;
+    }
+    .gate-grid h2.h-sec {
+        font-size: clamp(1.5rem, 6vw, 2.1rem) !important;
+        line-height: 1.12 !important;
+        margin-bottom: 8px !important;
+        max-width: 100% !important;
+    }
+    .gate-copy {
+        padding-top: 0 !important;
+    }
+    .gate-copy .lead {
+        font-size: 13.5px !important;
+        line-height: 1.55 !important;
+    }
+    .gate-copy .lead + p {
+        margin-top: 10px !important;
+        font-size: 12.5px !important;
+        line-height: 1.5 !important;
+    }
+    .arrowlink {
+        margin-top: 14px !important;
+        font-size: 10.5px !important;
+        letter-spacing: 0.14em !important;
+    }
+    .gate-stats {
+        margin-top: 18px !important;
+        padding-top: 14px !important;
+        display: grid !important;
+        grid-template-columns: repeat(2, 1fr) !important;
+        gap: 10px !important;
+    }
+    .gate-stats div {
+        padding: 10px 12px !important;
+        background: rgba(10, 14, 18, 0.65) !important;
+        border: 1px solid rgba(223, 231, 224, 0.08) !important;
+        border-radius: 6px !important;
+    }
+    .gate-stats div b {
+        font-size: 24px !important;
+        line-height: 1 !important;
+        margin-bottom: 3px !important;
+    }
+    .gate-stats div span {
+        font-size: 9.5px !important;
+        letter-spacing: 0.16em !important;
+    }
+
+    /* ── E. Chapter II: Still Gardens (Chambers) ───────────────── */
+    #pathways.sec {
+        padding: 34px 16px 26px !important;
+    }
+    .cards {
+        grid-template-columns: 1fr !important;
+        gap: 14px !important;
+    }
+    .card {
+        padding: 14px !important;
+    }
+    .card-fr {
+        aspect-ratio: 16/9 !important;
+        margin-bottom: 12px !important;
+    }
+
+    /* ── F. Chapter III: Sacred Craft (Curriculum) ──────────────── */
+    #lessons.sec {
+        padding: 34px 16px 26px !important;
+    }
+    .cur-head {
+        grid-template-columns: 1fr !important;
+        margin-bottom: 16px !important;
+        gap: 8px !important;
+    }
+    .cur-head h2.h-sec {
+        font-size: clamp(1.4rem, 5.8vw, 1.9rem) !important;
+        line-height: 1.15 !important;
+        max-width: 100% !important;
+    }
+    .cur-head .body-lg {
+        font-size: 13px !important;
+        line-height: 1.5 !important;
+    }
+    /* Well-arranged curriculum list on mobile without hiding descriptions */
+    .les {
+        display: grid !important;
+        grid-template-columns: 32px 1fr !important;
+        grid-template-areas:
+            "num title"
+            "num desc"
+            "num tag" !important;
+        row-gap: 4px !important;
+        column-gap: 10px !important;
+        padding: 14px 0 !important;
+        align-items: start !important;
+    }
+    .les .k {
+        grid-area: num !important;
+        font-size: 11px !important;
+        padding-top: 2px !important;
+    }
+    .les h3 {
+        grid-area: title !important;
+        font-size: 14.5px !important;
+        margin: 0 !important;
+        display: flex !important;
+        justify-content: space-between !important;
+        align-items: baseline !important;
+    }
+    .les h3 em {
+        font-size: 11px !important;
+        margin-left: 6px !important;
+    }
+    .les p {
+        grid-area: desc !important;
+        display: block !important; /* Preserves description text on mobile */
+        font-size: 12px !important;
+        line-height: 1.45 !important;
+        color: #8f9a94 !important;
+        margin: 2px 0 3px !important;
+    }
+    .les .t {
+        grid-area: tag !important;
+        text-align: left !important;
+        font-size: 10px !important;
+        color: var(--vermilion) !important;
+        font-weight: 600 !important;
+    }
+
+    /* ── G. Chapter IV: The Oracle (Luna AI) ────────────────────── */
+    #oracle.sec {
+        padding: 34px 16px 26px !important;
+    }
+    .oracle-preview-box {
+        grid-template-columns: 1fr !important;
+        gap: 10px !important;
+        margin-top: 14px !important;
+    }
+    .prompt-chip {
+        padding: 12px 14px !important;
+    }
+    #oracle .mt-8 {
+        margin-top: 16px !important;
+    }
+    #oracle .btn-editorial-primary {
+        width: 100% !important;
+        justify-content: center !important;
+        text-align: center !important;
+        padding: 12px 18px !important;
+    }
+
+    /* ── H. Chapter V: Afterlight (Closing & Export) ────────────── */
+    #eternity.sec.fin {
+        min-height: auto !important; /* Eliminate excessive 85svh void */
+        padding: 34px 16px 26px !important;
+    }
+    #eternity .eyebrow {
+        margin-bottom: 10px !important;
+        font-size: 9.5px !important;
+    }
+    #eternity.fin h2 {
+        font-size: clamp(2rem, 7.5vw, 2.75rem) !important;
+        line-height: 1 !important;
+        margin-bottom: 10px !important;
+    }
+    #eternity.fin p.body-lg {
+        font-size: 13px !important;
+        line-height: 1.5 !important;
+        margin-top: 8px !important;
+        max-width: 100% !important;
+    }
+    #eternity .cta {
+        margin-top: 16px !important;
+        width: 100% !important;
+        justify-content: center !important;
+        padding: 12px 20px !important;
+    }
+
+    /* ── I. Chapter 05.5: Frequent Inquiries (FAQ) ──────────────── */
+    #faq.sec.faq-sec {
+        margin-top: 0 !important; /* Eliminate duplicate margin void */
+        padding: 34px 16px 26px !important;
+    }
+    .faq-accordion-container {
+        margin-top: 14px !important;
+    }
+    .faq-question {
+        padding: 14px 4px !important;
+        gap: 10px !important;
+    }
+    .faq-number {
+        font-size: 11px !important;
+        min-width: 18px !important;
+    }
+    .faq-title {
+        font-size: 13.5px !important;
+        line-height: 1.35 !important;
+        padding-right: 6px !important;
+    }
+    .faq-icon {
+        font-size: 16px !important;
+        flex-shrink: 0 !important;
+    }
+    .faq-answer {
+        padding: 0 4px 0 28px !important;
+    }
+    .faq-item.open .faq-answer {
+        padding: 0 4px 14px 28px !important;
+    }
+    .faq-answer p {
+        font-size: 12.5px !important;
+        line-height: 1.5 !important;
+    }
+
+    /* ── J. Chapter VI: The Architect ──────────────────────────── */
+    #creator.sec.creator-sec {
+        padding: 34px 16px 26px !important;
+    }
+    .creator-card-container {
+        margin-top: 16px !important;
+    }
+    .creator-spotlight-card {
+        padding: 18px 14px !important;
+    }
+    .creator-card-inner {
+        flex-direction: column !important;
+        align-items: center !important;
+        text-align: center !important;
+        gap: 16px !important;
+    }
+    .creator-avatar-img {
+        width: 72px !important;
+        height: 72px !important;
+    }
+    .creator-info-main .flex {
+        justify-content: center !important;
+    }
+    .creator-name {
+        font-size: 18px !important;
+    }
+    .creator-tagline {
+        font-size: 12px !important;
+        line-height: 1.45 !important;
+        margin-top: 8px !important;
+    }
+    .creator-tags-list {
+        justify-content: center !important;
+        margin-top: 10px !important;
+        gap: 6px !important;
+    }
+    .c-tag {
+        font-size: 9.5px !important;
+        padding: 2px 7px !important;
+    }
+    .creator-actions-row {
+        flex-direction: column !important;
+        gap: 8px !important;
+        margin-top: 16px !important;
+    }
+    .creator-explore-btn,
+    .creator-donate-small-btn {
+        width: 100% !important;
+        justify-content: center !important;
+        padding: 11px 16px !important;
+        font-size: 11px !important;
+    }
+
+    /* ── K. Colophon Footer & Safe Spacing ──────────────────────── */
+    footer.foot {
+        padding: 34px 16px calc(76px + env(safe-area-inset-bottom, 0px)) !important;
+    }
+    .foot-grid {
+        grid-template-columns: 1fr !important;
+        gap: 20px !important;
+    }
+    .foot-brand p {
+        margin: 8px 0 0 !important;
+        font-size: 12px !important;
+        line-height: 1.5 !important;
+    }
+    .foot h4 {
+        margin-bottom: 8px !important;
+    }
+    .foot ul {
+        gap: 7px !important;
+    }
+    .foot li a {
+        font-size: 12.5px !important;
+        display: inline-block !important;
+        padding: 2px 0 !important;
+    }
+    .foot-base {
+        flex-direction: column !important;
+        align-items: flex-start !important;
+        gap: 6px !important;
+        margin-top: 18px !important;
+        padding-top: 12px !important;
+    }
+
+    /* ── L. Mobile Bottom Navigation & Floating Widget Hierarchy ── */
+    /* Ensure content is never obscured by the fixed bottom nav */
+    main#main-content,
+    .editorial-main {
+        padding-bottom: calc(76px + env(safe-area-inset-bottom, 0px)) !important;
+    }
+
+    /* Fixed Bottom Nav stays anchored and unobstructed at z-index 999 */
+    .mobile-bottom-nav {
+        display: flex !important;
+        position: fixed !important;
+        bottom: 0 !important;
+        left: 0 !important;
+        right: 0 !important;
+        height: calc(58px + env(safe-area-inset-bottom, 0px)) !important;
+        background: rgba(5, 7, 10, 0.96) !important;
+        backdrop-filter: blur(20px) !important;
+        -webkit-backdrop-filter: blur(20px) !important;
+        border-top: 1px solid rgba(223, 231, 224, 0.14) !important;
+        z-index: 999 !important;
+        padding: 0 4px env(safe-area-inset-bottom, 0px) 4px !important;
+        align-items: center !important;
+        justify-content: space-around !important;
+    }
+    .mobile-bottom-nav button {
+        font-size: 9px !important;
+        letter-spacing: 0.04em !important;
+        padding: 4px 2px !important;
+        gap: 2px !important;
+        min-width: 0 !important;
+        flex: 1 1 0 !important;
+    }
+    .mobile-bottom-nav button svg {
+        width: 17px !important;
+        height: 17px !important;
+    }
+
+    /* Position Floating Contact Button cleanly ABOVE bottom nav */
+    #floating-contact-widget {
+        position: fixed !important;
+        bottom: calc(66px + env(safe-area-inset-bottom, 0px)) !important;
+        left: 12px !important;
+        right: auto !important;
+        z-index: 92 !important;
+    }
+    .floating-contact-btn {
+        padding: 6px 11px !important;
+        font-size: 10px !important;
+        border-radius: 9999px !important;
+        gap: 5px !important;
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.5) !important;
+    }
+    .floating-contact-btn svg {
+        width: 14px !important;
+        height: 14px !important;
+    }
+
+    /* Position Floating System CTA cleanly ABOVE bottom nav */
+    #floating-cta-container {
+        position: fixed !important;
+        bottom: calc(66px + env(safe-area-inset-bottom, 0px)) !important;
+        right: 12px !important;
+        left: auto !important;
+        z-index: 92 !important;
+    }
+    #floating-cta-btn {
+        font-size: 10px !important;
+        letter-spacing: 0.08em !important;
+        padding: 7px 13px !important;
+        box-shadow: 0 4px 16px rgba(224, 35, 28, 0.45) !important;
+    }
+
+    /* Stack Back-to-Top Button above CTA so neither element collides */
+    #back-to-top-btn,
+    .back-to-top-btn {
+        position: fixed !important;
+        bottom: calc(112px + env(safe-area-inset-bottom, 0px)) !important;
+        right: 14px !important;
+        width: 36px !important;
+        height: 36px !important;
+        z-index: 91 !important;
+    }
+
+    /* Relocate Netlify badge if injected so it stays above bottom nav */
+    div[class*="netlify"],
+    iframe[src*="netlify"],
+    .netlify-badge {
+        bottom: calc(66px + env(safe-area-inset-bottom, 0px)) !important;
+    }
+
+    /* ── M. Mobile Views & Modals Refinement ─────────────────────── */
+    .module-view-wrapper {
+        padding: 4.25rem 1rem calc(76px + env(safe-area-inset-bottom, 0px)) !important;
+    }
+    .module-header {
+        margin-bottom: 1.25rem !important;
+        padding-bottom: 1rem !important;
+    }
+    .module-title-large {
+        font-size: clamp(1.6rem, 6vw, 2.2rem) !important;
+    }
+    .floating-contact-modal {
+        bottom: calc(100% + 8px) !important;
+        left: 0 !important;
+        width: min(340px, calc(100vw - 24px)) !important;
+        padding: 14px !important;
+    }
+    .search-modal-box {
+        width: calc(100vw - 20px) !important;
+        max-height: 80vh !important;
+    }
+    .drawer-panel,
+    .mobile-drawer-panel {
+        width: min(320px, 86vw) !important;
+    }
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   19. COMPACT ANDROID SMARTPHONES (<= 480px Viewports)
+   Fine-tuned for narrow Android screens (360px - 412px width)
+   ═══════════════════════════════════════════════════════════════════ */
+@media (max-width: 480px) {
+    .chapters {
+        grid-template-columns: repeat(2, 1fr) !important;
+        gap: 8px !important;
+    }
+    .chip {
+        padding: 8px 8px !important;
+    }
+    .chip b {
+        font-size: 10px !important;
+        letter-spacing: 0.1em !important;
+    }
+    .chip p {
+        font-size: 9.5px !important;
+        line-height: 1.3 !important;
+    }
+    .gate-stats {
+        gap: 8px !important;
+    }
+    .gate-stats div {
+        padding: 8px 10px !important;
+    }
+    .gate-stats div b {
+        font-size: 22px !important;
+    }
+    .hero-actions-bar button,
+    .hero-actions-bar .btn-editorial-primary,
+    .hero-actions-bar .btn-editorial-secondary {
+        padding: 10px 14px !important;
+        font-size: 10.5px !important;
+    }
+    .floating-contact-btn {
+        padding: 5px 9px !important;
+        font-size: 9.5px !important;
+    }
+    #floating-cta-btn {
+        padding: 6px 11px !important;
+        font-size: 9.5px !important;
+    }
+    .mobile-bottom-nav button {
+        font-size: 8.5px !important;
+    }
+    .mobile-bottom-nav button svg {
+        width: 16px !important;
+        height: 16px !important;
+    }
+}
