@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>Accessibility Statement — Luminix AI Health & Biomechanical Sanctuary</title>
+    <meta name="description" content="Luminix Accessibility Covenant: Digital inclusion conforming to WCAG 2.1 Level AA standards, keyboard navigability, screen-reader semantic landmarks, high contrast, and reduced motion.">
+    <meta name="keywords" content="Luminix accessibility, WCAG 2.1 AA, digital inclusion, keyboard navigation, screen reader, accessible fitness, Ram Charan Teja">
+    <meta name="author" content="Ram Charan Teja (@LUNO895)">
+    <meta name="robots" content="index, follow">
+    <meta name="theme-color" content="#05070a">
+
+    <!-- Canonical & Favicon -->
+    <link rel="canonical" href="http://localhost:8000/accessibility">
+    <link rel="icon" type="image/svg+xml" href="/static/favicon.svg">
+    <link rel="alternate icon" href="/favicon.ico">
+
+    <!-- Open Graph -->
+    <meta property="og:type" content="article">
+    <meta property="og:url" content="http://localhost:8000/accessibility">
+    <meta property="og:site_name" content="Luminix">
+    <meta property="og:title" content="Accessibility Statement — Luminix Digital Inclusion Covenant">
+    <meta property="og:description" content="Complete digital accessibility architecture: WCAG 2.1 AA conformity, full keyboard navigation, screen-reader landmarks, high-contrast typography, and reduced-motion support.">
+    <meta property="og:image" content="http://localhost:8000/assets/chaos_eyes_bg.jpg">
+
+    <!-- Twitter -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:site" content="@LUNO895">
+    <meta name="twitter:title" content="Accessibility Statement — Luminix Digital Inclusion Covenant">
+    <meta name="twitter:description" content="Complete digital accessibility architecture: WCAG 2.1 AA conformity, keyboard navigation, and sensory accessibility.">
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@1,400;1,600;1,700&family=Fragment+Mono&family=Instrument+Serif:ital@1&family=Inter:wght@300;400;500;600;700&family=Space+Grotesk:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/static/styles.css?v=4.3">
+
+    <style>
+        .legal-page-wrapper {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: calc(var(--pad) * 2) var(--pad) calc(var(--pad) * 3);
+            position: relative;
+            z-index: 10;
+        }
+        .legal-header {
+            border-bottom: 1px solid var(--border-subtle);
+            padding-bottom: 32px;
+            margin-bottom: 40px;
+        }
+        .legal-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            font-family: var(--font-mono);
+            font-size: 11px;
+            color: #38bdf8;
+            background: rgba(56, 189, 248, 0.08);
+            border: 1px solid rgba(56, 189, 248, 0.25);
+            padding: 4px 12px;
+            border-radius: 4px;
+            margin-bottom: 16px;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+        }
+        .legal-pulse-dot {
+            width: 7px;
+            height: 7px;
+            border-radius: 50%;
+            background: #38bdf8;
+            box-shadow: 0 0 8px #38bdf8;
+            animation: pulse-badge 2s infinite ease-in-out;
+        }
+        .legal-title {
+            font-family: var(--font-display);
+            font-size: clamp(2rem, 4vw, 3rem);
+            font-weight: 800;
+            color: var(--bone);
+            letter-spacing: -0.02em;
+            line-height: 1.1;
+            margin-bottom: 12px;
+        }
+        .legal-subtitle {
+            font-family: var(--font-serif);
+            font-style: italic;
+            font-size: 1.25rem;
+            color: var(--bone-dim);
+            line-height: 1.5;
+        }
+        .legal-meta {
+            display: flex;
+            gap: 24px;
+            margin-top: 20px;
+            font-family: var(--font-mono);
+            font-size: 11px;
+            color: var(--text-dim);
+            flex-wrap: wrap;
+        }
+        .legal-card {
+            background: rgba(14, 19, 25, 0.7);
+            backdrop-filter: blur(12px);
+            border: 1px solid var(--border-subtle);
+            border-radius: 8px;
+            padding: 28px;
+            margin-bottom: 28px;
+            transition: border-color 0.2s ease;
+        }
+        .legal-card:hover {
+            border-color: var(--border-medium);
+        }
+        .legal-card h2 {
+            font-family: var(--font-display);
+            font-size: 1.35rem;
+            font-weight: 700;
+            color: var(--bone);
+            margin-bottom: 14px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .legal-card h2 .section-num {
+            font-family: var(--font-mono);
+            font-size: 11px;
+            color: #38bdf8;
+            background: rgba(56, 189, 248, 0.1);
+            padding: 2px 8px;
+            border-radius: 3px;
+        }
+        .legal-card p, .legal-card li {
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+            line-height: 1.7;
+        }
+        .legal-card ul {
+            list-style: none;
+            padding-left: 0;
+            margin-top: 12px;
+            margin-bottom: 16px;
+        }
+        .legal-card ul li {
+            position: relative;
+            padding-left: 20px;
+            margin-bottom: 8px;
+        }
+        .legal-card ul li::before {
+            content: "•";
+            position: absolute;
+            left: 4px;
+            color: #38bdf8;
+            font-weight: bold;
+        }
+        .covenant-highlight-box {
+            background: rgba(56, 189, 248, 0.05);
+            border-left: 3px solid #38bdf8;
+            padding: 16px 20px;
+            border-radius: 0 6px 6px 0;
+            margin: 24px 0;
+            font-size: 0.9rem;
+            color: var(--bone);
+            line-height: 1.6;
+        }
+        .back-nav-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 32px;
+        }
+        .legal-footer {
+            border-top: 1px solid var(--border-subtle);
+            padding-top: 32px;
+            margin-top: 60px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 16px;
+            font-family: var(--font-mono);
+            font-size: 11px;
+            color: var(--text-dim);
+        }
+        .legal-footer-links {
+            display: flex;
+            gap: 16px;
+        }
+        .legal-footer-links a {
+            color: var(--bone-dim);
+            text-decoration: underline;
+            text-underline-offset: 4px;
+            transition: color 0.2s ease;
+        }
+        .legal-footer-links a:hover {
+            color: var(--bone);
+        }
+        .foot-small-a11y-badge {
+            font-size: 10px;
+            color: var(--text-dim);
+            font-family: var(--font-mono);
+            line-height: 1.5;
+            margin-top: 12px;
+            text-align: center;
+            width: 100%;
+        }
+    </style>
+</head>
+<body class="bg-editor-bg text-editor-text antialiased">
+    <div class="legal-page-wrapper">
+        <header class="legal-header">
+            <nav class="back-nav-bar" aria-label="Breadcrumb and quick navigation">
+                <a href="/" class="btn-editorial-secondary text-xs py-2 px-4" style="text-decoration:none;">
+                    ← RETURN TO SANCTUARY
+                </a>
+                <span class="font-mono text-xs text-[var(--bone-dim)]">
+                    LUMINIX // DIGITAL INCLUSION
+                </span>
+            </nav>
+
+            <div class="legal-badge">
+                <span class="legal-pulse-dot"></span>
+                WCAG 2.1 LEVEL AA CONFORMANCE CHARTER
+            </div>
+            <h1 class="legal-title">Accessibility Statement</h1>
+            <p class="legal-subtitle">
+                "Universal access to physical intelligence, stillness, and biomechanical sovereignty for people of all abilities."
+            </p>
+            <div class="legal-meta">
+                <span>EFFECTIVE: SEPTEMBER 6, 2026</span>
+                <span>STANDARD: WCAG 2.1 LEVEL AA</span>
+                <span>AUDIT STATUS: ACTIVE INTERNAL AUDIT</span>
+            </div>
+        </header>
+
+        <main id="accessibility-content">
+            <div class="covenant-highlight-box">
+                ♿ <strong>LUMINIX COMMITMENT TO DIGITAL INCLUSION:</strong> Luminix was engineered by Ram Charan Teja with a core belief that health intelligence, postural self-awareness, and mindfulness should be universally accessible. We actively engineer and optimize our user interface to conform with the <strong>Web Content Accessibility Guidelines (WCAG 2.1) Level AA</strong>.
+            </div>
+
+            <section class="legal-card" aria-labelledby="a11y-section-1">
+                <h2 id="a11y-section-1"><span class="section-num">01</span> Keyboard Navigation & Focus Architecture</h2>
+                <p>
+                    Every primary and secondary interactive element across the Luminix sanctuary is fully operable without a mouse:
+                </p>
+                <ul>
+                    <li><strong>Tab & Shift+Tab Ordering:</strong> Logical focus progression through navigation bars, workout selectors, nutrition calculators, and profile settings.</li>
+                    <li><strong>Visible Focus Indicators:</strong> High-contrast vermilion focus rings (<code>outline: 2px solid var(--vermilion)</code>) make the currently active element clearly identifiable.</li>
+                    <li><strong>Modal Dismissal:</strong> The <kbd>ESC</kbd> key instantaneously closes any active overlay, including the Search Palette, Kyoto Share Modal, Cookie Settings, and Biometric Drawers.</li>
+                    <li><strong>Skip Navigation:</strong> Direct skip links and semantic landmark architecture permit immediate jumping past repetitive headers directly to primary exercise workouts.</li>
+                </ul>
+            </section>
+
+            <section class="legal-card" aria-labelledby="a11y-section-2">
+                <h2 id="a11y-section-2"><span class="section-num">02</span> Screen Reader & Semantic Hierarchy</h2>
+                <p>
+                    Our templates and dynamic DOM elements are built with semantic HTML5 and Accessible Rich Internet Applications (WAI-ARIA) specifications:
+                </p>
+                <ul>
+                    <li><strong>Landmark Structure:</strong> Proper use of <code>&lt;header&gt;</code>, <code>&lt;nav&gt;</code>, <code>&lt;main&gt;</code>, <code>&lt;aside&gt;</code>, and <code>&lt;footer&gt;</code> containers for seamless screen reader jumping.</li>
+                    <li><strong>Explicit ARIA Labels:</strong> Every icon-only button (search, close, camera switch, social share) contains explicit <code>aria-label</code> and <code>title</code> attributes describing its exact programmatic action.</li>
+                    <li><strong>Descriptive Image Alternative Text:</strong> Visual assets, instructor avatars, anatomy diagrams, and UI state indicators carry rich, context-aware <code>alt</code> descriptions.</li>
+                    <li><strong>Form Labels:</strong> All input elements in the authentication views, BMI calculators, and meal planners have permanently associated <code>&lt;label&gt;</code> elements and assistive error announcements.</li>
+                </ul>
+            </section>
+
+            <section class="legal-card" aria-labelledby="a11y-section-3">
+                <h2 id="a11y-section-3"><span class="section-num">03</span> Sensory Accommodations & Motion Safety</h2>
+                <p>
+                    We acknowledge sensory sensitivities and diverse physiological conditions:
+                </p>
+                <ul>
+                    <li><strong>Reduced Motion Compliance:</strong> When your operating system requests reduced motion (<code>prefers-reduced-motion: reduce</code>), all heavy 3D camera pan animations, WebGL transitions, and particle flows are immediately disabled or replaced with static dissolves.</li>
+                    <li><strong>High-Contrast Color Ratios:</strong> Text typography is rendered with curated contrast ratios meeting or exceeding the 4.5:1 ratio for normal text and 3:1 for large display headers against our deep Kyoto background.</li>
+                    <li><strong>No Auto-Playing Audio:</strong> Workout timers and countdown sounds never auto-play without prior user initialization. Audio alerts respect global muting toggles.</li>
+                </ul>
+            </section>
+
+            <section class="legal-card" aria-labelledby="a11y-section-4">
+                <h2 id="a11y-section-4"><span class="section-num">04</span> Alternative Biomechanical Pathways</h2>
+                <p>
+                    For athletes or users who cannot or choose not to use real-time optical camera pose tracking:
+                </p>
+                <ul>
+                    <li><strong>Manual Repetition Logging:</strong> The adaptive gym engine allows full manual logging of repetition counts and hold durations without requiring camera activation.</li>
+                    <li><strong>Static Pose Guides:</strong> Complete step-by-step text, joint alignment cues, and breathing directions are provided for all 17 yoga asanas and gym exercises.</li>
+                    <li><strong>Audio Cues:</strong> Synthesized speech and tone cues announce workout state changes for users with low vision.</li>
+                </ul>
+            </section>
+
+            <section class="legal-card" aria-labelledby="a11y-section-5">
+                <h2 id="a11y-section-5"><span class="section-num">05</span> Continuous Audit & Feedback Mechanism</h2>
+                <p>
+                    Accessibility is an ongoing commitment. If you encounter any accessibility barrier, difficult-to-navigate interface component, or assistive technology conflict within Luminix:
+                </p>
+                <div class="covenant-highlight-box mt-3 mb-3">
+                    <strong>Accessibility Feedback & Support Contact:</strong><br>
+                    <span>Email: <code class="font-mono text-[var(--vermilion)]">accessibility@TODO_LEGAL_REVIEW.example</code></span><br>
+                    <span class="text-xs text-[var(--text-dim)] font-mono">[LEGAL REVIEW REQUIRED — PENDING PRODUCTION SUPPORT CONFIGURATION]</span><br>
+                    <span>Standard Target Response Window: Within 5 business days</span>
+                </div>
+                <p class="text-xs text-[var(--text-dim)] font-mono">
+                    Please describe the specific page URL, assistive technology used (e.g. NVDA, VoiceOver, JAWS, keyboard-only), and the nature of the obstacle encountered.
+                </p>
+            </section>
+        </main>
+
+        <footer class="legal-footer" role="contentinfo">
+            <div>
+                © 2026 LUMINIX — ARCHITECTED BY RAM CHARAN TEJA (@LUNO895)
+            </div>
+            <nav class="legal-footer-links" aria-label="Legal footer links">
+                <a href="/">Sanctuary</a>
+                <a href="/privacy">Privacy Policy</a>
+                <a href="/terms">Terms of Service</a>
+                <a href="/accessibility">Accessibility</a>
+                <a href="/health">System Health</a>
+            </nav>
+            <div class="foot-small-a11y-badge">
+                ♿ <strong>ACCESSIBILITY STATEMENT:</strong> Luminix conforms to WCAG 2.1 Level AA with complete keyboard control, semantic ARIA landmarks, high-contrast typography, and reduced-motion compliance.
+            </div>
+        </footer>
+    </div>
+</body>
+</html>

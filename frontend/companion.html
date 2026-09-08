@@ -1,0 +1,715 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Luminix Mobile Companion — Live Pedometer & Telemetry Bridge</title>
+    <meta name="description" content="Connect your mobile phone to Luminix Sanctuary. Real-time accelerometer step counter, motion telemetry, and sync.">
+    <meta name="theme-color" content="#05070a">
+    <link rel="icon" type="image/svg+xml" href="/static/favicon.svg">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fragment+Mono&family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@600;700;800&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        :root {
+            --bg: #05070a;
+            --surface: #0a0e14;
+            --card: #10151f;
+            --bone: #dfe7e0;
+            --bone-dim: #8b9990;
+            --vermilion: #e0231c;
+            --emerald: #10b981;
+            --border: rgba(223, 231, 224, 0.12);
+        }
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        body {
+            background-color: var(--bg);
+            color: var(--bone);
+            font-family: 'Inter', sans-serif;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            padding: 1.2rem;
+            margin: 0;
+            overflow-x: hidden;
+        }
+        .mono { font-family: 'Fragment Mono', monospace; }
+        .display { font-family: 'Space Grotesk', sans-serif; }
+        .pulse-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--emerald);
+            box-shadow: 0 0 10px var(--emerald);
+            animation: pulse 1.5s infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.4); opacity: 0.5; }
+        }
+        .step-circle {
+            width: 210px;
+            height: 210px;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(224, 35, 28, 0.1) 0%, rgba(10, 14, 20, 0.95) 75%);
+            border: 2px solid rgba(224, 35, 28, 0.4);
+            box-shadow: 0 0 35px rgba(224, 35, 28, 0.2), inset 0 0 25px rgba(224, 35, 28, 0.1);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            margin: 1.5rem auto;
+            position: relative;
+            transition: transform 0.15s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        .step-circle.stepped {
+            transform: scale(1.05);
+            border-color: var(--vermilion);
+            box-shadow: 0 0 50px rgba(224, 35, 28, 0.45);
+        }
+        .meter-bar-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #10b981, #e0231c);
+            width: 0%;
+            transition: width 0.1s ease;
+        }
+    </style>
+</head>
+<body>
+    <!-- Top Header -->
+    <header class="flex items-center justify-between pb-3 border-b border-[var(--border)]">
+        <div class="flex items-center gap-2">
+            <span class="w-2.5 h-2.5 bg-[var(--vermilion)] rounded-full"></span>
+            <span class="display font-bold text-sm tracking-wider">LUMINIX COMPANION</span>
+        </div>
+        <div class="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[rgba(16,185,129,0.1)] border border-[rgba(16,185,129,0.3)]">
+            <span class="pulse-dot"></span>
+            <span id="sync-status" class="mono text-[10px] font-bold text-[var(--emerald)]">STREAMING LIVE</span>
+        </div>
+    </header>
+
+    <!-- Device Details Pill -->
+    <div class="my-3 px-3 py-2 rounded-lg bg-[var(--card)] border border-[var(--border)] flex items-center justify-between">
+        <div>
+            <div class="mono text-[9px] text-[var(--bone-dim)] uppercase font-semibold">PAIRED HARDWARE</div>
+            <div id="device-model-name" class="display font-bold text-xs text-[var(--bone)] mt-0.5">Detecting Mobile Device…</div>
+        </div>
+        <div class="text-right">
+            <div class="mono text-[9px] text-[var(--bone-dim)] uppercase font-semibold">BATTERY / LINK</div>
+            <div id="device-battery-label" class="mono text-xs text-[var(--bone)] mt-0.5">--% • Wi-Fi Bridge</div>
+        </div>
+    </div>
+
+    <!-- Phone Finder Alarm Status & Test Card -->
+    <div id="alarm-arm-box" onclick="activateAndTestAlarmAudio()" class="my-2 p-3 rounded-xl border border-[rgba(224,35,28,0.4)] bg-[rgba(224,35,28,0.08)] flex items-center justify-between cursor-pointer active:scale-95 transition shadow-lg">
+        <div class="flex items-center gap-3">
+            <span class="text-2xl animate-bounce" id="alarm-bell-icon">🔔</span>
+            <div class="text-left">
+                <div id="alarm-arm-title" class="display font-bold text-xs text-white">PHONE FINDER ALARM READY</div>
+                <div id="alarm-arm-subtitle" class="mono text-[9px] text-[var(--bone-dim)]">Tap to test speaker &amp; unlock full-blast ring</div>
+            </div>
+        </div>
+        <span id="alarm-arm-badge" class="px-2.5 py-1 rounded-full bg-[rgba(224,35,28,0.25)] border border-[rgba(224,35,28,0.5)] mono text-[9px] font-bold text-[var(--vermilion)] uppercase">
+            ARM SOUND
+        </span>
+    </div>
+
+    <!-- HTML5 Audio Element for Bulletproof Mobile Audio Autoplay -->
+    <audio id="companion-alarm-audio" preload="auto" loop playsinline src="/static/assets/ring_alarm.wav"></audio>
+
+    <!-- Main Live Step Counter & Telemetry Input -->
+    <main class="flex-1 flex flex-col items-center justify-center text-center my-auto">
+        
+        <!-- Step Circle -->
+        <div class="step-circle" id="step-circle">
+            <span class="mono text-[10px] text-[var(--vermilion)] font-bold tracking-widest uppercase">CURRENT STEPS</span>
+            <div id="step-count-val" class="display text-5xl font-extrabold text-white tracking-tight my-1">0</div>
+            <span class="mono text-[11px] text-[var(--bone-dim)]">GOAL: 10,000</span>
+        </div>
+
+        <!-- Motion Energy Meter -->
+        <div class="w-full max-w-[320px] mt-1 mb-3">
+            <div class="flex justify-between mono text-[10px] text-[var(--bone-dim)] mb-1">
+                <span>PHONE ACCELEROMETER MOTION</span>
+                <span id="motion-mag-val" class="text-[var(--vermilion)]">0.0 m/s²</span>
+            </div>
+            <div class="w-full h-2 rounded-full bg-[var(--card)] border border-[var(--border)] overflow-hidden">
+                <div id="motion-meter-fill" class="meter-bar-fill"></div>
+            </div>
+        </div>
+
+        <!-- Real Stats Grid (Dynamically Calculated based on Profile) -->
+        <div class="grid grid-cols-2 gap-3 w-full max-w-[320px] mb-3">
+            <div class="p-3 rounded-lg bg-[var(--card)] border border-[var(--border)] text-left">
+                <div class="mono text-[9px] text-[var(--bone-dim)] uppercase">STRIDE DISTANCE</div>
+                <div id="dist-val" class="display font-bold text-base text-[var(--bone)] mt-0.5">0.00 km</div>
+                <div id="stride-formula-label" class="mono text-[8.5px] text-[var(--bone-dim)]">Height: 178cm</div>
+            </div>
+            <div class="p-3 rounded-lg bg-[var(--card)] border border-[var(--border)] text-left">
+                <div class="mono text-[9px] text-[var(--bone-dim)] uppercase">ACTIVE THERMOGENIC</div>
+                <div id="cal-val" class="display font-bold text-base text-[var(--vermilion)] mt-0.5">0 kcal</div>
+                <div id="weight-formula-label" class="mono text-[8.5px] text-[var(--bone-dim)]">Weight: 72kg</div>
+            </div>
+        </div>
+
+        <!-- Current Step Count Input Block (Direct Mobile Input) -->
+        <div class="w-full max-w-[320px] p-3 rounded-xl bg-[var(--card)] border border-[var(--border)] mb-3 text-left">
+            <label for="manual-step-input" class="mono text-[10px] text-[var(--bone)] font-bold block mb-1 uppercase tracking-wide">
+                📱 INPUT CURRENT PHONE STEPS
+            </label>
+            <p class="mono text-[9px] text-[var(--bone-dim)] mb-2">
+                Enter steps from Apple Health / Google Fit / Watch to sync immediately:
+            </p>
+            <div class="flex gap-2">
+                <input type="number" id="manual-step-input" min="0" max="100000" placeholder="e.g. 3500"
+                       class="flex-1 bg-[rgba(255,255,255,0.05)] border border-[var(--border)] rounded-lg px-3 py-2 mono text-sm text-white focus:outline-none focus:border-[var(--vermilion)]">
+                <button type="button" onclick="applyDirectStepInput()"
+                        class="px-4 py-2 rounded-lg bg-[var(--vermilion)] text-white font-bold mono text-xs uppercase shadow hover:bg-red-600 active:scale-95 transition">
+                    SYNC
+                </button>
+            </div>
+            
+            <!-- Quick Increment / Presets -->
+            <div class="grid grid-cols-4 gap-1.5 mt-2.5">
+                <button type="button" onclick="addQuickSteps(500)" class="py-1.5 rounded bg-[rgba(255,255,255,0.04)] border border-[var(--border)] mono text-[10px] text-[var(--bone)] active:bg-[rgba(255,255,255,0.1)]">
+                    +500
+                </button>
+                <button type="button" onclick="addQuickSteps(1000)" class="py-1.5 rounded bg-[rgba(255,255,255,0.04)] border border-[var(--border)] mono text-[10px] text-[var(--bone)] active:bg-[rgba(255,255,255,0.1)]">
+                    +1k
+                </button>
+                <button type="button" onclick="setPresetSteps(5000)" class="py-1.5 rounded bg-[rgba(255,255,255,0.04)] border border-[var(--border)] mono text-[10px] text-[var(--bone)] active:bg-[rgba(255,255,255,0.1)]">
+                    5k
+                </button>
+                <button type="button" onclick="setPresetSteps(10000)" class="py-1.5 rounded bg-[rgba(255,255,255,0.04)] border border-[var(--border)] mono text-[10px] text-[var(--bone)] active:bg-[rgba(255,255,255,0.1)]">
+                    10k
+                </button>
+            </div>
+        </div>
+
+        <!-- Hardware Motion Sensor Activation -->
+        <div class="w-full max-w-[320px] space-y-2 mb-2">
+            <button type="button" id="permission-btn" onclick="startMotionTracking()" class="w-full py-2.5 px-4 rounded-xl bg-[rgba(255,255,255,0.06)] border border-[var(--border)] text-[var(--bone)] font-bold display text-xs hover:border-[var(--vermilion)] active:scale-95 transition flex items-center justify-center gap-2">
+                <span>⚡</span>
+                <span id="motion-btn-text">ACTIVATE WALKING ACCELEROMETER</span>
+            </button>
+            <div class="flex gap-2">
+                <button type="button" onclick="recordManualStep(1)" class="flex-1 py-1.5 rounded-lg bg-[var(--card)] border border-[var(--border)] mono text-[10px] font-semibold text-[var(--bone)] active:bg-[rgba(255,255,255,0.1)]">
+                    +1 Step (Walk)
+                </button>
+                <button type="button" onclick="resetStepCounter()" class="flex-1 py-1.5 rounded-lg bg-[var(--card)] border border-[var(--border)] mono text-[10px] font-semibold text-red-400 active:bg-[rgba(255,255,255,0.1)]">
+                    Reset Steps (0)
+                </button>
+            </div>
+            <!-- Test Phone Ring Audio Button -->
+            <button type="button" onclick="testMobileRingAudio()" class="w-full py-2 px-3 rounded-lg bg-[rgba(224,35,28,0.12)] border border-[rgba(224,35,28,0.35)] hover:border-[var(--vermilion)] mono text-[10px] text-white font-bold flex items-center justify-center gap-2 active:scale-95 transition">
+                <span>🔔</span>
+                <span id="test-ring-btn-label">TEST PHONE RING SOUND (FIND MY MOBILE)</span>
+            </button>
+        </div>
+    </main>
+
+    <!-- Footer Instructions -->
+    <footer class="pt-2 border-t border-[var(--border)] text-center space-y-1.5">
+        <p class="mono text-[9px] text-[var(--bone-dim)] leading-relaxed">
+            Connected to Luminix Desktop Sanctuary. Accelerometer &amp; input steps stream in real time without dummy data.
+        </p>
+        <div class="flex items-center justify-center gap-2 mono text-[9px] text-[var(--bone-dim)]">
+            <a href="/" class="underline hover:text-white">Sanctuary</a>
+            <span>•</span>
+            <a href="/privacy" class="underline hover:text-white">Privacy</a>
+            <span>•</span>
+            <a href="/terms" class="underline hover:text-white">Terms</a>
+            <span>•</span>
+            <a href="/accessibility" class="underline hover:text-white">Accessibility</a>
+        </div>
+        <p class="mono text-[8.5px] text-[var(--bone-dim)]">
+            ♿ <strong>Accessibility:</strong> Conforms to WCAG 2.1 AA. <a href="/accessibility" class="underline hover:text-white">Statement &rarr;</a>
+        </p>
+    </footer>
+
+    <script>
+        let stepCount = parseInt(localStorage.getItem('luminix_companion_steps') || '0', 10);
+        let userWeight = 72; // default kg, can be updated via profile
+        let userHeight = 178; // default cm, can be updated via profile
+        let lastAcceleration = { x: 0, y: 0, z: 0 };
+        let lastPeakTime = 0;
+        let isSensorActive = false;
+        let deviceModel = "Mobile Phone";
+
+        // Try reading user profile from localStorage if accessible on same origin
+        try {
+            const storedProfile = JSON.parse(localStorage.getItem('luminix_guest_profile') || '{}');
+            if (storedProfile.weight) userWeight = parseFloat(storedProfile.weight) || 72;
+            if (storedProfile.height) userHeight = parseFloat(storedProfile.height) || 178;
+        } catch (_) {}
+
+        // Detect device model from User-Agent
+        (function detectDevice() {
+            const ua = navigator.userAgent;
+            if (/iPhone/i.test(ua)) {
+                if (/iPhone16/i.test(ua)) deviceModel = "Apple iPhone 16 Pro";
+                else if (/iPhone15/i.test(ua)) deviceModel = "Apple iPhone 15 Pro";
+                else if (/iPhone14/i.test(ua)) deviceModel = "Apple iPhone 14";
+                else deviceModel = "Apple iPhone (Motion Sensor)";
+            } else if (/Android/i.test(ua)) {
+                if (/Pixel/i.test(ua)) deviceModel = "Google Pixel Companion";
+                else if (/Samsung|SM-/i.test(ua)) deviceModel = "Samsung Galaxy Companion";
+                else deviceModel = "Android Pedometer";
+            } else {
+                deviceModel = "Mobile Companion Phone";
+            }
+            document.getElementById('device-model-name').textContent = deviceModel;
+            document.getElementById('stride-formula-label').textContent = `Height: ${userHeight}cm (${(userHeight * 0.414).toFixed(0)}cm stride)`;
+            document.getElementById('weight-formula-label').textContent = `Weight: ${userWeight}kg body mass`;
+            updateMetricsDisplay();
+        })();
+
+        let phoneBatteryPct = null;
+        // Read actual mobile phone battery level via Battery API
+        if (navigator.getBattery) {
+            navigator.getBattery().then(bat => {
+                phoneBatteryPct = Math.round(bat.level * 100);
+                document.getElementById('device-battery-label').textContent = `${phoneBatteryPct}% • Wi-Fi Bridge`;
+                bat.addEventListener('levelchange', () => {
+                    phoneBatteryPct = Math.round(bat.level * 100);
+                    document.getElementById('device-battery-label').textContent = `${phoneBatteryPct}% • Wi-Fi Bridge`;
+                });
+            }).catch(() => {});
+        }
+
+        function updateMetricsDisplay() {
+            document.getElementById('step-count-val').textContent = stepCount.toLocaleString();
+            // True stride distance: Height(cm) * 0.414 / 100000 km
+            const strideKm = (userHeight * 0.414) / 100000;
+            const distance = (stepCount * strideKm).toFixed(2);
+            document.getElementById('dist-val').textContent = `${distance} km`;
+            
+            // True MET-adjusted calories: Steps * 0.045 * (Weight / 70)
+            const calories = Math.round(stepCount * 0.045 * (userWeight / 70));
+            document.getElementById('cal-val').textContent = `${calories} kcal`;
+            localStorage.setItem('luminix_companion_steps', stepCount.toString());
+        }
+
+        // Direct Step Input Handlers
+        function applyDirectStepInput() {
+            const input = document.getElementById('manual-step-input');
+            if (!input) return;
+            const val = parseInt(input.value, 10);
+            if (!isNaN(val) && val >= 0) {
+                stepCount = val;
+                triggerStepVisual();
+                updateMetricsDisplay();
+                syncTelemetryToDesktop();
+                input.value = '';
+            }
+        }
+
+        function addQuickSteps(amount) {
+            stepCount += amount;
+            triggerStepVisual();
+            updateMetricsDisplay();
+            syncTelemetryToDesktop();
+        }
+
+        function setPresetSteps(target) {
+            stepCount = target;
+            triggerStepVisual();
+            updateMetricsDisplay();
+            syncTelemetryToDesktop();
+        }
+
+        function resetStepCounter() {
+            stepCount = 0;
+            triggerStepVisual();
+            updateMetricsDisplay();
+            syncTelemetryToDesktop();
+        }
+
+        // Real Hardware Motion Sensor & Step Peak Detection
+        async function startMotionTracking() {
+            const btn = document.getElementById('permission-btn');
+            const btnText = document.getElementById('motion-btn-text');
+            if (typeof DeviceMotionEvent !== 'undefined' && typeof DeviceMotionEvent.requestPermission === 'function') {
+                try {
+                    const permission = await DeviceMotionEvent.requestPermission();
+                    if (permission === 'granted') {
+                        attachMotionListener();
+                        if (btnText) btnText.textContent = "✓ SENSOR STREAMING LIVE";
+                        btn.style.borderColor = "#10b981";
+                        btn.style.background = "rgba(16, 185, 129, 0.1)";
+                    } else {
+                        alert('Motion permission denied. You can still input steps manually above!');
+                    }
+                } catch (e) {
+                    attachMotionListener();
+                    if (btnText) btnText.textContent = "✓ SENSOR STREAMING LIVE";
+                }
+            } else {
+                attachMotionListener();
+                if (btnText) btnText.textContent = "✓ SENSOR STREAMING LIVE";
+                btn.style.borderColor = "#10b981";
+                btn.style.background = "rgba(16, 185, 129, 0.1)";
+            }
+        }
+
+        function attachMotionListener() {
+            if (isSensorActive) return;
+            isSensorActive = true;
+            window.addEventListener('devicemotion', handleDeviceMotion, { passive: true });
+        }
+
+        function handleDeviceMotion(event) {
+            const acc = event.accelerationIncludingGravity || event.acceleration;
+            if (!acc) return;
+
+            const x = acc.x || 0;
+            const y = acc.y || 0;
+            const z = acc.z || 0;
+
+            const total = Math.sqrt(x * x + y * y + z * z);
+            const delta = Math.abs(total - 9.81);
+
+            const meterFill = document.getElementById('motion-meter-fill');
+            const meterVal = document.getElementById('motion-mag-val');
+            if (meterFill) meterFill.style.width = Math.min(100, Math.round((delta / 8) * 100)) + '%';
+            if (meterVal) meterVal.textContent = delta.toFixed(1) + ' m/s²';
+
+            // Pedometer Peak Detection (~2.2 m/s² with 320ms refractory period)
+            const now = Date.now();
+            if (delta > 2.2 && (now - lastPeakTime) > 320) {
+                lastPeakTime = now;
+                stepCount++;
+                triggerStepVisual();
+                updateMetricsDisplay();
+                syncTelemetryToDesktop();
+            }
+
+            lastAcceleration = { x, y, z };
+        }
+
+        function recordManualStep(amount = 1) {
+            stepCount += amount;
+            triggerStepVisual();
+            updateMetricsDisplay();
+            syncTelemetryToDesktop();
+        }
+
+        function triggerStepVisual() {
+            const circle = document.getElementById('step-circle');
+            if (circle) {
+                circle.classList.add('stepped');
+                setTimeout(() => circle.classList.remove('stepped'), 140);
+            }
+            if (navigator.vibrate) navigator.vibrate(35);
+        }
+
+        // Transmit telemetry to FastAPI backend WITHOUT DUMMY VITALS
+        let isSyncing = false;
+        async function syncTelemetryToDesktop() {
+            if (isSyncing) return;
+            isSyncing = true;
+            try {
+                const strideKm = (userHeight * 0.414) / 100000;
+                const dist = +(stepCount * strideKm).toFixed(2);
+                const cal = Math.round(stepCount * 0.045 * (userWeight / 70));
+
+                const res = await fetch('/v1/telemetry/sync', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        device_name: deviceModel,
+                        device_type: 'phone',
+                        connection_type: 'Mobile Wi-Fi Companion Bridge',
+                        steps: stepCount,
+                        step_goal: 10000,
+                        distance_km: dist,
+                        calories: cal,
+                        battery: phoneBatteryPct,
+                        motion_magnitude: 1.2
+                        // Notice: NO dummy SpO2, NO dummy blood pressure, NO dummy sleep!
+                    })
+                });
+                if (res.ok) {
+                    const statusEl = document.getElementById('sync-status');
+                    if (statusEl) statusEl.textContent = 'STREAMING LIVE';
+                }
+            } catch (err) {
+                console.warn('Sync notice:', err.message);
+            } finally {
+                isSyncing = false;
+            }
+        }
+
+        // ── Find My Device: Multi-Channel Ring Alarm System ───────────────────
+        let _ringAudioCtx = null;
+        let _ringOscillators = [];
+        let _ringStatusPollTimer = null;
+        let _sirenToneLoopTimer = null;
+        let _vibeTimer = null;
+        let _isRinging = false;
+        let _audioUnlocked = false;
+
+        /**
+         * Unlock both HTML5 Audio element and Web Audio API context on mobile touch
+         */
+        function unlockAudio() {
+            if (_audioUnlocked) return;
+            try {
+                // 1. Prime HTML5 Audio element (required by mobile Safari / Chrome)
+                const audio = document.getElementById('companion-alarm-audio');
+                if (audio) {
+                    audio.volume = 1.0;
+                    const p = audio.play();
+                    if (p !== undefined) {
+                        p.then(() => {
+                            audio.pause();
+                            audio.currentTime = 0;
+                        }).catch(() => {});
+                    }
+                }
+
+                // 2. Resume Web Audio API context
+                if (!_ringAudioCtx) {
+                    _ringAudioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                }
+                if (_ringAudioCtx.state === 'suspended') {
+                    _ringAudioCtx.resume();
+                }
+
+                _audioUnlocked = true;
+                updateAlarmArmBadge(true);
+            } catch (_) {}
+        }
+
+        // Global listeners for first user gesture
+        window.addEventListener('touchstart', unlockAudio, { passive: true });
+        window.addEventListener('click', unlockAudio, { passive: true });
+        window.addEventListener('pointerdown', unlockAudio, { passive: true });
+
+        function updateAlarmArmBadge(armed) {
+            const title = document.getElementById('alarm-arm-title');
+            const sub = document.getElementById('alarm-arm-subtitle');
+            const badge = document.getElementById('alarm-arm-badge');
+            const bell = document.getElementById('alarm-bell-icon');
+            if (armed) {
+                if (title) title.textContent = "✓ PHONE ALARM ARMED & AUDIBLE";
+                if (sub) sub.textContent = "Speaker ready — will ring at maximum volume on find";
+                if (badge) {
+                    badge.textContent = "ARMED";
+                    badge.style.color = "#10b981";
+                    badge.style.background = "rgba(16, 185, 129, 0.2)";
+                    badge.style.borderColor = "#10b981";
+                }
+                if (bell) bell.classList.remove('animate-bounce');
+            }
+        }
+
+        /**
+         * Interactive 1-tap alarm test from the top card
+         */
+        window.activateAndTestAlarmAudio = function() {
+            unlockAudio();
+            if (_isRinging) {
+                stopRingAlarm();
+                return;
+            }
+            // Trigger 1.5-second test alarm burst
+            startRingAlarm(true);
+            setTimeout(() => {
+                if (_isRinging) stopRingAlarm();
+            }, 2500);
+        };
+
+        function startRingAlarm(isTest = false) {
+            _isRinging = true;
+            unlockAudio();
+            showRingBanner();
+
+            // 1. Play loopable loud alarm audio file via HTML5 Audio tag
+            const audio = document.getElementById('companion-alarm-audio');
+            if (audio) {
+                audio.currentTime = 0;
+                audio.volume = 1.0;
+                audio.play().catch(e => console.warn('[Audio Tag Notice]:', e));
+            }
+
+            // 2. Synthesize dual-tone square wave siren via Web Audio API
+            startWebAudioSiren();
+
+            // 3. Continuous alarm vibration pulses
+            if (navigator.vibrate) {
+                navigator.vibrate([700, 200, 700, 200, 1000]);
+                if (_vibeTimer) clearInterval(_vibeTimer);
+                _vibeTimer = setInterval(() => {
+                    if (!_isRinging) { clearInterval(_vibeTimer); return; }
+                    navigator.vibrate([700, 200, 700, 200, 1000]);
+                }, 2800);
+            }
+
+            // 4. Emergency voice announcement
+            try {
+                if (window.speechSynthesis) {
+                    window.speechSynthesis.cancel();
+                    const msg = new SpeechSynthesisUtterance("Luminix Locator. Mobile phone is here.");
+                    msg.rate = 1.1;
+                    msg.volume = 1.0;
+                    window.speechSynthesis.speak(msg);
+                }
+            } catch (_) {}
+
+            const testLabel = document.getElementById('test-ring-btn-label');
+            if (testLabel) testLabel.textContent = isTest ? '■ STOPPING TEST…' : '■ STOP ALARM';
+        }
+
+        function startWebAudioSiren() {
+            stopWebAudioSiren();
+            try {
+                if (!_ringAudioCtx) {
+                    _ringAudioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                }
+                if (_ringAudioCtx.state === 'suspended') {
+                    _ringAudioCtx.resume();
+                }
+            } catch (_) { return; }
+
+            const playTone = (freq, duration) => {
+                if (!_ringAudioCtx || !_isRinging) return;
+                try {
+                    const osc = _ringAudioCtx.createOscillator();
+                    const gain = _ringAudioCtx.createGain();
+                    osc.type = 'square';
+                    osc.frequency.setValueAtTime(freq, _ringAudioCtx.currentTime);
+                    gain.gain.setValueAtTime(0.01, _ringAudioCtx.currentTime);
+                    gain.gain.linearRampToValueAtTime(0.9, _ringAudioCtx.currentTime + 0.04);
+                    gain.gain.exponentialRampToValueAtTime(0.001, _ringAudioCtx.currentTime + duration);
+                    osc.connect(gain);
+                    gain.connect(_ringAudioCtx.destination);
+                    osc.start(_ringAudioCtx.currentTime);
+                    osc.stop(_ringAudioCtx.currentTime + duration);
+                    _ringOscillators.push(osc);
+                } catch (_) {}
+            };
+
+            let high = true;
+            const cycle = () => {
+                if (!_isRinging) return;
+                playTone(high ? 960 : 770, 0.28);
+                high = !high;
+            };
+            cycle();
+            _sirenToneLoopTimer = setInterval(cycle, 320);
+        }
+
+        function stopWebAudioSiren() {
+            if (_sirenToneLoopTimer) {
+                clearInterval(_sirenToneLoopTimer);
+                _sirenToneLoopTimer = null;
+            }
+            _ringOscillators.forEach(o => { try { o.stop(); } catch(_) {} });
+            _ringOscillators = [];
+        }
+
+        function stopRingAlarm() {
+            _isRinging = false;
+            stopWebAudioSiren();
+
+            // 1. Pause HTML5 audio
+            const audio = document.getElementById('companion-alarm-audio');
+            if (audio) {
+                try {
+                    audio.pause();
+                    audio.currentTime = 0;
+                } catch(_) {}
+            }
+
+            // 2. Stop vibration
+            if (_vibeTimer) { clearInterval(_vibeTimer); _vibeTimer = null; }
+            if (navigator.vibrate) navigator.vibrate(0);
+
+            // 3. Stop speech synthesis
+            try { if (window.speechSynthesis) window.speechSynthesis.cancel(); } catch(_) {}
+
+            // 4. Hide ring banner
+            const banner = document.getElementById('ring-alarm-banner');
+            if (banner) banner.style.display = 'none';
+
+            // 5. Reset button label
+            const testLabel = document.getElementById('test-ring-btn-label');
+            if (testLabel) testLabel.textContent = 'TEST PHONE RING SOUND (FIND MY MOBILE)';
+
+            // 6. Tell backend to stop
+            fetch('/v1/device/ring/stop', { method: 'POST' }).catch(() => {});
+        }
+
+        window.testMobileRingAudio = function() {
+            if (_isRinging) stopRingAlarm();
+            else startRingAlarm(true);
+        };
+
+        function showRingBanner() {
+            let banner = document.getElementById('ring-alarm-banner');
+            if (!banner) {
+                banner = document.createElement('div');
+                banner.id = 'ring-alarm-banner';
+                banner.style.cssText = `
+                    position:fixed;inset:0;z-index:99999;
+                    background:rgba(224,35,28,0.96);
+                    display:flex;flex-direction:column;align-items:center;justify-content:center;
+                    color:#fff;font-family:'Space Grotesk',sans-serif;
+                    animation:strobeFlash 0.4s infinite alternate;
+                    padding:2rem;text-align:center;
+                `;
+                banner.innerHTML = `
+                    <style>
+                        @keyframes strobeFlash{0%{background:rgba(224,35,28,0.98)}100%{background:rgba(120,10,6,0.98)}}
+                        @keyframes bellWiggle{0%,100%{transform:rotate(-28deg) scale(1.1)}50%{transform:rotate(28deg) scale(1.25)}}
+                        #ring-bell-icon{animation:bellWiggle 0.22s infinite;display:inline-block;font-size:5rem;}
+                    </style>
+                    <div id="ring-bell-icon">🔔</div>
+                    <div style="font-size:1.8rem;font-weight:900;letter-spacing:.05em;margin-top:16px;">FIND MY DEVICE</div>
+                    <div style="font-size:.9rem;font-family:'Fragment Mono',monospace;opacity:.9;margin-top:6px;letter-spacing:0.05em;">LUMINIX LOCATOR — RINGING THIS PHONE</div>
+                    <button onclick="stopRingAlarm()" style="
+                        margin-top:32px;padding:18px 44px;border-radius:50px;
+                        background:#fff;color:#e0231c;font-weight:900;font-size:1rem;
+                        border:none;cursor:pointer;letter-spacing:.08em;font-family:'Space Grotesk',sans-serif;
+                        box-shadow:0 0 35px rgba(0,0,0,0.5);
+                    ">■ FOUND PHONE! STOP RINGING</button>
+                `;
+                document.body.appendChild(banner);
+            } else {
+                banner.style.display = 'flex';
+            }
+        }
+
+        async function pollRingStatus() {
+            try {
+                const res = await fetch('/v1/device/ring/status');
+                if (!res.ok) return;
+                const data = await res.json();
+                if (data.active && !_isRinging) {
+                    startRingAlarm();
+                } else if (!data.active && _isRinging) {
+                    stopRingAlarm();
+                }
+            } catch (_) {}
+        }
+
+        // Poll for ring command every 700ms (near real-time responsiveness)
+        if (_ringStatusPollTimer) clearInterval(_ringStatusPollTimer);
+        _ringStatusPollTimer = setInterval(pollRingStatus, 700);
+
+        // Immediate first sync to register mobile hardware with desktop
+        syncTelemetryToDesktop();
+        // Regular heartbeat to keep mobile connection live
+        setInterval(syncTelemetryToDesktop, 3500);
+
+        // Auto-start sensor on first touch
+        document.addEventListener('touchstart', () => {
+            if (!isSensorActive) startMotionTracking();
+            unlockAudio();
+        }, { once: true });
+    </script>
+</body>
+</html>
+

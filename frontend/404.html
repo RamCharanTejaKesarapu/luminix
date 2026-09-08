@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>404 — Void of Kyoto // Chamber Not Found | Luminix</title>
+    <meta name="description" content="You have wandered off the stone pathway into the mist. The chamber you seek does not exist in the Luminix sanctuary.">
+    <meta name="robots" content="noindex, follow">
+    <meta name="theme-color" content="#05070a">
+    <link rel="icon" type="image/svg+xml" href="/static/favicon.svg">
+    <link rel="alternate icon" href="/favicon.ico">
+    <link rel="canonical" href="http://localhost:8000/404">
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fragment+Mono&family=Inter:wght@300;400;500;600;700&family=Space+Grotesk:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/static/styles.css?v=4.2">
+
+    <style>
+        .error-page-wrap {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+            text-align: center;
+            position: relative;
+            z-index: 10;
+            background: radial-gradient(circle at center 40%, rgba(224, 35, 28, 0.08) 0%, transparent 65%);
+        }
+        .error-glyph-box {
+            position: relative;
+            width: 140px;
+            height: 140px;
+            margin: 0 auto 2rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .error-moon {
+            position: absolute;
+            inset: 0;
+            border-radius: 50%;
+            background: radial-gradient(circle, #ff5a3c 0%, #e0231c 65%, #991410 100%);
+            box-shadow: 0 0 50px rgba(224, 35, 28, 0.45);
+            opacity: 0.85;
+            animation: pulseGlow 4s ease-in-out infinite alternate;
+        }
+        @keyframes pulseGlow {
+            0% { transform: scale(0.96); box-shadow: 0 0 35px rgba(224, 35, 28, 0.35); }
+            100% { transform: scale(1.04); box-shadow: 0 0 65px rgba(224, 35, 28, 0.6); }
+        }
+        .error-code {
+            position: relative;
+            z-index: 2;
+            font-family: var(--font-display);
+            font-size: 3.5rem;
+            font-weight: 800;
+            color: #dfe7e0;
+            letter-spacing: -0.04em;
+            text-shadow: 0 4px 20px rgba(0, 0, 0, 0.8);
+        }
+        .error-card {
+            background: rgba(12, 16, 23, 0.88);
+            border: 1px solid rgba(223, 231, 224, 0.16);
+            border-radius: 12px;
+            padding: clamp(2rem, 5vw, 3.5rem);
+            max-width: 640px;
+            width: 100%;
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            box-shadow: 0 24px 60px rgba(0, 0, 0, 0.8), 0 0 30px rgba(224, 35, 28, 0.12);
+        }
+        .breadcrumbs-404 {
+            font-family: var(--font-mono);
+            font-size: 0.75rem;
+            color: var(--bone-dim);
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+        .breadcrumbs-404 a {
+            color: var(--bone-sub);
+            text-decoration: none;
+            transition: color 0.2s ease;
+        }
+        .breadcrumbs-404 a:hover {
+            color: var(--vermilion);
+        }
+    </style>
+</head>
+<body class="editorial-body">
+    <div id="vignette"></div>
+    <div id="grain"></div>
+
+    <div class="error-page-wrap">
+        <div class="error-card">
+            <!-- Breadcrumbs -->
+            <nav class="breadcrumbs-404" aria-label="Breadcrumb">
+                <a href="/">Sanctuary</a>
+                <span>/</span>
+                <span style="color: var(--vermilion);">Void // 404</span>
+            </nav>
+
+            <!-- Vermilion Glyph -->
+            <div class="error-glyph-box">
+                <div class="error-moon"></div>
+                <span class="error-code">404</span>
+            </div>
+
+            <div style="font-family: var(--font-mono); font-size: 0.8rem; color: var(--vermilion); letter-spacing: 0.16em; text-transform: uppercase; margin-bottom: 0.5rem;">
+                四〇四 // 迷い道 — THE VOID OF KYOTO
+            </div>
+
+            <h1 style="font-family: var(--font-display); font-size: clamp(1.6rem, 3.5vw, 2.2rem); font-weight: 700; color: #dfe7e0; margin: 0 0 1rem; letter-spacing: -0.02em;">
+                Sanctuary Chamber Not Found
+            </h1>
+
+            <p style="font-family: var(--font-body); font-size: 0.95rem; line-height: 1.65; color: #aab4ad; margin: 0 0 2rem;">
+                You have stepped off the stone pathway into the midnight mist. The route or resource you are seeking does not exist or has been dissolved into the shadows.
+            </p>
+
+            <div style="display: flex; flex-wrap: wrap; gap: 12px; justify-content: center;">
+                <a href="/" style="display: inline-flex; align-items: center; gap: 8px; background: var(--vermilion); color: #ffffff; font-family: var(--font-mono); font-size: 0.82rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; padding: 12px 24px; border-radius: 6px; text-decoration: none; box-shadow: 0 0 20px rgba(224, 35, 28, 0.4); transition: transform 0.2s ease;">
+                    <span>←</span> Return to Sanctuary
+                </a>
+                <a href="/#live-pose" style="display: inline-flex; align-items: center; gap: 8px; background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(223, 231, 224, 0.2); color: #dfe7e0; font-family: var(--font-mono); font-size: 0.82rem; letter-spacing: 0.08em; text-transform: uppercase; padding: 12px 20px; border-radius: 6px; text-decoration: none; transition: background 0.2s ease;">
+                    Live Pose Engine
+                </a>
+                <a href="/#gym" style="display: inline-flex; align-items: center; gap: 8px; background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(223, 231, 224, 0.2); color: #dfe7e0; font-family: var(--font-mono); font-size: 0.82rem; letter-spacing: 0.08em; text-transform: uppercase; padding: 12px 20px; border-radius: 6px; text-decoration: none; transition: background 0.2s ease;">
+                    Gym Engine
+                </a>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

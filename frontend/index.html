@@ -3,29 +3,219 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <title>Luminix — Health Intelligence Platform</title>
-    <meta name="description" content="Luminix — AI-powered health intelligence with real-time pose tracking, yoga, gym workouts, and fitness coaching.">
-    <meta name="theme-color" content="#000000">
+    <title>Luminix — Autonomous AI Health & Biomechanical Sanctuary</title>
+    <meta name="description" content="Luminix is an autonomous, private, client-side AI health intelligence platform. Experience zero-lag 60 FPS computer vision pose tracking, 17 guided yoga asanas, adaptive gym engine, metabolic matrix BMR calculation, and conversational AI grounded in your biomechanics.">
+    <meta name="keywords" content="AI health platform, 60 FPS pose detection, MediaPipe computer vision, biomechanical analysis, yoga posture guide, adaptive gym rep tracker, metabolic matrix, BMR calculator, TDEE, Luna AI, privacy fitness, Kyoto cyber, Ram Charan Teja, LUNO895">
+    <meta name="author" content="Ram Charan Teja (@LUNO895)">
+    <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1">
+    <meta name="theme-color" content="#05070a">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Luminix">
 
-    <!-- Fonts: Space Grotesk (display) + Inter (body) -->
+    <!-- Canonical & Favicon -->
+    <link rel="canonical" href="http://localhost:8000/">
+    <link rel="icon" type="image/svg+xml" href="/static/favicon.svg">
+    <link rel="alternate icon" href="/favicon.ico">
+    <link rel="apple-touch-icon" href="/static/favicon.svg">
+
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="http://localhost:8000/">
+    <meta property="og:site_name" content="Luminix">
+    <meta property="og:title" content="Luminix — Autonomous AI Health & Biomechanical Sanctuary">
+    <meta property="og:description" content="Private, zero-lag 60 FPS client-side computer vision kinematics, adaptive workouts, 17 yoga postures, and clinical nutrition intelligence. Built by Ram Charan Teja.">
+    <meta property="og:image" content="http://localhost:8000/assets/chaos_eyes_bg.jpg">
+
+    <!-- Twitter / X -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:site" content="@LUNO895">
+    <meta name="twitter:creator" content="@LUNO895">
+    <meta name="twitter:title" content="Luminix — Autonomous AI Health & Biomechanical Sanctuary">
+    <meta name="twitter:description" content="Private, zero-lag 60 FPS client-side computer vision kinematics, adaptive workouts, 17 yoga postures, and clinical nutrition intelligence.">
+    <meta name="twitter:image" content="http://localhost:8000/assets/chaos_eyes_bg.jpg">
+
+    <!-- JSON-LD Structured Data: SoftwareApplication, Person, LocalBusiness & Breadcrumbs -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@graph": [
+        {
+          "@type": "SoftwareApplication",
+          "@id": "http://localhost:8000/#software",
+          "name": "Luminix",
+          "applicationCategory": "HealthApplication",
+          "operatingSystem": "Web, iOS, Android, macOS, Windows",
+          "offers": {
+            "@type": "Offer",
+            "price": "0.00",
+            "priceCurrency": "USD"
+          },
+          "description": "Autonomous AI health platform fusing 60 FPS MediaPipe pose kinematics, discrete gym rep state machine, 17 yoga postures, and metabolic analysis.",
+          "author": {
+            "@type": "Person",
+            "name": "Ram Charan Teja",
+            "alternateName": "LUNO895",
+            "url": "https://github.com/LUNO895",
+            "email": "ramcharantejak396@gmail.com",
+            "jobTitle": "Lead AI Architect & Systems Creator"
+          }
+        },
+        {
+          "@type": "Person",
+          "@id": "http://localhost:8000/#creator",
+          "name": "Ram Charan Teja",
+          "alternateName": "LUNO895",
+          "url": "https://github.com/LUNO895",
+          "email": "ramcharantejak396@gmail.com",
+          "jobTitle": "Full-Stack AI Systems Architect & Computer Vision Engineer",
+          "sameAs": [
+            "https://github.com/LUNO895"
+          ]
+        },
+        {
+          "@type": "HealthAndBeautyBusiness",
+          "@id": "http://localhost:8000/#sanctuary",
+          "name": "Luminix Biomechanical Sanctuary",
+          "description": "Kinetic biomechanics and real-time computer vision wellness sanctuary.",
+          "url": "http://localhost:8000/",
+          "address": {
+            "@type": "PostalAddress",
+            "addressLocality": "Hyderabad",
+            "addressCountry": "IN"
+          },
+          "priceRange": "$",
+          "openingHours": "Mo-Su 00:00-24:00"
+        },
+        {
+          "@type": "WebSite",
+          "@id": "http://localhost:8000/#website",
+          "url": "http://localhost:8000/",
+          "name": "Luminix Health Intelligence",
+          "publisher": {
+            "@id": "http://localhost:8000/#creator"
+          }
+        },
+        {
+          "@type": "BreadcrumbList",
+          "@id": "http://localhost:8000/#breadcrumbs",
+          "itemListElement": [
+            {
+              "@type": "ListItem",
+              "position": 1,
+              "name": "Sanctuary",
+              "item": "http://localhost:8000/"
+            },
+            {
+              "@type": "ListItem",
+              "position": 2,
+              "name": "60 FPS Live Pose Engine",
+              "item": "http://localhost:8000/#live-pose"
+            },
+            {
+              "@type": "ListItem",
+              "position": 3,
+              "name": "Adaptive Gym Engine",
+              "item": "http://localhost:8000/#gym"
+            },
+            {
+              "@type": "ListItem",
+              "position": 4,
+              "name": "17 Sacred Yoga Asanas",
+              "item": "http://localhost:8000/#yoga"
+            }
+          ]
+        },
+        {
+          "@type": "FAQPage",
+          "@id": "http://localhost:8000/#faq",
+          "mainEntity": [
+            {
+              "@type": "Question",
+              "name": "How does Luminix maintain 60 FPS computer vision without sending camera feeds to servers?",
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "Luminix executes 100% of its MediaPipe machine learning inference client-side inside your browser via WebAssembly (WASM) and WebGL hardware acceleration. Not a single pixel or video stream is ever uploaded to external servers."
+              }
+            },
+            {
+              "@type": "Question",
+              "name": "What camera hardware is required for 33-point biomechanics?",
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "Any standard 720p or 1080p webcam, laptop integrated camera, or smartphone mobile browser camera works natively with adaptive jitter smoothing."
+              }
+            },
+            {
+              "@type": "Question",
+              "name": "How does the Adaptive Gym Engine detect discrete rep states?",
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "Our engine uses deterministic finite state machines (FSM) measuring vector dot-products between proximal and distal limbs, incrementing counts only upon complete depth and lockout."
+              }
+            },
+            {
+              "@type": "Question",
+              "name": "How are Basal Metabolic Rate (BMR) and macro splits calculated?",
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "We apply clinically validated Mifflin-St Jeor and Revised Harris-Benedict metabolic equations, scaled by physical activity multipliers (PAL)."
+              }
+            },
+            {
+              "@type": "Question",
+              "name": "Are clinical PDF reports and health exports secure?",
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "All exported PDF dossiers adhere to institutional health summary guidelines, protected by Argon2 hashing, JWT HS256 authentication, and a multi-layer WAF."
+              }
+            }
+          ]
+        }
+      ]
+    }
+    </script>
+
+    <!-- DNS Prefetch & Resource Preconnects -->
+    <link rel="dns-prefetch" href="https://cdn.jsdelivr.net">
+    <link rel="dns-prefetch" href="https://cdnjs.cloudflare.com">
+    <link rel="dns-prefetch" href="https://fonts.googleapis.com">
+    <link rel="dns-prefetch" href="https://www.gstatic.com">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@1,400;1,600;1,700&family=Fragment+Mono&family=Instrument+Serif:ital@1&family=Inter:wght@300;400;500;600;700&family=Space+Grotesk:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
-    <link rel="stylesheet" href="/static/styles.css">
+    <link rel="stylesheet" href="/static/styles.css?v=4.3">
     <link rel="manifest" href="/manifest.json">
 
-    <!-- Tailwind for utility classes only -->
+    <!-- Tailwind for utility layout support -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
             theme: {
                 extend: {
-                    fontFamily: { display: ['Space Grotesk'], body: ['Inter'] },
+                    fontFamily: { 
+                        display: ['Space Grotesk', 'sans-serif'], 
+                        body: ['Inter', 'sans-serif'], 
+                        serif: ['Instrument Serif', 'Cormorant Garamond', 'serif'],
+                        mono: ['Fragment Mono', 'monospace'] 
+                    },
                     colors: {
-                        yellow: { primary: '#FFC400', electric: '#FFE94A', hot: '#FF6A00' },
-                        cyan: { primary: '#00E5FF', bright: '#5FFFFF' },
-                        black: { base: '#050609', pure: '#000000' }
+                        editorial: {
+                            bg: '#05070a',
+                            bg2: '#0a0e12',
+                            bg3: '#10141a',
+                            ink: '#dfe7e0',
+                            sub: '#aab4ad',
+                            dim: '#78837c',
+                            blue: '#1b3cde',
+                            vermilion: '#e0231c',
+                            ember: '#ff5a3c',
+                            gold: '#c9a24a',
+                            yellow: '#ff5a3c',
+                            cyan: '#00D9FF'
+                        }
                     }
                 }
             }
@@ -40,124 +230,558 @@
     <!-- Three.js -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 </head>
-<body>
-    <!-- Custom Cursor -->
+<body class="editorial-body">
+    <!-- Accessible Skip to Main Content Link -->
+    <a href="#main-content" class="skip-to-content" id="skip-to-content-link">Skip to Sanctuary Content</a>
+
+    <!-- Scroll Progress Bar -->
+    <div id="scroll-progress-bar" class="scroll-progress-bar" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" aria-label="Page reading progress"></div>
+
+    <!-- WebGL Background Canvas & Atmosphere Overlays -->
+    <canvas id="gl" aria-hidden="true"></canvas>
+    <div id="vignette"></div>
+    <div id="grain"></div>
+
+    <!-- Subtle Custom Cursor -->
     <div id="cursor-dot" class="custom-cursor" aria-hidden="true"></div>
-    <div id="cursor-ring" class="custom-cursor-ring" aria-hidden="true"></div>
-    <div id="cursor-label" aria-hidden="true">REVEAL</div>
 
     <!-- Warning Overlay (risk alert) -->
     <div id="warning-overlay" class="warning-overlay"></div>
 
+    <!-- Global Toast Notifications Container -->
+    <div id="toast-container" class="toast-container" aria-live="polite" aria-atomic="true"></div>
+
+    <!-- Announcement Banner -->
+    <aside id="announcement-banner" class="announcement-banner" role="complementary" aria-label="System Announcement">
+        <div class="banner-inner">
+            <span class="banner-pulse"></span>
+            <span class="banner-text"><strong>KYOTO SPRING RELEASE</strong> — 60 FPS Camera Biomechanics & Adaptive Discrete State Counter v4.2 Active.</span>
+            <button type="button" onclick="nav('live-pose')" class="banner-cta">LAUNCH VISION →</button>
+            <button type="button" class="banner-dismiss" onclick="window.dismissBanner()" aria-label="Dismiss announcement">&times;</button>
+        </div>
+    </aside>
+
     <!-- App Shell -->
     <div id="app-shell" class="auth-locked">
 
-        <!-- ── Sidebar ─────────────────────────────────── -->
-        <nav id="main-sidebar">
-            <div class="brand-lockup">
-                <div>
-                    <div class="brand-name" style="text-transform: uppercase; font-size: 1rem; letter-spacing: 0.1em; color: var(--white);">TOJI FUSHIGURO</div>
-                    <div class="brand-sub" style="color: var(--cyan-primary);">× LUMINIX</div>
+        <!-- ── Minimal Fixed Editorial Header ─────────────────────────── -->
+        <header id="main-header">
+            <nav id="main-nav" aria-label="Primary Navigation">
+                <div class="header-left">
+                    <button type="button" class="brand-link" onclick="nav('dashboard')">
+                        <span class="brand-name">LUMINIX</span>
+                    </button>
+                </div>
+
+                <div class="header-center">
+                    <span class="system-descriptor">AI FITNESS / WELLNESS SYSTEM</span>
+                </div>
+
+                <div class="header-right">
+                    <ul id="nav-menu">
+                        <li><button class="nav-btn nav-active" onclick="nav('dashboard')" data-view="dashboard">SYSTEM</button></li>
+                        <li><button class="nav-btn" onclick="nav('live-pose')" data-view="live-pose">LIVE POSE</button></li>
+                        <li><button class="nav-btn" onclick="nav('yoga')" data-view="yoga">YOGA</button></li>
+                        <li><button class="nav-btn" onclick="nav('gym')" data-view="gym">GYM</button></li>
+                        <li><button class="nav-btn" onclick="nav('bmi')" data-view="bmi">NUTRITION</button></li>
+                        <li><button class="nav-btn" onclick="nav('food-tracker')" data-view="food-tracker">FOOD</button></li>
+                        <li><button class="nav-btn" onclick="nav('luna')" data-view="luna">LUNA & EXPORT</button></li>
+                        <li><button class="nav-btn" onclick="nav('connect')" data-view="connect">CONNECT</button></li>
+                    </ul>
+
+                    <!-- Search Palette Trigger Button -->
+                    <button type="button" id="header-search-btn" class="header-action-btn" onclick="window.openSearchModal()" title="Search chambers, postures, exercises (⌘K / Ctrl+K)" aria-label="Site Search">
+                        <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                        <kbd class="search-kbd">⌘K</kbd>
+                    </button>
+
+                    <!-- Dark / White Theme Toggle Button -->
+                    <button type="button" id="header-theme-btn" class="header-action-btn theme-toggle-btn" onclick="window.toggleTheme()" title="Toggle Dark / White Mode" aria-label="Toggle Theme">
+                        <svg class="theme-icon-sun" viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+                        <svg class="theme-icon-moon hidden" viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+                    </button>
+
+                    <!-- Dedicated Right-End Profile Section -->
+                    <div id="user-profile" class="header-profile-section">
+                        <button class="profile-pill" onclick="window.openUserProfileModal()" title="View profile, biometrics & security details">
+                            <span class="profile-avatar-ph">👤</span>
+                            <span id="profile-name">PROFILE</span>
+                            <span class="logout-tag">▾</span>
+                        </button>
+                    </div>
+
+                    <!-- Mobile Menu Hamburger Button -->
+                    <button type="button" id="mobile-menu-btn" class="mobile-menu-toggle" aria-label="Toggle Mobile Menu" aria-expanded="false" onclick="window.toggleMobileMenu()">
+                        <span class="bar top-bar"></span>
+                        <span class="bar mid-bar"></span>
+                        <span class="bar bot-bar"></span>
+                    </button>
+                </div>
+            </nav>
+        </header>
+
+        <!-- ── Slide-Out Mobile Navigation Drawer ────────────────────── -->
+        <aside id="mobile-nav-drawer" class="mobile-drawer" aria-label="Mobile Navigation Menu" aria-hidden="true">
+            <div class="mobile-drawer-backdrop" onclick="window.closeMobileMenu()"></div>
+            <div class="mobile-drawer-panel">
+                <div class="drawer-header">
+                    <div class="drawer-brand">
+                        <span class="drawer-dot"></span>
+                        <span class="drawer-title">LUMINIX // DISCIPLINE DIRECTORY</span>
+                    </div>
+                    <button type="button" class="drawer-close-btn" onclick="window.closeMobileMenu()" aria-label="Close navigation">&times;</button>
+                </div>
+                
+                <div class="drawer-section-label">QUICK SHORTCUTS</div>
+                <div class="drawer-quick-actions">
+                    <button type="button" class="drawer-quick-btn" onclick="window.openSearchModal(); window.closeMobileMenu();">
+                        <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                        <span>Search (⌘K)</span>
+                    </button>
+                    <button type="button" class="drawer-quick-btn" onclick="window.toggleTheme();">
+                        <span class="drawer-theme-indicator">☀️/🌙</span>
+                        <span>Toggle Theme</span>
+                    </button>
+                </div>
+
+                <div class="drawer-section-label">CHAMBERS & DISCIPLINES</div>
+                <ul class="drawer-links">
+                    <li><button onclick="nav('dashboard'); window.closeMobileMenu();" class="drawer-nav-btn active" data-mob-drawer="dashboard"><span class="d-num">00</span><span class="d-txt">Sanctuary System</span></button></li>
+                    <li><button onclick="nav('live-pose'); window.closeMobileMenu();" class="drawer-nav-btn" data-mob-drawer="live-pose"><span class="d-num">01</span><span class="d-txt">Live Pose Engine (60 FPS)</span></button></li>
+                    <li><button onclick="nav('gym'); window.closeMobileMenu();" class="drawer-nav-btn" data-mob-drawer="gym"><span class="d-num">02</span><span class="d-txt">Adaptive Gym Engine</span></button></li>
+                    <li><button onclick="nav('yoga'); window.closeMobileMenu();" class="drawer-nav-btn" data-mob-drawer="yoga"><span class="d-num">03</span><span class="d-txt">17 Sacred Yoga Asanas</span></button></li>
+                    <li><button onclick="nav('bmi'); window.closeMobileMenu();" class="drawer-nav-btn" data-mob-drawer="bmi"><span class="d-num">04</span><span class="d-txt">Metabolic Matrix & BMR</span></button></li>
+                    <li><button onclick="nav('food-tracker'); window.closeMobileMenu();" class="drawer-nav-btn" data-mob-drawer="food-tracker"><span class="d-num">05</span><span class="d-txt">Food & Hydration Tracking</span></button></li>
+                    <li><button onclick="nav('luna'); window.closeMobileMenu();" class="drawer-nav-btn" data-mob-drawer="luna"><span class="d-num">06</span><span class="d-txt">Luna AI & Clinical Studio</span></button></li>
+                    <li><button onclick="nav('connect'); window.closeMobileMenu();" class="drawer-nav-btn" data-mob-drawer="connect"><span class="d-num">07</span><span class="d-txt">Connect with Lumi (Wearables)</span></button></li>
+                </ul>
+
+                <div class="drawer-section-label">THE ARCHITECT & SUPPORT</div>
+                <div class="drawer-creator-box">
+                    <div style="display:flex; align-items:center; gap:12px; margin-bottom:12px;">
+                        <img src="/assets/togi pfp.jpeg" alt="Ram Charan Teja (@LUNO895) - Creator and Lead Architect of Luminix" style="width:42px; height:42px; border-radius:50%; object-fit:cover; border:2px solid var(--vermilion); box-shadow:0 0 10px rgba(224,35,28,0.4);" />
+                        <div>
+                            <div style="font-weight:700; font-size:13px; color:var(--bone); font-family:var(--font-display);">Ram Charan Teja</div>
+                            <div style="font-family:var(--font-mono); font-size:10px; color:var(--vermilion);">@LUNO895 // SOLE ARCHITECT</div>
+                        </div>
+                    </div>
+                    <div style="display:flex; gap:8px; flex-direction:column;">
+                        <button onclick="openCreatorModal('story'); window.closeMobileMenu();" class="drawer-action-btn">
+                            📜 View Creator Dossier & Story
+                        </button>
+                        <button onclick="openCreatorModal('donate'); window.closeMobileMenu();" class="drawer-action-btn donate-highlight">
+                            ❤️ Donate to Creator
+                        </button>
+                    </div>
+                </div>
+
+                <div class="drawer-footer">
+                    <span class="font-mono text-xs text-bone-dim">KYOTO EDITORIAL BIOMECHANICS v4.2</span>
                 </div>
             </div>
+        </aside>
 
-            <ul id="sidebar-nav">
-                <li class="nav-item nav-active" onclick="nav('dashboard')" data-view="dashboard">
-                    <svg class="nav-icon" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="4" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="11" width="7" height="10" rx="1"/></svg>
-                    Dashboard
-                </li>
-                <li class="nav-item" onclick="nav('live-pose')" data-view="live-pose">
-                    <svg class="nav-icon" viewBox="0 0 24 24"><circle cx="12" cy="4" r="2"/><path d="M12 6v4m-4 2l4-2 4 2m-8 0v4l4 4 4-4v-4"/></svg>
-                    <span class="nav-live-dot"></span>
-                    Live Pose
-                </li>
-                <li class="nav-item" onclick="nav('yoga')" data-view="yoga">
-                    <svg class="nav-icon" viewBox="0 0 24 24"><circle cx="12" cy="4" r="2"/><path d="M4 20l4-8 4 4 4-4 4 8"/></svg>
-                    Yoga Library
-                </li>
-                <li class="nav-item" onclick="nav('gym')" data-view="gym">
-                    <svg class="nav-icon" viewBox="0 0 24 24"><path d="M6.5 6.5h11M2 12h3m14 0h3M5 8v8m14-8v8m-12-6v4m10-4v4"/></svg>
-                    Gym Module
-                </li>
-                <li class="nav-item" onclick="nav('bmi')" data-view="bmi">
-                    <svg class="nav-icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/><path d="M8 12a4 4 0 018 0"/></svg>
-                    BMI & Health
-                </li>
-                <li class="nav-item" onclick="nav('food-tracker')" data-view="food-tracker">
-                    <svg class="nav-icon" viewBox="0 0 24 24"><path d="M18 8h1a4 4 0 010 8h-1"/><path d="M2 8h16v9a4 4 0 01-4 4H6a4 4 0 01-4-4V8z"/><line x1="6" y1="1" x2="6" y2="4"/><line x1="10" y1="1" x2="10" y2="4"/><line x1="14" y1="1" x2="14" y2="4"/></svg>
-                    Food Tracker
-                </li>
-                <li class="nav-item" onclick="nav('luna')" data-view="luna">
-                    <svg class="nav-icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 1v2m0 18v2M4.22 4.22l1.42 1.42m12.72 12.72l1.42 1.42M1 12h2m18 0h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
-                    Luna AI
-                </li>
-                <li class="nav-item" onclick="nav('export')" data-view="export">
-                    <svg class="nav-icon" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-                    Export
-                </li>
-            </ul>
-
-            <!-- Right Side Items -->
-            <div style="display: flex; align-items: center; gap: 1rem;">
-                <!-- Luna Widget -->
-                <div class="luna-sidebar-widget cursor-pointer" id="luna-sidebar-widget" onclick="nav('luna')">
-                    <div class="luna-orb" id="luna-orb-sidebar">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 1v2m0 18v2M4.22 4.22l1.42 1.42m12.72 12.72l1.42 1.42M1 12h2m18 0h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
-                    </div>
-                    <div style="font-size:0.75rem;font-weight:700;color:var(--white-2)">Luna AI</div>
-                </div>
-
-                <!-- User Profile -->
-                <div id="user-profile" class="hidden">
-                    <div class="user-avatar" id="profile-avatar">U</div>
-                    <div class="user-info">
-                        <div id="profile-name">User</div>
-                        <div id="profile-email">email@example.com</div>
-                    </div>
-                    <button class="sign-out-btn" onclick="luminixAuth.logout()">Sign Out</button>
-                </div>
-            </div>
-        </nav>
-
-        <!-- ── Main Content ─────────────────────────────── -->
-        <main id="main-content">
+        <!-- ── Main Content Area ─────────────────────────────── -->
+        <main id="main-content" class="editorial-main">
             <!-- Populated by app.js -->
         </main>
 
-        <!-- ── Mobile Navigation ─────────────────────────── -->
+        <!-- ── Floating System Button ───────────────────────── -->
+        <div id="floating-cta-container">
+            <button id="floating-cta-btn" onclick="scrollToSystemIndex()">
+                EXPLORE SYSTEM ↓
+            </button>
+        </div>
+
+        <!-- ── Mobile Bottom Navigation ─────────────────────── -->
         <div class="mobile-bottom-nav">
             <button onclick="nav('dashboard')" class="mob-active" data-mob="dashboard">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="4" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="11" width="7" height="10" rx="1"/></svg>
-                Home
+                System
             </button>
             <button onclick="nav('live-pose')" data-mob="live-pose">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="4" r="2"/><path d="M12 6v4m-4 2l4-2 4 2m-8 0v4l4 4 4-4v-4"/></svg>
-                Live
+                Vision
             </button>
             <button onclick="nav('gym')" data-mob="gym">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M6.5 6.5h11M2 12h3m14 0h3M5 8v8m14-8v8m-12-6v4m10-4v4"/></svg>
                 Gym
             </button>
+            <button onclick="nav('yoga')" data-mob="yoga">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="4" r="2"/><path d="M4 20l4-8 4 4 4-4 4 8"/></svg>
+                Yoga
+            </button>
             <button onclick="nav('bmi')" data-mob="bmi">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg>
-                BMI
-            </button>
-            <button onclick="nav('food-tracker')" data-mob="food-tracker">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M18 8h1a4 4 0 010 8h-1"/><path d="M2 8h16v9a4 4 0 01-4 4H6a4 4 0 01-4-4V8z"/></svg>
-                Food
+                Metrics
             </button>
             <button onclick="nav('luna')" data-mob="luna">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="3"/><path d="M12 1v2m0 18v2M4.22 4.22l1.42 1.42m12.72 12.72l1.42 1.42M1 12h2m18 0h2"/></svg>
                 Luna
             </button>
+            <button onclick="nav('connect')" data-mob="connect">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="6" y="2" width="12" height="20" rx="3"/><path d="M12 18h.01"/><path d="M9 2h6M9 22h6"/></svg>
+                Sync
+            </button>
         </div>
     </div>
 
+    <!-- ── Floating Back to Top Button ───────────────────────── -->
+    <button type="button" id="back-to-top-btn" class="back-to-top-btn" onclick="window.scrollToTop()" aria-label="Back to top" title="Scroll back to top">
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 15l-6-6-6 6"/></svg>
+    </button>
+
+    <!-- ── Floating Contact Widget ───────────────────────────── -->
+    <div id="floating-contact-widget">
+        <button type="button" id="floating-contact-btn" class="floating-contact-btn" onclick="window.toggleContactModal()" aria-label="Open Contact Modal" title="Direct Contact & Feedback">
+            <span class="contact-pulse"></span>
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+            <span class="contact-label">CONTACT</span>
+        </button>
+
+        <div id="floating-contact-modal" class="floating-contact-modal hidden" aria-hidden="true">
+            <div class="contact-modal-header">
+                <div>
+                    <div class="contact-modal-tag font-mono">ENCRYPTED TRANSMISSION</div>
+                    <div class="contact-modal-title">Contact Architect & Support</div>
+                </div>
+                <button type="button" class="contact-modal-close" onclick="window.closeContactModal()" aria-label="Close dialog">&times;</button>
+            </div>
+            <form id="floating-contact-form" onsubmit="window.handleFloatingContactSubmit(event)" class="contact-modal-form">
+                <div class="form-group-editorial">
+                    <label class="form-label-editorial text-[10px]">NAME / CALLSIGN</label>
+                    <input type="text" id="contact-name" required placeholder="Dr. Sarah Chen" class="form-input-editorial">
+                </div>
+                <div class="form-group-editorial">
+                    <label class="form-label-editorial text-[10px]">EMAIL ADDRESS</label>
+                    <input type="email" id="contact-email" required placeholder="sarah@institution.org" class="form-input-editorial">
+                </div>
+                <div class="form-group-editorial">
+                    <label class="form-label-editorial text-[10px]">INQUIRY TYPE</label>
+                    <select id="contact-type" class="form-input-editorial">
+                        <option value="clinical">Clinical Integration & Biomechanics</option>
+                        <option value="vision">Computer Vision & Latency</option>
+                        <option value="feedback">Product Feedback & Feature Request</option>
+                        <option value="creator">Creator Tribute / Sponsorship</option>
+                        <option value="bug">Security / Bug Report</option>
+                    </select>
+                </div>
+                <div class="form-group-editorial">
+                    <label class="form-label-editorial text-[10px]">MESSAGE</label>
+                    <textarea id="contact-message" required rows="3" placeholder="Specify your inquiry, telemetry feedback, or institutional request..." class="form-input-editorial"></textarea>
+                </div>
+                <button type="submit" id="contact-modal-submit-btn" class="btn-editorial-primary w-full">
+                    TRANSMIT MESSAGE →
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- ── Site Search Modal (Command Palette / ⌘K) ───────────── -->
+    <div id="site-search-modal" class="search-modal-overlay hidden" aria-hidden="true">
+        <div class="search-modal-backdrop" onclick="window.closeSearchModal()"></div>
+        <div class="search-modal-box" role="dialog" aria-modal="true" aria-label="Command Palette Site Search">
+            <div class="search-input-wrap">
+                <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" class="search-input-icon"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                <input type="text" id="site-search-input" placeholder="Search chambers, 17 yoga asanas, gym exercises, nutrition..." autocomplete="off" spellcheck="false" oninput="window.handleSearchInput(this.value)" onkeydown="window.handleSearchKeydown(event)">
+                <button type="button" class="search-clear-btn" onclick="window.clearSearch()" aria-label="Clear search">&times;</button>
+            </div>
+            <div class="search-quick-chips">
+                <button type="button" class="search-chip" onclick="window.setSearchQuery('pose')">Live Pose</button>
+                <button type="button" class="search-chip" onclick="window.setSearchQuery('squat')">Squats</button>
+                <button type="button" class="search-chip" onclick="window.setSearchQuery('warrior')">Warrior Asana</button>
+                <button type="button" class="search-chip" onclick="window.setSearchQuery('macro')">BMR & Macros</button>
+                <button type="button" class="search-chip" onclick="window.setSearchQuery('creator')">Architect</button>
+            </div>
+            <div id="site-search-results" class="search-results-list" role="listbox">
+                <!-- Populated dynamically by search controller -->
+            </div>
+            <div class="search-modal-footer">
+                <span class="search-footer-hint"><kbd>↑</kbd><kbd>↓</kbd> Navigate</span>
+                <span class="search-footer-hint"><kbd>↵</kbd> Select</span>
+                <span class="search-footer-hint"><kbd>ESC</kbd> Dismiss</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- ── Universal Confirmation Modal ───────────────────────── -->
+    <div id="confirm-modal-overlay" class="confirm-modal-overlay hidden" aria-hidden="true">
+        <div class="confirm-modal-backdrop" onclick="window.resolveConfirmModal(false)"></div>
+        <div class="confirm-modal-card" role="alertdialog" aria-modal="true" aria-labelledby="confirm-modal-title" aria-describedby="confirm-modal-msg">
+            <div class="confirm-modal-icon" id="confirm-modal-icon">⚠️</div>
+            <div class="confirm-modal-title" id="confirm-modal-title">Confirm Action</div>
+            <div class="confirm-modal-msg" id="confirm-modal-msg">Are you certain you wish to proceed?</div>
+            <div class="confirm-modal-actions">
+                <button type="button" id="confirm-cancel-btn" class="btn-editorial-secondary" onclick="window.resolveConfirmModal(false)">Cancel</button>
+                <button type="button" id="confirm-proceed-btn" class="btn-editorial-primary" onclick="window.resolveConfirmModal(true)">Proceed</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ── Biometric Onboarding Modal (Personalization & Terms Covenant) ────────── -->
+    <div id="biometric-onboarding-modal" class="search-modal-overlay hidden" aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="onboarding-modal-title">
+        <div class="search-modal-backdrop" onclick="window.closeBiometricOnboardingModal(true)"></div>
+        <div class="auth-card-editorial onboarding-modal-box relative" onclick="event.stopPropagation()">
+            <!-- Top Tag & Close/Skip Button -->
+            <div class="flex items-center justify-between mb-3">
+                <div class="flex items-center gap-2">
+                    <span class="hero-category-tag">SYSTEM // BIOMETRIC REGISTRY</span>
+                    <span class="firewall-shield-badge">
+                        <span class="firewall-pulse-dot"></span>
+                        FIREBASE SYNC
+                    </span>
+                </div>
+                <button type="button" class="search-clear-btn" onclick="window.closeBiometricOnboardingModal(true)" title="Skip for now" aria-label="Close onboarding modal">&times;</button>
+            </div>
+
+            <div class="mb-4">
+                <h2 id="onboarding-modal-title" class="text-2xl font-display font-bold text-[var(--bone)] tracking-tight">
+                    PERSONALIZE YOUR <span class="text-vermilion font-display font-extrabold">SANCTUARY.</span>
+                </h2>
+                <p class="text-[var(--bone-dim)] text-xs mt-1 font-mono">
+                    Register your biometric baseline, custom avatar, and weight for real-time calorie telemetry.
+                </p>
+            </div>
+
+            <form id="biometric-onboarding-form" onsubmit="window.handleBiometricOnboardingSubmit(event)" class="space-y-3.5">
+                <!-- Custom Profile Picture / Avatar Upload with Live Preview -->
+                <div class="avatar-upload-container p-3 rounded-lg bg-[rgba(255,255,255,0.02)] border border-[var(--border-subtle)] flex items-center gap-4">
+                    <div class="relative group cursor-pointer" onclick="document.getElementById('onboarding-avatar-file').click()" title="Click to upload custom profile picture">
+                        <img id="onboarding-avatar-preview" src="" alt="User Custom Biometric Profile Picture Preview" class="hidden w-16 h-16 rounded-full object-cover border-2 border-[var(--vermilion)] shadow-[0_0_12px_rgba(224,35,28,0.3)]">
+                        <div id="onboarding-avatar-placeholder" class="w-16 h-16 rounded-full bg-[rgba(255,255,255,0.06)] border border-dashed border-[var(--border-medium)] flex flex-col items-center justify-center text-xs text-[var(--bone-dim)] transition group-hover:border-[var(--vermilion)]">
+                            <span class="text-base">📷</span>
+                            <span class="text-[8px] font-mono mt-0.5 font-bold">PHOTO</span>
+                        </div>
+                        <span class="avatar-edit-badge">+</span>
+                    </div>
+                    <div class="flex-1">
+                        <div class="font-display font-semibold text-xs text-[var(--bone)]">Custom Profile Picture</div>
+                        <div class="font-mono text-[10px] text-[var(--text-dim)] mt-0.5">Stored securely in Firebase Storage Vault.</div>
+                        <input type="file" id="onboarding-avatar-file" accept="image/*" class="hidden" onchange="window.handleAvatarFileSelect(event)">
+                        <button type="button" class="btn-editorial-secondary py-1 px-2.5 text-[10px] mt-1.5" onclick="document.getElementById('onboarding-avatar-file').click()">
+                            SELECT AVATAR IMAGE…
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Full Name -->
+                <div class="form-group-editorial">
+                    <label class="form-label-editorial text-[10px]">FULL NAME / CODENAME</label>
+                    <input type="text" id="onboarding-name" required placeholder="E.g., Toji Zenin" class="form-input-editorial" autocomplete="name">
+                </div>
+
+                <!-- Age & Weight (Kg) -->
+                <div class="grid grid-cols-2 gap-3">
+                    <div class="form-group-editorial">
+                        <label class="form-label-editorial text-[10px]">AGE (YEARS)</label>
+                        <input type="number" id="onboarding-age" required min="12" max="110" placeholder="26" class="form-input-editorial">
+                    </div>
+                    <div class="form-group-editorial">
+                        <label class="form-label-editorial text-[10px]">BODY WEIGHT (KG)</label>
+                        <input type="number" id="onboarding-weight" required min="30" max="250" step="0.1" placeholder="75" class="form-input-editorial">
+                    </div>
+                </div>
+
+                <!-- Height & Gender -->
+                <div class="grid grid-cols-2 gap-3">
+                    <div class="form-group-editorial">
+                        <label class="form-label-editorial text-[10px]">HEIGHT (CM)</label>
+                        <input type="number" id="onboarding-height" min="100" max="240" placeholder="180" class="form-input-editorial">
+                    </div>
+                    <div class="form-group-editorial">
+                        <label class="form-label-editorial text-[10px]">GENDER</label>
+                        <select id="onboarding-gender" class="form-input-editorial">
+                            <option value="unspecified">Select Gender</option>
+                            <option value="male">Male</option>
+                            <option value="female">Female</option>
+                            <option value="nonbinary">Non-Binary / Custom</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Primary Health / Fitness Goal -->
+                <div class="form-group-editorial">
+                    <label class="form-label-editorial text-[10px]">PRIMARY BIOMECHANICAL GOAL</label>
+                    <select id="onboarding-goal" class="form-input-editorial">
+                        <option value="lean_mass">Hypertrophy & Lean Muscle Mass</option>
+                        <option value="fat_loss">Aggressive Caloric Deficit & Fat Loss</option>
+                        <option value="biomechanics">Zero-Lag Pose Kinematics & Posture</option>
+                        <option value="endurance">Cardiovascular Health & Restorative Sleep</option>
+                    </select>
+                </div>
+
+                <!-- Required Terms & Conditions Checkbox with Small Font Privacy Guarantee -->
+                <div class="terms-checkbox-wrap p-3 rounded bg-[rgba(255,255,255,0.02)] border border-[var(--border-subtle)]">
+                    <label class="flex items-start gap-2.5 cursor-pointer select-none">
+                        <input type="checkbox" id="onboarding-terms-check" required class="terms-checkbox mt-0.5" onchange="document.getElementById('onboarding-terms-error')?.classList.add('hidden')">
+                        <span class="text-xs text-[var(--bone)] leading-tight font-medium">
+                            I accept the Luminix Biometric Processing Terms & Conditions.
+                        </span>
+                    </label>
+                    <p class="terms-small-disclaimer font-mono text-[10px] text-[var(--text-dim)] mt-2 leading-relaxed">
+                        🔒 <strong>ZERO-LEAK PRIVACY COVENANT:</strong> We guarantee that all personal biometric information, including your name, age, body weight, height, health metrics, and custom profile picture, is strictly protected. <strong>Your information will NEVER be leaked, rented, sold, or shared with third parties, data brokers, or advertisers under any circumstance.</strong> Telemetry inference occurs entirely client-side, and cloud backups are encrypted with AES-256 via your private Firebase & local vault instance.
+                    </p>
+                    <div id="onboarding-terms-error" class="text-[var(--vermilion)] font-mono text-[10px] mt-1.5 hidden">
+                        ⚠️ Please tick the box to accept the terms & privacy guarantee before continuing.
+                    </div>
+                </div>
+
+                <!-- Action Controls -->
+                <div class="flex items-center justify-between gap-3 pt-2">
+                    <button type="button" class="font-mono text-xs text-[var(--bone-dim)] hover:text-[var(--bone)] underline underline-offset-4" onclick="window.closeBiometricOnboardingModal(true)">
+                        Skip for now &rarr;
+                    </button>
+                    <button type="submit" id="onboarding-submit-btn" class="btn-editorial-primary py-2 px-5 text-xs">
+                        SAVE & INITIALIZE VAULT &check;
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- ── Wearable Biometric Risk Alert Modal ─────────────────── -->
+    <div id="wearable-risk-modal" class="confirm-modal-overlay hidden" aria-hidden="true" role="alertdialog" aria-modal="true" aria-labelledby="wearable-risk-title">
+        <div class="confirm-modal-backdrop" onclick="window.dismissRiskAlert()"></div>
+        <div class="wearable-risk-card" onclick="event.stopPropagation()">
+            <div class="risk-badge-pulse" id="wearable-risk-badge">HYPERTENSION ALERT</div>
+            <div class="risk-device-tag">⌚ WATCH TELEMETRY TRIGGERED</div>
+            <h3 id="wearable-risk-title" class="font-display text-xl font-bold text-white mt-2">BIOMETRIC LIMIT EXCEEDED</h3>
+            <p id="wearable-risk-msg" class="text-xs text-[var(--bone-dim)] font-mono mt-3 leading-relaxed">
+                Vitals have exceeded safety thresholds. Resting baseline required.
+            </p>
+            <div class="risk-actions mt-5 flex gap-3">
+                <button type="button" class="btn-editorial-secondary flex-1 text-xs py-2" onclick="window.dismissRiskAlert()">ACKNOWLEDGE &amp; MONITOR</button>
+                <button type="button" class="btn-editorial-primary flex-1 text-xs py-2" onclick="window.simulateWearableCondition('normal')">RESTORE TO NORMAL</button>
+            </div>
+        </div>
+    <!-- ── Kyoto Social Share Modal ────────────────────────────── -->
+    <div id="social-share-modal" class="search-modal-overlay hidden" aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="share-modal-title">
+        <div class="search-modal-backdrop" onclick="window.closeShareModal()"></div>
+        <div class="share-modal-box" onclick="event.stopPropagation()">
+            <div class="flex items-center justify-between mb-2">
+                <span class="cookie-tag">BROADCAST // SANCTUARY</span>
+                <button type="button" class="search-clear-btn" onclick="window.closeShareModal()" aria-label="Close share dialog">&times;</button>
+            </div>
+            <h3 id="share-modal-title" class="text-xl font-display font-bold text-[var(--bone)]">SHARE LUMINIX INTELLIGENCE</h3>
+            <p class="text-xs text-[var(--bone-dim)] font-mono mt-1">Transmit the autonomous 60 FPS private health platform across your network.</p>
+
+            <div class="share-grid">
+                <button type="button" class="share-card-btn" onclick="window.shareToPlatform('x')" aria-label="Share on X (Twitter)">
+                    <div class="share-card-icon">𝕏</div>
+                    <div>
+                        <div class="text-xs font-bold">X (Twitter)</div>
+                        <div class="text-[10px] text-[var(--text-dim)] font-mono">Broadcast telemetry</div>
+                    </div>
+                </button>
+                <button type="button" class="share-card-btn" onclick="window.shareToPlatform('linkedin')" aria-label="Share on LinkedIn">
+                    <div class="share-card-icon font-bold">in</div>
+                    <div>
+                        <div class="text-xs font-bold">LinkedIn</div>
+                        <div class="text-[10px] text-[var(--text-dim)] font-mono">Professional dispatch</div>
+                    </div>
+                </button>
+                <button type="button" class="share-card-btn" onclick="window.shareToPlatform('whatsapp')" aria-label="Share on WhatsApp">
+                    <div class="share-card-icon">💬</div>
+                    <div>
+                        <div class="text-xs font-bold">WhatsApp</div>
+                        <div class="text-[10px] text-[var(--text-dim)] font-mono">Direct message</div>
+                    </div>
+                </button>
+                <button type="button" class="share-card-btn" onclick="window.shareToPlatform('reddit')" aria-label="Share on Reddit">
+                    <div class="share-card-icon">🤖</div>
+                    <div>
+                        <div class="text-xs font-bold">Reddit</div>
+                        <div class="text-[10px] text-[var(--text-dim)] font-mono">Biohacking &amp; AI</div>
+                    </div>
+                </button>
+            </div>
+
+            <div class="share-link-input-wrap mt-3">
+                <input type="text" id="share-url-input" value="http://localhost:8000/" readonly class="share-link-input" aria-label="Sanctuary share link">
+                <button type="button" id="copy-share-btn" class="btn-editorial-primary text-xs py-1.5 px-3" onclick="window.copyShareLink()">
+                    COPY LINK
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ── Cookie Consent Banner ────────────────────────────────── -->
+    <aside id="cookie-consent-banner" class="cookie-banner hidden" role="region" aria-label="Privacy & Cookie Preferences">
+        <div class="cookie-header">
+            <span class="cookie-tag">PRIVACY // COVENANT</span>
+            <button type="button" class="search-clear-btn" onclick="window.dismissCookieBanner()" aria-label="Dismiss cookie banner">&times;</button>
+        </div>
+        <div>
+            <div class="cookie-title">BIOMETRIC SOVEREIGNTY &amp; COOKIES</div>
+            <p class="cookie-body mt-1">
+                We enforce zero camera uploads and local WebAssembly telemetry. We use strictly essential cookies for secure token sessions and optional client telemetry to optimize frame smoothness. Read our <a href="/privacy" onclick="event.preventDefault(); window.nav ? window.nav('privacy') : window.location.href='/privacy';">Privacy Policy</a>.
+            </p>
+        </div>
+        <div class="cookie-actions">
+            <button type="button" class="cookie-btn-primary" onclick="window.acceptAllCookies()">ACCEPT ALL</button>
+            <button type="button" class="cookie-btn-secondary" onclick="window.acceptEssentialCookies()">ESSENTIAL ONLY</button>
+            <button type="button" class="cookie-link-btn" onclick="window.openCookieSettings()">CUSTOMIZE</button>
+        </div>
+    </aside>
+
+    <!-- ── Cookie Settings Modal ───────────────────────────────── -->
+    <div id="cookie-settings-modal" class="confirm-modal-overlay hidden" aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="cookie-settings-title">
+        <div class="confirm-modal-backdrop" onclick="window.closeCookieSettings()"></div>
+        <div class="confirm-modal-card" style="max-width:480px; text-align:left;" onclick="event.stopPropagation()">
+            <div class="flex items-center justify-between mb-2">
+                <span class="cookie-tag">VAULT PREFERENCES</span>
+                <button type="button" class="search-clear-btn" onclick="window.closeCookieSettings()" aria-label="Close cookie settings">&times;</button>
+            </div>
+            <h3 id="cookie-settings-title" class="text-xl font-display font-bold text-[var(--bone)]">Telemetry &amp; Storage Preferences</h3>
+            <p class="text-xs text-[var(--text-secondary)] font-mono mt-1">Configure your browser-side consent parameters below.</p>
+
+            <div class="space-y-3 mt-4">
+                <div class="p-3 rounded bg-[rgba(255,255,255,0.02)] border border-[var(--border-subtle)] flex items-center justify-between">
+                    <div>
+                        <div class="text-xs font-bold text-[var(--bone)]">Essential Authentication (JWT)</div>
+                        <div class="text-[10px] text-[var(--text-dim)] font-mono">Required for login sessions &amp; cryptographic token security.</div>
+                    </div>
+                    <input type="checkbox" checked disabled class="accent-[var(--vermilion)]">
+                </div>
+                <div class="p-3 rounded bg-[rgba(255,255,255,0.02)] border border-[var(--border-subtle)] flex items-center justify-between">
+                    <div>
+                        <div class="text-xs font-bold text-[var(--bone)]">Client Telemetry &amp; Frame Analytics</div>
+                        <div class="text-[10px] text-[var(--text-dim)] font-mono">Measures 60 FPS performance, MediaPipe load times, and error telemetry.</div>
+                    </div>
+                    <input type="checkbox" id="cookie-pref-analytics" checked class="accent-[var(--vermilion)]">
+                </div>
+                <div class="p-3 rounded bg-[rgba(255,255,255,0.02)] border border-[var(--border-subtle)] flex items-center justify-between">
+                    <div>
+                        <div class="text-xs font-bold text-[var(--bone)]">Local Unit &amp; Theme Caching</div>
+                        <div class="text-[10px] text-[var(--text-dim)] font-mono">Persists dark/white mode and metric unit selections locally.</div>
+                    </div>
+                    <input type="checkbox" id="cookie-pref-functional" checked class="accent-[var(--vermilion)]">
+                </div>
+            </div>
+
+            <div class="confirm-modal-actions mt-5">
+                <button type="button" class="btn-editorial-secondary text-xs py-2 px-4" onclick="window.closeCookieSettings()">CANCEL</button>
+                <button type="button" class="btn-editorial-primary text-xs py-2 px-4" onclick="window.saveCustomCookiePreferences()">SAVE PREFERENCES</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Firebase Compat SDK (Cloud Storage, Firestore, Auth & App) with resilient offline vault fallback -->
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-storage-compat.js"></script>
+    <script src="/static/firebase_service.js?v=4.4"></script>
+    <!-- Chart.js for wearable analytics history charts -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+    <script src="/static/wearable.js?v=6.2.0"></script>
+
     <!-- Scripts -->
-    <script src="/static/auth.js"></script>
-    <script src="/static/app.js"></script>
-    <script src="/static/yoga.js"></script>
-    <script src="/static/gym.js"></script>
-    <script src="/static/nutrition.js"></script>
+    <script src="/static/kage_scene.js?v=4.5"></script>
+    <script src="/static/auth.js?v=4.5"></script>
+    <script src="/static/app.js?v=4.5"></script>
+    <script src="/static/yoga.js?v=4.5"></script>
+    <script src="/static/gym.js?v=4.5"></script>
+    <script src="/static/nutrition.js?v=4.5"></script>
 </body>
 </html>

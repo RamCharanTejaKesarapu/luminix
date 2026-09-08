@@ -1,0 +1,19 @@
+# Robots.txt for Luminix AI Health & Biomechanical Sanctuary
+User-agent: *
+Allow: /
+Allow: /auth
+Allow: /privacy
+Allow: /terms
+Allow: /accessibility
+Allow: /static/
+Allow: /images/
+Allow: /assets/
+
+# Disallow internal API endpoints & runtime data
+Disallow: /api/
+Disallow: /v1/
+Disallow: /data/
+Disallow: /output/
+
+# Sitemaps
+Sitemap: http://localhost:8000/sitemap.xml

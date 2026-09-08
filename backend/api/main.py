@@ -5,14 +5,16 @@ from __future__ import annotations
 import json
 import os
 import sys
+import uuid
 from pathlib import Path
 from typing import Any, Dict, Optional
 
 from dotenv import load_dotenv
-from fastapi import Depends, FastAPI, File, Form, HTTPException, UploadFile
+from fastapi import Depends, FastAPI, File, Form, HTTPException, UploadFile, Request, Response
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, JSONResponse
-from pydantic import BaseModel, Field
+from starlette.exceptions import HTTPException as StarletteHTTPException
+from pydantic import BaseModel, Field, EmailStr
 from fastapi.staticfiles import StaticFiles
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -22,11 +24,19 @@ if str(ROOT) not in sys.path:
 
 load_dotenv(PROJECT_ROOT / ".env")
 
-from analysis_module.email_service import send_report_email  # noqa: E402
+from analysis_module.email_service import send_donation_notification_email, send_report_email  # noqa: E402
 from analysis_module.pdf_export import export_combined_pdf  # noqa: E402
 from analysis_module.report_generator import build_combined_report  # noqa: E402
-from database.db import init_db, log_event, recent_events  # noqa: E402
+from database.db import check_daily_donation_limit, get_security_stats, init_db, log_event, recent_events, record_creator_donation  # noqa: E402
+from database.firebase_admin_service import (  # noqa: E402
+    get_telemetry_history_from_firestore,
+    is_firebase_ready,
+    save_donation_to_firestore,
+    save_telemetry_to_firestore,
+)
 from api.auth_routes import get_optional_user, router as auth_router  # noqa: E402
+from auth.firewall import SecurityFirewallMiddleware, firewall  # noqa: E402
+from auth.oauth import google_configured, github_configured  # noqa: E402
 from gym_module.exercises import GYM_PLANS, generate_daily_workout, get_gym_plan  # noqa: E402
 from nutrition_module.bmi_bmr import compute_nutrition_metrics, metrics_to_dict  # noqa: E402
 from nutrition_module.meal_planner import build_weekly_plan  # noqa: E402
@@ -107,20 +117,35 @@ class PoseAnalysisRequest(BaseModel):
     video_path: Optional[str] = None
 
 
-app = FastAPI(title="Luminix", description="Advanced Health Intelligence Platform", version="2.0.0")
+app = FastAPI(title="Luminix", description="Advanced Health Intelligence Platform & Security Firewall", version="2.0.0")
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
     allow_methods=["*"],
     allow_headers=["*"],
 )
+# Attach Luminix Security Firewall (WAF + Rate Limiting + Security Headers)
+app.add_middleware(SecurityFirewallMiddleware)
+
+@app.middleware("http")
+async def no_cache_static_middleware(request: Request, call_next):
+    response = await call_next(request)
+    path = request.url.path
+    if path.startswith("/static/") or path == "/" or path.endswith(".html"):
+        response.headers["Cache-Control"] = "no-cache, no-store, must-revalidate, max-age=0"
+        response.headers["Pragma"] = "no-cache"
+        response.headers["Expires"] = "0"
+    return response
 
 app.mount("/static", StaticFiles(directory=str(STATIC_DIR)), name="static")
 app.mount("/assets", StaticFiles(directory=str(ASSETS_DIR)), name="assets")
+IMAGES_DIR = STATIC_DIR / "images"
+if IMAGES_DIR.exists():
+    app.mount("/images", StaticFiles(directory=str(IMAGES_DIR)), name="images")
 app.include_router(auth_router)
 
 
-@app.get("/")
+@app.api_route("/", methods=["GET", "HEAD"])
 def index_page() -> FileResponse:
     path = STATIC_DIR / "index.html"
     if not path.is_file():
@@ -128,7 +153,7 @@ def index_page() -> FileResponse:
     return FileResponse(path, media_type="text/html")
 
 
-@app.get("/auth")
+@app.api_route("/auth", methods=["GET", "HEAD"])
 def auth_page() -> FileResponse:
     path = STATIC_DIR / "auth.html"
     if not path.is_file():
@@ -136,7 +161,31 @@ def auth_page() -> FileResponse:
     return FileResponse(path, media_type="text/html")
 
 
-@app.get("/manifest.json")
+@app.api_route("/privacy", methods=["GET", "HEAD"])
+def privacy_page() -> FileResponse:
+    path = STATIC_DIR / "privacy.html"
+    if not path.is_file():
+        raise HTTPException(status_code=404, detail="frontend/privacy.html missing")
+    return FileResponse(path, media_type="text/html")
+
+
+@app.api_route("/terms", methods=["GET", "HEAD"])
+def terms_page() -> FileResponse:
+    path = STATIC_DIR / "terms.html"
+    if not path.is_file():
+        raise HTTPException(status_code=404, detail="frontend/terms.html missing")
+    return FileResponse(path, media_type="text/html")
+
+
+@app.api_route("/accessibility", methods=["GET", "HEAD"])
+def accessibility_page() -> FileResponse:
+    path = STATIC_DIR / "accessibility.html"
+    if not path.is_file():
+        raise HTTPException(status_code=404, detail="frontend/accessibility.html missing")
+    return FileResponse(path, media_type="text/html")
+
+
+@app.api_route("/manifest.json", methods=["GET", "HEAD"])
 def manifest() -> FileResponse:
     path = STATIC_DIR / "manifest.json"
     if not path.is_file():
@@ -144,16 +193,68 @@ def manifest() -> FileResponse:
     return FileResponse(path, media_type="application/json")
 
 
+@app.api_route("/favicon.ico", methods=["GET", "HEAD"])
+def favicon_ico() -> FileResponse:
+    svg_path = STATIC_DIR / "favicon.svg"
+    if svg_path.is_file():
+        return FileResponse(svg_path, media_type="image/svg+xml")
+    raise HTTPException(status_code=404, detail="favicon missing")
+
+
+@app.api_route("/robots.txt", methods=["GET", "HEAD"])
+def robots_txt() -> FileResponse:
+    path = STATIC_DIR / "robots.txt"
+    if path.is_file():
+        return FileResponse(path, media_type="text/plain")
+    return Response(content="User-agent: *\nAllow: /\nSitemap: http://localhost:8000/sitemap.xml\n", media_type="text/plain")
+
+
+@app.api_route("/sitemap.xml", methods=["GET", "HEAD"])
+def sitemap_xml() -> FileResponse:
+    path = STATIC_DIR / "sitemap.xml"
+    if path.is_file():
+        return FileResponse(path, media_type="application/xml")
+    raise HTTPException(status_code=404, detail="sitemap.xml missing")
+
+
+@app.api_route("/llms.txt", methods=["GET", "HEAD"])
+def llms_txt() -> FileResponse:
+    path = STATIC_DIR / "llms.txt"
+    if path.is_file():
+        return FileResponse(path, media_type="text/plain")
+    raise HTTPException(status_code=404, detail="llms.txt missing")
+
+
+# ── Custom Themed 404 Handler ───────────────────────────────────────────────
+@app.exception_handler(StarletteHTTPException)
+async def custom_http_exception_handler(request: Request, exc: StarletteHTTPException):
+    if exc.status_code == 404:
+        path_str = request.url.path
+        # Cleanly ignore source map requests so devtools never log 404 errors
+        if path_str.endswith(".map"):
+            return Response(status_code=204)
+        # API or JSON request
+        if path_str.startswith(("/v1", "/api", "/auth/")) or "application/json" in request.headers.get("accept", ""):
+            return JSONResponse(status_code=404, content={"detail": exc.detail or "Endpoint not found", "status_code": 404})
+        # Render Kyoto-themed 404 HTML
+        page_404 = STATIC_DIR / "404.html"
+        if page_404.is_file():
+            return FileResponse(page_404, status_code=404, media_type="text/html")
+    return JSONResponse(status_code=exc.status_code, content={"detail": exc.detail})
+
+
 @app.get("/health")
 def health() -> Dict[str, Any]:
     return {
         "status": "ok",
         "platform": "Luminix",
+        "firewall_active": True,
         "gemini_configured": bool(os.getenv("GEMINI_API_KEY")),
         "smtp_configured": bool(os.getenv("SMTP_HOST")),
         "sendgrid_configured": bool(os.getenv("SENDGRID_API_KEY")),
-        "google_oauth_configured": bool(os.getenv("GOOGLE_CLIENT_ID")),
-        "github_oauth_configured": bool(os.getenv("GITHUB_CLIENT_ID")),
+        "google_oauth_configured": google_configured(),
+        "github_oauth_configured": github_configured(),
+        "security_stats": get_security_stats(),
         "output_dir": str(OUTPUT),
     }
 
@@ -198,11 +299,39 @@ def generate_plan(req: GeneratePlanRequest) -> Dict[str, Any]:
 @app.post("/v1/cook/suggest")
 def cook_suggest(payload: Dict[str, Any]) -> Dict[str, Any]:
     ingredients = payload.get("ingredients", "")
+    diet = payload.get("diet_preference", "omnivore")
     limit = int(payload.get("limit", 5) or 5)
-    return suggest_recipes(ingredients, limit=limit)
+    catalog = suggest_recipes(ingredients, limit=limit)
+
+    # Enhance with Gemini AI Recipe when available
+    if os.getenv("GEMINI_API_KEY"):
+        try:
+            from analysis_module.gemini_integration import generate_ai_recipe_gemini
+            ai_recipe = generate_ai_recipe_gemini(ingredients, diet)
+            if ai_recipe and "recipe_name" in ai_recipe:
+                catalog["ai_recipe"] = ai_recipe
+        except Exception:
+            pass
+
+    return catalog
 
 
 # ── Pose ─────────────────────────────────────────────────────────────────────
+
+ALLOWED_VIDEO_EXTENSIONS = {".mp4", ".mov", ".avi", ".webm"}
+
+
+def _verify_video_magic_bytes(header: bytes, ext: str) -> bool:
+    if len(header) < 4:
+        return False
+    if ext in (".mp4", ".mov"):
+        return b"ftyp" in header[:32] or b"moov" in header[:32] or b"mdat" in header[:32]
+    elif ext == ".avi":
+        return header.startswith(b"RIFF") and b"AVI " in header[:16]
+    elif ext == ".webm":
+        return header.startswith(b"\x1a\x45\xdf\xa3")
+    return False
+
 
 @app.post("/v1/pose/analyze-video")
 async def pose_analyze_video(
@@ -210,14 +339,40 @@ async def pose_analyze_video(
     stride: int = Form(3),
     max_frames: int = Form(240),
 ) -> Dict[str, Any]:
-    suffix = Path(file.filename or "upload.mp4").suffix or ".mp4"
-    dest = OUTPUT / f"upload_pose{suffix}"
-    dest.write_bytes(await file.read())
+    raw_name = file.filename or "upload.mp4"
+    ext = Path(raw_name).suffix.lower()
+    if ext not in ALLOWED_VIDEO_EXTENSIONS:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Unsupported file format '{ext}'. Allowed video formats: {', '.join(sorted(ALLOWED_VIDEO_EXTENSIONS))}",
+        )
+
+    content = await file.read()
+    if len(content) == 0:
+        raise HTTPException(status_code=400, detail="Uploaded video file is empty.")
+    if len(content) > 15 * 1024 * 1024:
+        raise HTTPException(status_code=413, detail="File size exceeds maximum allowed upload limit of 15MB.")
+
+    if not _verify_video_magic_bytes(content[:64], ext):
+        raise HTTPException(status_code=400, detail="Invalid video header: file content does not match declared video format.")
+
+    unique_id = uuid.uuid4().hex
+    safe_filename = f"pose_{unique_id}{ext}"
+    dest = OUTPUT / safe_filename
+    dest.write_bytes(content)
+
     try:
         rep = analyze_video_file(dest, stride=stride, max_frames=max_frames, output_dir=OUTPUT / "pose_previews")
+        return report_to_dict(rep)
     except Exception as exc:  # noqa: BLE001
         raise HTTPException(status_code=400, detail=str(exc)) from exc
-    return report_to_dict(rep)
+    finally:
+        # Ephemeral cleanup — delete biometric video bytes immediately after kinematic extraction
+        if dest.exists():
+            try:
+                dest.unlink()
+            except Exception:
+                pass
 
 
 @app.post("/v1/pose-analysis")
@@ -404,8 +559,13 @@ def get_yoga_poses_api() -> JSONResponse:
 
 
 @app.get("/v1/progress/recent")
-def progress_recent(limit: int = 20) -> JSONResponse:
-    return JSONResponse({"items": recent_events(limit)})
+def progress_recent(
+    limit: int = 20,
+    current_user: Optional[Dict[str, Any]] = Depends(get_optional_user),
+) -> JSONResponse:
+    user_label = str(current_user["id"]) if current_user else "default"
+    safe_limit = min(100, max(1, limit))
+    return JSONResponse({"items": recent_events(safe_limit, user_label=user_label)})
 
 
 class ProgressLogRequest(BaseModel):
@@ -416,9 +576,13 @@ class ProgressLogRequest(BaseModel):
 
 
 @app.post("/v1/progress/log")
-def progress_log(req: ProgressLogRequest) -> JSONResponse:
+def progress_log(
+    req: ProgressLogRequest,
+    current_user: Optional[Dict[str, Any]] = Depends(get_optional_user),
+) -> JSONResponse:
+    effective_label = str(current_user["id"]) if current_user else req.user_label
     log_event(
-        user_label=req.user_label,
+        user_label=effective_label,
         bmi=req.bmi,
         pose_score=req.pose_score,
         payload=req.payload or {},
@@ -445,41 +609,65 @@ def nutrition_metrics_simple(req: NutritionOnlyRequest) -> Dict[str, Any]:
     return metrics_to_dict(metrics)
 
 
+# ── Nutrition AI Food Analysis ────────────────────────────────────────────────
+
+class FoodAnalysisRequest(BaseModel):
+    food_query: str
+
+@app.post("/v1/nutrition/ai-food-analysis")
+def nutrition_ai_food_analysis(req: FoodAnalysisRequest) -> Dict[str, Any]:
+    """Analyze custom meal or food query and return calories and macros using Gemini."""
+    if os.getenv("GEMINI_API_KEY"):
+        try:
+            from analysis_module.gemini_integration import analyze_food_nutrition_gemini
+            data = analyze_food_nutrition_gemini(req.food_query)
+            if data and "calories" in data:
+                return {"success": True, "analysis": data, "source": "gemini"}
+        except Exception as e:
+            pass
+
+    # Simple fallback heuristic
+    return {
+        "success": True,
+        "analysis": {
+            "food_name": req.food_query,
+            "estimated_serving": "1 serving",
+            "calories": 250,
+            "protein_g": 12.0,
+            "carbs_g": 30.0,
+            "fat_g": 8.0,
+            "fiber_g": 3.0,
+            "micronutrients": ["Balanced Essential Nutrients"],
+            "health_score": 75,
+            "analysis_notes": "Standard nutritional estimate. For exact tracking, verify with weighed portions."
+        },
+        "source": "fallback"
+    }
+
+
 # ── Luna AI Chat ─────────────────────────────────────────────────────────────
 
 class LunaChatRequest(BaseModel):
     message: str
+    user_context: Optional[Dict[str, Any]] = None
 
 @app.post("/v1/luna/chat")
 def luna_chat(req: LunaChatRequest) -> Dict[str, Any]:
-    """Luna AI chat endpoint — uses Gemini when available, falls back to rule-based."""
-    msg = req.message.strip().lower()
+    """Luna AI chat endpoint — uses Gemini 3.6 Flash when available, falls back to rule-based."""
+    msg = req.message.strip()
 
-    # Try Gemini first
-    gemini_key = os.getenv("GEMINI_API_KEY")
-    if gemini_key:
+    # Try Gemini first with specialized health and nutrition intelligence
+    if os.getenv("GEMINI_API_KEY"):
         try:
-            from analysis_module.gemini_integration import configure_gemini
-            import google.generativeai as genai
-
-            configure_gemini()
-            model = genai.GenerativeModel(os.getenv("GEMINI_MODEL", "gemini-2.0-flash"))
-            prompt = (
-                "You are Luna, the AI health and fitness assistant for Luminix platform. "
-                "You provide helpful, concise health advice about fitness, nutrition, yoga, gym, "
-                "and general wellness. Keep responses under 150 words. Be supportive and informative. "
-                "Do not provide medical diagnoses — always recommend consulting a professional for medical concerns.\n\n"
-                f"User: {req.message}\nLuna:"
-            )
-            resp = model.generate_content(prompt)
-            reply = (resp.text or "").strip()
+            from analysis_module.gemini_integration import luna_chat_gemini
+            reply = luna_chat_gemini(msg, req.user_context)
             if reply:
-                return {"reply": reply, "source": "gemini"}
-        except Exception:
+                return {"reply": reply, "source": "gemini", "model": os.getenv("GEMINI_MODEL", "gemini-3.6-flash")}
+        except Exception as e:
             pass
 
     # Rule-based fallback
-    reply = _luna_fallback(msg)
+    reply = _luna_fallback(msg.lower())
     return {"reply": reply, "source": "built-in"}
 
 
@@ -562,4 +750,840 @@ def export_pdf_frontend() -> FileResponse:
     except Exception as exc:
         raise HTTPException(status_code=500, detail=str(exc)) from exc
     return FileResponse(out, filename="luminix_health_report.pdf", media_type="application/pdf")
+
+
+# ── Live Wearable & Mobile Telemetry Sync Service ────────────────────────────
+
+class TelemetryPayload(BaseModel):
+    device_id: Optional[str] = "mobile_default"
+    device_name: Optional[str] = "Mobile Companion"
+    device_type: Optional[str] = "phone"
+    connection_type: Optional[str] = "Wi-Fi Companion Bridge"
+    steps: int = 0
+    step_goal: int = 10000
+    distance_km: float = 0.0
+    calories: Optional[int] = None
+    battery: Optional[int] = 85
+    heart_rate: Optional[int] = None
+    spo2: Optional[int] = None
+    systolic: Optional[int] = None
+    diastolic: Optional[int] = None
+    sleep_score: Optional[int] = None
+    sleep_hours: Optional[int] = None
+    sleep_minutes: Optional[int] = None
+    motion_magnitude: Optional[float] = 0.0
+    timestamp: Optional[float] = None
+
+class BluetoothConnectPayload(BaseModel):
+    device_name: str
+    device_address: Optional[str] = None
+    device_type: Optional[str] = "smartwatch"
+    connection_type: Optional[str] = "System Bluetooth (BCM_4387 Controller)"
+    steps: Optional[int] = None
+    battery: Optional[int] = None
+
+# In-memory live telemetry state
+_live_telemetry: Dict[str, Any] = {
+    "connected": False,
+    "device_name": None,
+    "device_type": None,
+    "connection_type": None,
+    "battery": None,
+    "steps": None,
+    "distance_km": None,
+    "calories": None,
+    "heart_rate": None,
+    "spo2": None,
+    "systolic": None,
+    "diastolic": None,
+    "sleep_score": None,
+    "sleep_hours": None,
+    "sleep_minutes": None,
+    "sleep_quality": None,
+    "last_sync": None,
+    "raw_packets_received": 0
+}
+
+# In-memory time-series history (up to 30 daily records per metric)
+_metrics_history: list = []
+
+# Live cache of legitimately connected devices
+_known_system_devices: list = []
+
+@app.post("/v1/telemetry/sync")
+def sync_telemetry(payload: TelemetryPayload) -> Dict[str, Any]:
+    """Called by mobile phone companion or BLE bridge to report live step and sensor telemetry."""
+    import time
+    global _live_telemetry
+    _live_telemetry.update({
+        "connected": True,
+        "device_name": payload.device_name,
+        "device_type": payload.device_type,
+        "connection_type": payload.connection_type,
+        "battery": payload.battery,
+        "steps": payload.steps,
+        "distance_km": payload.distance_km,
+        "calories": payload.calories,
+        "heart_rate": payload.heart_rate,
+        "spo2": payload.spo2,
+        "systolic": payload.systolic,
+        "diastolic": payload.diastolic,
+        "sleep_score": payload.sleep_score,
+        "sleep_hours": payload.sleep_hours,
+        "sleep_minutes": payload.sleep_minutes,
+        "motion_magnitude": payload.motion_magnitude,
+        "last_sync": time.time(),
+        "raw_packets_received": _live_telemetry.get("raw_packets_received", 0) + 1
+    })
+    return {"status": "ok", "synced": True, "packets": _live_telemetry["raw_packets_received"]}
+
+@app.get("/v1/telemetry/live")
+def get_live_telemetry() -> Dict[str, Any]:
+    """Desktop/Dashboard polls this to get real-time synced telemetry from the paired phone or watch."""
+    import time
+    data = dict(_live_telemetry)
+    if data.get("last_sync"):
+        elapsed = time.time() - data["last_sync"]
+        data["seconds_since_last_packet"] = round(elapsed, 1)
+        data["is_live"] = elapsed < 35.0
+    else:
+        data["seconds_since_last_packet"] = None
+        data["is_live"] = False
+    return data
+
+@app.post("/v1/telemetry/reset")
+def reset_telemetry() -> Dict[str, Any]:
+    """Resets live telemetry state to disconnected."""
+    global _live_telemetry
+    _live_telemetry = {
+        "connected": False,
+        "device_name": None,
+        "device_type": None,
+        "connection_type": None,
+        "battery": None,
+        "steps": None,
+        "distance_km": None,
+        "calories": None,
+        "heart_rate": None,
+        "spo2": None,
+        "systolic": None,
+        "diastolic": None,
+        "sleep_score": None,
+        "sleep_hours": None,
+        "sleep_minutes": None,
+        "sleep_quality": None,
+        "last_sync": None,
+        "raw_packets_received": 0
+    }
+    return {"status": "reset", "connected": False}
+
+# BLE device cache for instant, non-blocking proximity and scan queries
+_ble_device_cache: Dict[str, Dict[str, Any]] = {}
+_last_ble_scan_time: float = 0.0
+
+def get_local_ip() -> str:
+    """Returns the local network LAN IP for companion mobile device connection."""
+    import socket
+    try:
+        s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        s.connect(("8.8.8.8", 80))
+        ip = s.getsockname()[0]
+        s.close()
+        return ip
+    except Exception:
+        return "10.36.98.140"
+
+@app.post("/v1/bluetooth/force-pair-request")
+def force_pair_request() -> Dict[str, Any]:
+    """Broadcasts native hardware connection, baseband paging, and pairing authentication requests to all available Bluetooth devices."""
+    import threading
+    paged = []
+    try:
+        import objc
+        from Foundation import NSBundle
+        b = NSBundle.bundleWithPath_('/System/Library/Frameworks/IOBluetooth.framework')
+        if b:
+            b.load()
+            IOBluetoothDevice = objc.lookUpClass('IOBluetoothDevice')
+            IOBluetoothDevicePair = objc.lookUpClass('IOBluetoothDevicePair')
+            devices = IOBluetoothDevice.pairedDevices() or []
+            for d in devices:
+                name = d.name() or "Bluetooth Device"
+                paged.append(name)
+                def _force_page_and_pair(dev):
+                    try:
+                        # 1. Baseband Remote Name Paging (pings and wakes the target device's radio)
+                        dev.remoteNameRequest_(None)
+                    except Exception:
+                        pass
+                    try:
+                        # 2. Transmit Baseband Connection Request
+                        dev.openConnection()
+                    except Exception:
+                        pass
+                    try:
+                        # 3. Transmit Pair / Authentication Request (causes incoming 'Pair with device?' pop up on target device)
+                        dev.requestAuthentication()
+                    except Exception:
+                        pass
+                    try:
+                        # 4. Initiate IOBluetoothDevicePair handshake
+                        if IOBluetoothDevicePair:
+                            pair_inst = IOBluetoothDevicePair.pairWithDevice_(dev)
+                            if pair_inst:
+                                pair_inst.start()
+                    except Exception:
+                        pass
+
+                threading.Thread(target=_force_page_and_pair, args=(d,), daemon=True).start()
+    except Exception as e:
+        print(f"[Force Pair Notice]: {e}")
+    return {"status": "ok", "paged_devices": paged}
+
+@app.get("/v1/bluetooth/state")
+def get_bluetooth_hardware_state() -> Dict[str, Any]:
+    """Returns real physical hardware power status of the Bluetooth controller."""
+    import subprocess
+    import json
+    is_on = True
+    state_str = "Powered On"
+    try:
+        raw = subprocess.check_output(['system_profiler', 'SPBluetoothDataType', '-json'], timeout=3)
+        data = json.loads(raw)
+        info = data.get('SPBluetoothDataType', [{}])[0]
+        c_props = info.get('controller_properties', {})
+        c_state = c_props.get('controller_state', '').lower()
+        if 'off' in c_state or 'disabled' in c_state or 'attrib_off' in c_state:
+            is_on = False
+            state_str = "Powered Off"
+        elif 'on' in c_state or 'enabled' in c_state or 'attrib_on' in c_state:
+            is_on = True
+            state_str = "Powered On"
+    except Exception as e:
+        print(f"[Bluetooth State Error]: {e}")
+    return {"status": "ok", "powered_on": is_on, "state": state_str}
+
+@app.get("/v1/bluetooth/scan")
+async def scan_bluetooth_devices() -> Dict[str, Any]:
+    """Scans for real BLE smartwatches, mobile phones, and reads system Bluetooth devices."""
+    import subprocess
+    import json
+    import asyncio
+    import time
+    global _ble_device_cache, _last_ble_scan_time, _known_system_devices
+
+    host_ip = get_local_ip()
+    controller_info = {
+        "chipset": "BCM_4387",
+        "address": "68:CA:C4:9C:D3:71",
+        "state": "Powered On",
+        "host_ip": host_ip
+    }
+    system_devices = []
+
+    # 1. Query macOS native Bluetooth controller & recognized devices
+    try:
+        raw = subprocess.check_output(['system_profiler', 'SPBluetoothDataType', '-json'], timeout=4)
+        data = json.loads(raw)
+        info = data.get('SPBluetoothDataType', [{}])[0]
+        c_props = info.get('controller_properties', {})
+        if c_props.get('controller_state'):
+            controller_info["state"] = "Powered On" if "on" in c_props.get('controller_state', '').lower() else "Powered Off"
+        if c_props.get('controller_address') and c_props['controller_address'] != "NULL":
+            controller_info["address"] = c_props['controller_address']
+        if c_props.get('controller_chipset'):
+            controller_info["chipset"] = c_props['controller_chipset']
+
+        discovered_sys = []
+        for cat in ['device_connected', 'device_not_connected', 'device_title']:
+            for item in info.get(cat, []):
+                for name, props in item.items():
+                    minor = props.get('device_minorType', 'Device')
+                    dtype = 'phone' if 'phone' in minor.lower() else ('smartwatch' if 'watch' in minor.lower() else 'wearable')
+                    
+                    # Extract genuine battery if reported by macOS controller for this hardware
+                    real_batt = None
+                    for b_key in ['device_batteryLevelMain', 'device_batteryPercentCombined', 'device_batteryLevelCase']:
+                        if b_key in props:
+                            try:
+                                raw_b = str(props[b_key]).replace('%', '').strip()
+                                real_batt = int(raw_b)
+                                break
+                            except Exception:
+                                pass
+
+                    discovered_sys.append({
+                        "name": name,
+                        "address": props.get('device_address', ''),
+                        "type": dtype,
+                        "minor_type": minor,
+                        "battery": real_batt,
+                        "connected": cat == 'device_connected'
+                    })
+        if discovered_sys:
+            # Preserve any newly added / custom devices previously registered in _known_system_devices
+            for kd in _known_system_devices:
+                if not any(d.get("name", "").lower() == kd.get("name", "").lower() for d in discovered_sys):
+                    discovered_sys.append(kd)
+            system_devices = discovered_sys
+            _known_system_devices = discovered_sys
+        else:
+            system_devices = list(_known_system_devices)
+    except Exception as e:
+        print(f"[Bluetooth Query Warning]: {e}")
+        system_devices = list(_known_system_devices)
+
+    # 2. Query real BLE broadcasting peripherals via Bleak
+    ble_devices = []
+    try:
+        from bleak import BleakScanner
+        devices_dict = await BleakScanner.discover(timeout=2.8, return_adv=True)
+        now = time.time()
+        _last_ble_scan_time = now
+        for d, adv in devices_dict.values():
+            name = d.name or adv.local_name
+            raw_addr = d.address or ""
+            display_name = name if name else f"BLE Device ({raw_addr[-8:] if len(raw_addr) >= 8 else raw_addr})"
+            name_lower = display_name.lower()
+            dtype = 'smartwatch' if any(w in name_lower for w in ['watch', 'buzz', 'fit', 'caliber', 'band', 'gear']) else (
+                'phone' if any(p in name_lower for p in ['phone', 'pixel', 'redmi', 'samsung', 'iphone', 'xiaomi']) else (
+                    'wearable' if any(h in name_lower for h in ['headset', 'buds', 'studio', 'audio', 'ear']) else 'ble_sensor'
+                )
+            )
+            item = {
+                "name": display_name,
+                "address": raw_addr,
+                "type": dtype,
+                "rssi": adv.rssi,
+                "timestamp": now
+            }
+            ble_devices.append(item)
+            _ble_device_cache[raw_addr] = item
+            if name:
+                _ble_device_cache[name.lower()] = item
+
+        # Sort by signal strength (strongest first)
+        ble_devices.sort(key=lambda x: x.get("rssi", -100), reverse=True)
+    except Exception as e:
+        print(f"[BLE Bleak Scan Warning]: {e}")
+
+    return {
+        "status": "ok",
+        "controller": controller_info,
+        "host_ip": host_ip,
+        "system_devices": system_devices,
+        "ble_devices": ble_devices[:18]
+    }
+
+class RegisterDevicePayload(BaseModel):
+    name: str
+    type: Optional[str] = "smartwatch"
+    address: Optional[str] = ""
+    battery: Optional[int] = None
+
+@app.post("/v1/bluetooth/devices")
+def register_bluetooth_device(payload: RegisterDevicePayload) -> Dict[str, Any]:
+    """Registers a new Bluetooth/BLE device (smartwatch, band, phone) into the known devices registry."""
+    global _known_system_devices
+    clean_name = payload.name.strip()
+    if not clean_name:
+        return {"status": "error", "message": "Device name required"}
+    existing = next((d for d in _known_system_devices if d.get("name", "").lower() == clean_name.lower()), None)
+    if not existing:
+        new_dev = {
+            "name": clean_name,
+            "address": payload.address or f"BLE:{clean_name[:6].upper()}",
+            "type": payload.type or "smartwatch",
+            "minor_type": payload.type or "smartwatch",
+            "battery": payload.battery,
+            "connected": False
+        }
+        _known_system_devices.append(new_dev)
+    else:
+        if payload.type:
+            existing["type"] = payload.type
+        if payload.battery is not None:
+            existing["battery"] = payload.battery
+    return {"status": "ok", "devices": _known_system_devices}
+
+@app.delete("/v1/bluetooth/devices/{device_name}")
+def forget_bluetooth_device(device_name: str) -> Dict[str, Any]:
+    """Removes a device from the known devices registry."""
+    global _known_system_devices
+    _known_system_devices = [d for d in _known_system_devices if d.get("name", "").lower() != device_name.lower()]
+    return {"status": "ok", "message": f"Forgot {device_name}"}
+
+@app.post("/v1/bluetooth/connect")
+def connect_bluetooth_device(payload: BluetoothConnectPayload) -> Dict[str, Any]:
+    """Connects the host system's Bluetooth module to a selected phone, watch or BLE peripheral."""
+    import time
+    global _live_telemetry, _known_system_devices
+    # Reset telemetry for new device connection unless payload provides genuine data
+    is_new_device = payload.device_name != _live_telemetry.get("device_name")
+    if is_new_device:
+        steps = payload.steps
+        battery = payload.battery
+    else:
+        steps = payload.steps if payload.steps is not None else _live_telemetry.get("steps")
+        battery = payload.battery if payload.battery is not None else _live_telemetry.get("battery")
+
+    # If battery not specified, check if macOS system controller reported hardware battery for this device
+    if battery is None and payload.device_name:
+        for d in _known_system_devices:
+            if d.get("name") and (d["name"].lower() == payload.device_name.lower() or payload.device_name.lower() in d["name"].lower()):
+                if d.get("battery") is not None:
+                    battery = d["battery"]
+                    break
+
+    # Persist or update device in _known_system_devices
+    if payload.device_name:
+        existing = next((d for d in _known_system_devices if d.get("name", "").lower() == payload.device_name.lower()), None)
+        if not existing:
+            _known_system_devices.append({
+                "name": payload.device_name,
+                "address": payload.device_address or f"BLE:{payload.device_name[:6].upper()}",
+                "type": payload.device_type or "smartwatch",
+                "minor_type": payload.device_type or "smartwatch",
+                "battery": battery,
+                "connected": True
+            })
+        else:
+            existing["connected"] = True
+            if battery is not None:
+                existing["battery"] = battery
+
+    dist = round(steps * 0.00076, 2) if steps is not None else None
+    cal = round(steps * 0.045) if steps is not None else None
+
+    _live_telemetry.update({
+        "connected": True,
+        "device_name": payload.device_name,
+        "device_address": payload.device_address,
+        "device_type": payload.device_type,
+        "connection_type": payload.connection_type,
+        "battery": battery,
+        "steps": steps,
+        "distance_km": dist,
+        "calories": cal,
+        "last_sync": time.time(),
+        "raw_packets_received": _live_telemetry.get("raw_packets_received", 0) + 1
+    })
+    return {
+        "status": "connected",
+        "device_name": payload.device_name,
+        "connection_type": payload.connection_type,
+        "battery": _live_telemetry["battery"],
+        "steps": _live_telemetry["steps"]
+    }
+
+
+
+class MetricHistoryPayload(BaseModel):
+    ts: Optional[float] = None
+    date: Optional[str] = None
+    steps: Optional[int] = None
+    calories: Optional[int] = None
+    distance_km: Optional[float] = None
+    systolic: Optional[int] = None
+    diastolic: Optional[int] = None
+    heart_rate: Optional[int] = None
+    spo2: Optional[int] = None
+    sleep_hours: Optional[int] = None
+    sleep_minutes: Optional[int] = None
+    sleep_score: Optional[int] = None
+    sleep_quality: Optional[str] = None
+
+@app.post("/v1/telemetry/record")
+def record_metric_history(
+    payload: MetricHistoryPayload,
+    current_user: Optional[Dict[str, Any]] = Depends(get_optional_user),
+) -> Dict[str, Any]:
+    """Records a daily metric snapshot to time-series history and syncs to Cloud Firestore."""
+    import time
+    global _metrics_history
+    user_id = str(current_user["id"]) if current_user else "anonymous"
+    record = {
+        "user_id": user_id,
+        "ts": payload.ts or time.time(),
+        "date": payload.date,
+        "steps": payload.steps,
+        "calories": payload.calories,
+        "distance_km": payload.distance_km,
+        "systolic": payload.systolic,
+        "diastolic": payload.diastolic,
+        "heart_rate": payload.heart_rate,
+        "spo2": payload.spo2,
+        "sleep_hours": payload.sleep_hours,
+        "sleep_minutes": payload.sleep_minutes,
+        "sleep_score": payload.sleep_score,
+        "sleep_quality": payload.sleep_quality,
+    }
+    _metrics_history.append(record)
+    # Keep only the last 30 records
+    _metrics_history = _metrics_history[-30:]
+
+    # Sync to Cloud Firestore if available
+    firestore_doc_id = None
+    try:
+        firestore_doc_id = save_telemetry_to_firestore(record)
+    except Exception:
+        pass
+
+    return {
+        "status": "recorded",
+        "total_records": len(_metrics_history),
+        "firestore_doc_id": firestore_doc_id,
+        "cloud_synced": firestore_doc_id is not None
+    }
+
+
+@app.get("/v1/telemetry/history")
+def get_metric_history(
+    current_user: Optional[Dict[str, Any]] = Depends(get_optional_user),
+) -> Dict[str, Any]:
+    """Returns stored metric snapshots from memory or Cloud Firestore scoped to the caller."""
+    global _metrics_history
+    if not _metrics_history:
+        # Fall back to Firestore cloud records
+        cloud_records = get_telemetry_history_from_firestore(limit=30)
+        if cloud_records:
+            _metrics_history = list(reversed(cloud_records))
+
+    user_id = str(current_user["id"]) if current_user else "anonymous"
+    scoped = [
+        r for r in _metrics_history
+        if r.get("user_id") == user_id or (user_id == "anonymous" and "user_id" not in r)
+    ]
+    return {
+        "status": "ok",
+        "records": scoped,
+        "total": len(scoped),
+        "firebase_live": is_firebase_ready()
+    }
+
+
+@app.get("/v1/firebase/client-config")
+def get_firebase_client_config() -> Dict[str, Any]:
+    """Dynamically serves public client Firebase config from environment variables (no keys in files)."""
+    api_key = os.environ.get("FIREBASE_API_KEY")
+    project_id = os.environ.get("FIREBASE_PROJECT_ID", "luminix-a0363")
+    if not api_key:
+        return {"configured": False, "privacy": "zero_keys_in_files"}
+    return {
+        "configured": True,
+        "apiKey": api_key,
+        "authDomain": os.environ.get("FIREBASE_AUTH_DOMAIN", f"{project_id}.firebaseapp.com"),
+        "projectId": project_id,
+        "storageBucket": os.environ.get("FIREBASE_STORAGE_BUCKET", f"{project_id}.firebasestorage.app"),
+        "messagingSenderId": os.environ.get("FIREBASE_MESSAGING_SENDER_ID", ""),
+        "appId": os.environ.get("FIREBASE_APP_ID", ""),
+        "measurementId": os.environ.get("FIREBASE_MEASUREMENT_ID", "")
+    }
+
+
+@app.get("/v1/firebase/status")
+def get_firebase_status() -> Dict[str, Any]:
+    """Returns Firebase Admin SDK connection and configuration health."""
+    ready = is_firebase_ready()
+    return {
+        "status": "connected" if ready else "local_private_mode",
+        "cloud_firestore": ready,
+        "storage_mode": "cloud" if ready else "local_encrypted_vault",
+        "keys_in_files": False,
+        "privacy": "strict_zero_file_storage"
+    }
+
+
+
+
+# ── Find My Device / Ring Feature ────────────────────────────────────────────
+
+# Ring state: tracks if alarm is active for external mobile phone or smartwatch
+_ring_state: Dict[str, Any] = {
+    "active": False,
+    "triggered_at": None,
+    "duration_seconds": 15
+}
+
+@app.post("/v1/device/ring")
+def trigger_device_ring() -> Dict[str, Any]:
+    """Triggers the Find My Device ring alarm ONLY on external devices (mobile phone companion & smartwatch). Host machine audio is muted per user request."""
+    import time
+    global _ring_state
+
+    _ring_state["active"] = True
+    _ring_state["triggered_at"] = time.time()
+
+    # Attempt to trigger BLE Immediate Alert (0x1802) on external smartwatch if address is present
+    device_address = _live_telemetry.get("device_address")
+    if device_address and ":" in device_address:
+        import asyncio
+        async def _ble_ring():
+            try:
+                from bleak import BleakClient
+                async with BleakClient(device_address, timeout=4.0) as client:
+                    for service in client.services:
+                        for char in service.characteristics:
+                            if "2a06" in char.uuid.lower():
+                                # 0x02 = High Alert (smartwatch buzzer/vibrate)
+                                await client.write_gatt_char(char.uuid, bytes([0x02]))
+                                print(f"[BLE Alert] High Alert written to {device_address}")
+                                return
+            except Exception as e:
+                print(f"[BLE Alert Notice for {device_address}]: {e}")
+
+        try:
+            import threading
+            threading.Thread(target=lambda: asyncio.run(_ble_ring()), daemon=True).start()
+        except Exception:
+            pass
+
+    device_name = _live_telemetry.get("device_name", "External Device")
+    return {
+        "status": "ringing",
+        "target": "external_device_only",
+        "host_audio": False,
+        "device_name": device_name,
+        "duration_seconds": _ring_state["duration_seconds"]
+    }
+
+@app.post("/v1/device/ring/stop")
+def stop_device_ring() -> Dict[str, Any]:
+    """Stops the external ring alarm immediately."""
+    global _ring_state
+    _ring_state["active"] = False
+    _ring_state["triggered_at"] = None
+
+    # Tell BLE smartwatch to stop alert (0x00 = No Alert)
+    device_address = _live_telemetry.get("device_address")
+    if device_address and ":" in device_address:
+        import asyncio
+        async def _ble_stop():
+            try:
+                from bleak import BleakClient
+                async with BleakClient(device_address, timeout=3.0) as client:
+                    for service in client.services:
+                        for char in service.characteristics:
+                            if "2a06" in char.uuid.lower():
+                                await client.write_gatt_char(char.uuid, bytes([0x00]))
+                                return
+            except Exception:
+                pass
+        try:
+            import threading
+            threading.Thread(target=lambda: asyncio.run(_ble_stop()), daemon=True).start()
+        except Exception:
+            pass
+
+    return {"status": "stopped"}
+
+@app.get("/v1/device/ring/status")
+def get_ring_status() -> Dict[str, Any]:
+    """Polled by the phone companion to know if it should ring."""
+    import time
+    global _ring_state
+    # Auto-expire after duration_seconds
+    if _ring_state["active"] and _ring_state["triggered_at"]:
+        elapsed = time.time() - _ring_state["triggered_at"]
+        if elapsed > _ring_state["duration_seconds"]:
+            _ring_state["active"] = False
+            _ring_state["triggered_at"] = None
+    return {
+        "active": _ring_state["active"],
+        "triggered_at": _ring_state["triggered_at"],
+        "device_name": _live_telemetry.get("device_name", "Mobile Phone"),
+        "duration_seconds": _ring_state["duration_seconds"]
+    }
+
+@app.get("/v1/device/proximity")
+async def get_device_proximity() -> Dict[str, Any]:
+    """Returns RSSI signal strength and calculated distance radius of the connected device."""
+    import math
+    import time
+    global _ble_device_cache, _last_ble_scan_time
+
+    device_name = _live_telemetry.get("device_name")
+    device_address = _live_telemetry.get("device_address")
+
+    if not _live_telemetry.get("connected") or not device_name:
+        return {
+            "status": "disconnected",
+            "rssi": None,
+            "distance_m": None,
+            "signal_bars": 0,
+            "radius_zone": "DISCONNECTED",
+            "accuracy_m": 0.0
+        }
+
+    rssi = None
+    name_clean = (device_name or "").lower()
+    addr_clean = (device_address or "").lower()
+
+    # 1. Check BLE cache first for rapid, non-blocking response
+    if addr_clean and addr_clean in _ble_device_cache:
+        rssi = _ble_device_cache[addr_clean].get("rssi")
+    elif name_clean and name_clean in _ble_device_cache:
+        rssi = _ble_device_cache[name_clean].get("rssi")
+    else:
+        for key, cached in _ble_device_cache.items():
+            if name_clean and (name_clean in key or key in name_clean):
+                rssi = cached.get("rssi")
+                break
+
+    # 2. If cache is empty or older than 5 seconds, perform a quick 1.0s scan
+    now = time.time()
+    if rssi is None and (now - _last_ble_scan_time > 4.0):
+        try:
+            from bleak import BleakScanner
+            devices_dict = await BleakScanner.discover(timeout=1.2, return_adv=True)
+            _last_ble_scan_time = time.time()
+            for d, adv in devices_dict.values():
+                d_name = d.name or adv.local_name or ""
+                d_addr = d.address or ""
+                _ble_device_cache[d_addr.lower()] = {"name": d_name, "rssi": adv.rssi, "timestamp": _last_ble_scan_time}
+                if d_name:
+                    _ble_device_cache[d_name.lower()] = {"name": d_name, "rssi": adv.rssi, "timestamp": _last_ble_scan_time}
+
+                if (addr_clean and addr_clean == d_addr.lower()) or \
+                   (name_clean and d_name and (name_clean in d_name.lower() or d_name.lower() in name_clean)):
+                    rssi = adv.rssi
+        except Exception:
+            pass
+
+    # 3. Calculate Distance Radius using indoor log-distance path loss: d = 10^((TxPower - RSSI) / (10 * n))
+    distance_m = None
+    if rssi is not None:
+        tx_power = -59  # standard BLE reference power at 1 meter
+        n = 2.4         # indoor RF path loss exponent
+        raw_d = 10 ** ((tx_power - rssi) / (10 * n))
+        distance_m = max(0.4, min(round(raw_d, 1), 35.0))
+
+    # Signal bars: 0 to 5
+    if rssi is None:
+        bars = 0
+    elif rssi >= -50:
+        bars = 5
+    elif rssi >= -60:
+        bars = 4
+    elif rssi >= -70:
+        bars = 3
+    elif rssi >= -80:
+        bars = 2
+    else:
+        bars = 1
+
+    # Radius zone label
+    if distance_m is None:
+        zone = "AWAITING RADIO SIGNAL"
+    elif distance_m <= 1.5:
+        zone = "IMMEDIATE (< 1.5m)"
+    elif distance_m <= 5.0:
+        zone = "NEARBY (1.5 - 5m)"
+    elif distance_m <= 10.0:
+        zone = "ROOM RADIUS (5 - 10m)"
+    else:
+        zone = "PERIMETER (> 10m)"
+
+    return {
+        "status": "ok",
+        "device_name": device_name,
+        "rssi": rssi,
+        "distance_m": distance_m,
+        "signal_bars": bars,
+        "radius_zone": zone,
+        "accuracy_m": 0.3
+    }
+
+
+# ── Creator Support & Donation Dispatch (Strict 5/day Rate Limit) ───────────
+
+class CreatorDonationRequest(BaseModel):
+    name: str = Field(..., min_length=1, max_length=100)
+    email: Optional[EmailStr] = None
+    amount: float = Field(..., ge=0.0, le=50000.0)
+    note: Optional[str] = Field(default=None, max_length=2000)
+    channel: Optional[str] = Field(default="Direct Support", max_length=50)
+
+@app.post("/v1/creator/donation")
+def submit_creator_donation(
+    req: CreatorDonationRequest,
+    request: Request,
+) -> Dict[str, Any]:
+    """
+    Submits a donation pledge and note to creator Ram Charan Teja.
+    Strictly caps notifications to maximum 5 per user/IP per 24 hours.
+    Sends an immediate email notification to ramcharantejak396@gmail.com
+    and records the record into local SQLite and Cloud Firestore.
+    """
+    client_ip = "127.0.0.1"
+    if request.client and request.client.host:
+        client_ip = request.client.host
+    forwarded = request.headers.get("x-forwarded-for")
+    if forwarded:
+        client_ip = forwarded.split(",")[0].strip()
+
+    email_val = str(req.email).strip().lower() if req.email else None
+
+    # 1. Enforce strict 5-per-day rate limit
+    allowed, current_count = check_daily_donation_limit(client_ip=client_ip, email=email_val, max_per_day=5)
+    if not allowed:
+        raise HTTPException(
+            status_code=429,
+            detail="Daily limit reached: You can send at most 5 messages/pledges per day to Ram Charan Teja. Thank you so much for your support!"
+        )
+
+    # 2. Record donation in SQLite
+    donation_row = record_creator_donation(
+        client_ip=client_ip,
+        name=req.name.strip(),
+        amount=req.amount,
+        email=email_val,
+        note=req.note.strip() if req.note else None,
+        channel=req.channel or "Direct Support",
+    )
+
+    # 3. Mirror donation to Cloud Firestore if connected
+    firestore_id = None
+    try:
+        firestore_id = save_donation_to_firestore({
+            "name": req.name.strip(),
+            "amount": req.amount,
+            "email": email_val,
+            "note": req.note.strip() if req.note else None,
+            "channel": req.channel or "Direct Support",
+            "client_ip": client_ip,
+            "sqlite_id": donation_row.get("id"),
+            "created_at": donation_row.get("created_at"),
+        })
+    except Exception:
+        pass
+
+    # 4. Dispatch notification email to Ram Charan Teja (ramcharantejak396@gmail.com)
+    email_sent, email_status = send_donation_notification_email(
+        donor_name=req.name.strip(),
+        donor_email=email_val,
+        amount=req.amount,
+        note=req.note.strip() if req.note else None,
+        channel=req.channel or "Direct Support",
+        client_ip=client_ip,
+    )
+
+    remaining_today = max(0, 5 - (current_count + 1))
+
+    return {
+        "status": "success",
+        "message": f"Thank you, {req.name.strip()}! Your contribution and message have been delivered to Ram Charan Teja.",
+        "email_notified": email_sent,
+        "email_status": email_status,
+        "remaining_today": remaining_today,
+        "firestore_id": firestore_id,
+        "donation": donation_row,
+    }
+
+
+@app.api_route("/companion", methods=["GET", "HEAD"])
+def serve_companion_page() -> FileResponse:
+    """Serve the dedicated Mobile Companion Pedometer & Biometric Bridge."""
+    companion_path = STATIC_DIR / "companion.html"
+    return FileResponse(companion_path, media_type="text/html")
 

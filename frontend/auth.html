@@ -2,20 +2,74 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="theme-color" content="#6366f1">
-    <title>Sign In — Luminix</title>
-    <link rel="icon" href="/assets/luminix-logo.svg" type="image/svg+xml">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>Authentication & Security Access — Luminix</title>
+    <meta name="description" content="Access your personalized Luminix health vault. Zero-lag client-side biomechanics, posture telemetry, and workout history.">
+    <meta name="robots" content="noindex, follow">
+    <meta name="theme-color" content="#05070a">
+    <link rel="canonical" href="http://localhost:8000/auth">
+    <link rel="icon" type="image/svg+xml" href="/static/favicon.svg">
+    <link rel="alternate icon" href="/favicon.ico">
+    <link rel="apple-touch-icon" href="/static/favicon.svg">
+
+    <!-- Open Graph -->
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="Authentication & Security Access — Luminix">
+    <meta property="og:description" content="Secure authentication gate for Luminix Autonomous AI Health Sanctuary.">
+    <meta property="og:url" content="http://localhost:8000/auth">
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@1,400;1,600;1,700&family=Fragment+Mono&family=Instrument+Serif:ital@1&family=Inter:wght@300;400;500;600;700&family=Space+Grotesk:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/static/styles.css?v=4.2">
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;600;700&family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="/static/styles.css">
-</head>
-<body class="bg-dark text-white font-['Outfit'] min-h-screen">
-    <main id="main-content" class="min-h-screen"></main>
-    <script src="/static/auth.js"></script>
     <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: { 
+                        display: ['Space Grotesk', 'sans-serif'], 
+                        body: ['Inter', 'sans-serif'], 
+                        serif: ['Instrument Serif', 'Cormorant Garamond', 'serif'],
+                        mono: ['Fragment Mono', 'monospace'] 
+                    },
+                    colors: {
+                        editorial: {
+                            bg: '#05070a',
+                            ink: '#dfe7e0',
+                            sub: '#aab4ad',
+                            dim: '#78837c',
+                            blue: '#1b3cde',
+                            vermilion: '#e0231c'
+                        }
+                    }
+                }
+            }
+        };
+    </script>
+</head>
+<body class="editorial-body min-h-screen">
+    <!-- Global Toast Container -->
+    <div id="toast-container" class="toast-container" aria-live="polite" aria-atomic="true"></div>
+
+    <div id="app-shell" class="auth-locked">
+        <main id="main-content" class="min-h-screen"></main>
+    </div>
+
+    <!-- Firebase Compat SDK (App, Auth, Firestore, Storage) with zero keys in files -->
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-storage-compat.js"></script>
+    <script src="/static/firebase_service.js?v=4.4"></script>
+
+    <script src="/static/auth.js?v=4.4"></script>
+    <script>
+        window.initTheme?.();
         window.luminixAuth.handleTokenFromUrl();
         window.onload = async () => {
+            window.initTheme?.();
             if (window.luminixAuth.isAuthenticated()) {
                 const user = await window.luminixAuth.fetchMe();
                 if (user) {
@@ -23,7 +77,8 @@
                     return;
                 }
             }
-            window.renderAuthView();
+            await window.renderAuthView();
+            window.initTheme?.();
         };
     </script>
 </body>

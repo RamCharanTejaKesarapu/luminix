@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>Privacy Policy — Luminix AI Health & Biomechanical Sanctuary</title>
+    <meta name="description" content="Luminix Zero-Leak Privacy Covenant: Client-side WebAssembly pose inference, encrypted Firebase vault, GDPR and CCPA compliance. Your biometrics never leave your device.">
+    <meta name="keywords" content="Luminix privacy policy, zero-leak privacy, client-side computer vision, biometric security, GDPR compliance, CCPA health privacy">
+    <meta name="author" content="Ram Charan Teja (@LUNO895)">
+    <meta name="robots" content="index, follow">
+    <meta name="theme-color" content="#05070a">
+
+    <!-- Canonical & Favicon -->
+    <link rel="canonical" href="http://localhost:8000/privacy">
+    <link rel="icon" type="image/svg+xml" href="/static/favicon.svg">
+    <link rel="alternate icon" href="/favicon.ico">
+
+    <!-- Open Graph -->
+    <meta property="og:type" content="article">
+    <meta property="og:url" content="http://localhost:8000/privacy">
+    <meta property="og:site_name" content="Luminix">
+    <meta property="og:title" content="Privacy Policy — Luminix Zero-Leak Privacy Covenant">
+    <meta property="og:description" content="Complete privacy architecture: Zero server video uploads, client-side WASM pose inference, and encrypted biometric vaults.">
+    <meta property="og:image" content="http://localhost:8000/assets/chaos_eyes_bg.jpg">
+
+    <!-- Twitter -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:site" content="@LUNO895">
+    <meta name="twitter:title" content="Privacy Policy — Luminix Zero-Leak Privacy Covenant">
+    <meta name="twitter:description" content="Complete privacy architecture: Zero server video uploads, client-side WASM pose inference, and encrypted biometric vaults.">
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@1,400;1,600;1,700&family=Fragment+Mono&family=Instrument+Serif:ital@1&family=Inter:wght@300;400;500;600;700&family=Space+Grotesk:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/static/styles.css?v=4.3">
+
+    <style>
+        .legal-page-wrapper {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: calc(var(--pad) * 2) var(--pad) calc(var(--pad) * 3);
+            position: relative;
+            z-index: 10;
+        }
+        .legal-header {
+            border-bottom: 1px solid var(--border-subtle);
+            padding-bottom: 32px;
+            margin-bottom: 40px;
+        }
+        .legal-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            font-family: var(--font-mono);
+            font-size: 11px;
+            color: var(--vermilion);
+            background: rgba(224, 35, 28, 0.08);
+            border: 1px solid rgba(224, 35, 28, 0.25);
+            padding: 4px 12px;
+            border-radius: 4px;
+            margin-bottom: 16px;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+        }
+        .legal-pulse-dot {
+            width: 7px;
+            height: 7px;
+            border-radius: 50%;
+            background: var(--vermilion);
+            box-shadow: 0 0 8px var(--vermilion);
+            animation: pulse-badge 2s infinite ease-in-out;
+        }
+        .legal-title {
+            font-family: var(--font-display);
+            font-size: clamp(2rem, 4vw, 3rem);
+            font-weight: 800;
+            color: var(--bone);
+            letter-spacing: -0.02em;
+            line-height: 1.1;
+            margin-bottom: 12px;
+        }
+        .legal-subtitle {
+            font-family: var(--font-serif);
+            font-style: italic;
+            font-size: 1.25rem;
+            color: var(--bone-dim);
+            line-height: 1.5;
+        }
+        .legal-meta {
+            display: flex;
+            gap: 24px;
+            margin-top: 20px;
+            font-family: var(--font-mono);
+            font-size: 11px;
+            color: var(--text-dim);
+            flex-wrap: wrap;
+        }
+        .legal-card {
+            background: rgba(14, 19, 25, 0.7);
+            backdrop-filter: blur(12px);
+            border: 1px solid var(--border-subtle);
+            border-radius: 8px;
+            padding: 28px;
+            margin-bottom: 28px;
+            transition: border-color 0.2s ease;
+        }
+        .legal-card:hover {
+            border-color: var(--border-medium);
+        }
+        .legal-card h2 {
+            font-family: var(--font-display);
+            font-size: 1.35rem;
+            font-weight: 700;
+            color: var(--bone);
+            margin-bottom: 14px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .legal-card h2 span.section-num {
+            font-family: var(--font-mono);
+            font-size: 12px;
+            color: var(--vermilion);
+            background: rgba(224, 35, 28, 0.1);
+            padding: 2px 8px;
+            border-radius: 3px;
+        }
+        .legal-card p {
+            color: var(--text-secondary);
+            font-size: 0.92rem;
+            line-height: 1.7;
+            margin-bottom: 14px;
+        }
+        .legal-card p:last-child {
+            margin-bottom: 0;
+        }
+        .legal-card ul {
+            list-style: none;
+            padding: 0;
+            margin: 14px 0;
+        }
+        .legal-card li {
+            position: relative;
+            padding-left: 22px;
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            line-height: 1.6;
+            margin-bottom: 8px;
+        }
+        .legal-card li::before {
+            content: "✦";
+            position: absolute;
+            left: 0;
+            color: var(--vermilion);
+            font-size: 11px;
+        }
+        .covenant-highlight-box {
+            background: rgba(224, 35, 28, 0.05);
+            border-left: 3px solid var(--vermilion);
+            padding: 16px 20px;
+            border-radius: 0 6px 6px 0;
+            margin: 20px 0;
+        }
+        .covenant-highlight-box p {
+            color: var(--bone);
+            font-family: var(--font-mono);
+            font-size: 12px;
+            line-height: 1.6;
+            margin: 0;
+        }
+        .back-nav-bar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 32px;
+        }
+    </style>
+</head>
+<body class="editorial-body">
+    <div id="vignette"></div>
+    <div id="grain"></div>
+
+    <div class="legal-page-wrapper">
+        <div class="back-nav-bar">
+            <a href="/" class="btn-editorial-secondary" style="font-size:12px; padding:6px 14px; text-decoration:none;">
+                ← RETURN TO SANCTUARY
+            </a>
+            <span class="font-mono text-xs text-[var(--bone-dim)]">LUMINIX SYSTEM COVENANT // v4.3</span>
+        </div>
+
+        <header class="legal-header">
+            <div class="legal-badge">
+                <span class="legal-pulse-dot"></span>
+                ZERO-LEAK PRIVACY COVENANT & TELEMETRY CHARTER
+            </div>
+            <h1 class="legal-title">Privacy Policy & Biometric Architecture</h1>
+            <p class="legal-subtitle">
+                "Where stillness reveals the unseen — and your biological telemetry remains strictly within your dominion."
+            </p>
+            <div class="legal-meta">
+                <span>EFFECTIVE DATE: SEPTEMBER 6, 2026</span>
+                <span>JURISDICTION: GLOBAL (GDPR, CCPA, CPRA COMPLIANT)</span>
+                <span>DATA CLASSIFICATION: ENCRYPTED AT REST & IN TRANSIT</span>
+            </div>
+        </header>
+
+        <div class="covenant-highlight-box">
+            <p>
+                🔒 <strong>THE ZERO-LEAK SOVEREIGNTY GUARANTEE:</strong> Luminix was engineered by Ram Charan Teja with a core tenet: 
+                <strong>your camera streams, joint vectors, and biometric indicators never leave your device without your explicit cryptographic authorization.</strong> 
+                We do not sell, rent, monetize, or harvest personal health data for marketing or external advertising under any condition.
+            </p>
+        </div>
+
+        <section class="legal-card">
+            <h2><span class="section-num">01</span> Client-Side WebAssembly Computer Vision</h2>
+            <p>
+                Luminix executes 100% of its MediaPipe machine learning inference locally inside your browser via WebAssembly (WASM) and WebGL acceleration. 
+                When you grant camera access for pose detection, 17 yoga asanas, or the adaptive gym state machine:
+            </p>
+            <ul>
+                <li>Raw camera frames are processed entirely in transient device RAM at 60 FPS.</li>
+                <li>No video stream, recorded clip, or photographic frame is ever transmitted to external servers.</li>
+                <li>Camera access terminates instantly the moment you navigate away, stop the workout, or close the browser tab.</li>
+                <li>Camera permissions are strictly scoped to <code>(self)</code> via HTTP Permissions-Policy headers.</li>
+            </ul>
+        </section>
+
+        <section class="legal-card">
+            <h2><span class="section-num">02</span> Data We Collect & Storage Architecture</h2>
+            <p>
+                When you opt to create a Luminix account or personalize your biomechanical baseline, we store only the minimal necessary telemetry:
+            </p>
+            <ul>
+                <li><strong>Identity Information:</strong> Name/codename, email address, encrypted password hash (Argon2 / bcrypt), and optional avatar URL.</li>
+                <li><strong>Biometric Baselines:</strong> Age, height, body weight, and primary fitness objective — utilized exclusively for Mifflin-St Jeor metabolic calculations.</li>
+                <li><strong>Workout Logs:</strong> Completed repetition counts, sets, exercise timestamps, and yoga pose hold durations.</li>
+                <li><strong>Wearable Telemetry:</strong> Heart rate, blood oxygen (SpO2), systolic/diastolic blood pressure, and step counts if you sync a device via the Wearable Hub.</li>
+            </ul>
+            <p>
+                All cloud backups are synchronized via your private Firebase instance with AES-256 encryption. For offline users, telemetry resides exclusively in encrypted local browser storage.
+            </p>
+        </section>
+
+        <section class="legal-card">
+            <h2><span class="section-num">03</span> Rate Limiting & Web Application Firewall (WAF)</h2>
+            <p>
+                To defend against credential stuffing, brute-force incursions, and automated scrapers, the Luminix security gateway enforces:
+            </p>
+            <ul>
+                <li><strong>Authentication Shield:</strong> Strict sliding-window rate limit of <strong>maximum 5 attempts per 15-minute window</strong> on all authentication endpoints.</li>
+                <li><strong>Universal API Limiting:</strong> 60 requests per minute ceiling on telemetry and computation endpoints.</li>
+                <li><strong>Payload Size Guard:</strong> Immediate HTTP 413 rejection for request payloads exceeding 1MB (15MB for authorized media exports).</li>
+                <li><strong>Threat Sanitization:</strong> Automatic dropping of payloads containing SQL injection, XSS signatures, or null bytes.</li>
+            </ul>
+        </section>
+
+        <section class="legal-card">
+            <h2><span class="section-num">04</span> Cookies & Telemetry Preferences</h2>
+            <p>
+                Luminix uses minimal, privacy-respecting cookies and local storage tokens:
+            </p>
+            <ul>
+                <li><strong>Essential Cookies:</strong> JWT authentication tokens and session security state necessary for platform login.</li>
+                <li><strong>Functional Storage:</strong> User preferences (white/dark mode theme, metric/imperial units).</li>
+                <li><strong>Analytics Telemetry:</strong> Optional client-side performance metrics. Telemetry is completely disabled if you select "Essential Only" in the Cookie Consent Banner or enable "Do Not Track" (DNT) in your browser.</li>
+            </ul>
+        </section>
+
+        <section class="legal-card">
+            <h2><span class="section-num">05</span> Your Global Privacy Rights (GDPR & CCPA)</h2>
+            <p>
+                Regardless of your physical location, you retain total dominion over your biological data:
+            </p>
+            <ul>
+                <li><strong>Right of Access & Portability:</strong> Export your full biometric history at any time via Luna AI Clinical PDF Export.</li>
+                <li><strong>Right to Rectification:</strong> Update your baseline metrics instantly in the profile dashboard.</li>
+                <li><strong>Right to Erasure ("Right to be Forgotten"):</strong> Purge your entire profile, telemetry logs, and wearable records with one click in the security settings.</li>
+                <li><strong>Non-Discrimination:</strong> Platform features remain 100% accessible even if you decline non-essential cookies.</li>
+            </ul>
+        </section>
+
+        <section class="legal-card">
+            <h2><span class="section-num">06</span> Architectural Contact & Data Protection Officer</h2>
+            <p>
+                Luminix is designed and maintained by Ram Charan Teja (@LUNO895). For security audits, vulnerability reports, or data deletion inquiries:
+            </p>
+            <div style="font-family:var(--font-mono); font-size:12px; color:var(--bone); background:rgba(255,255,255,0.03); padding:14px; border-radius:4px; border:1px solid var(--border-subtle); margin-top:12px;">
+                <div>ARCHITECT: Ram Charan Teja</div>
+                <div>GITHUB: <a href="https://github.com/LUNO895" target="_blank" style="color:var(--vermilion); text-decoration:underline;">@LUNO895</a></div>
+                <div>ENCRYPTED INQUIRIES: <a href="mailto:ramcharantejak396@gmail.com" style="color:var(--vermilion); text-decoration:underline;">ramcharantejak396@gmail.com</a></div>
+                <div>BASE OF OPERATIONS: Hyderabad, India</div>
+            </div>
+        </section>
+
+        <footer style="text-align:center; padding-top:20px; border-top:1px solid var(--border-subtle); font-family:var(--font-mono); font-size:11px; color:var(--text-dim);">
+            <div>© 2026 LUMINIX — AUTONOMOUS BIOMECHANICAL SANCTUARY • ALL RIGHTS RESERVED</div>
+            <div style="display:flex; justify-content:center; gap:16px; margin-top:8px;">
+                <a href="/" style="color:var(--bone-dim); text-decoration:underline;">Sanctuary</a>
+                <a href="/privacy" style="color:var(--bone-dim); text-decoration:underline;">Privacy Policy</a>
+                <a href="/terms" style="color:var(--bone-dim); text-decoration:underline;">Terms of Service</a>
+                <a href="/accessibility" style="color:var(--bone-dim); text-decoration:underline;">Accessibility</a>
+            </div>
+            <div class="foot-a11y-statement" style="margin-top:12px; padding-top:8px;">
+                ♿ <strong>ACCESSIBILITY STATEMENT:</strong> Luminix conforms to WCAG 2.1 Level AA standards with comprehensive keyboard navigation, semantic ARIA landmarks, high-contrast typography, and reduced-motion compliance. <a href="/accessibility" style="color:var(--bone); text-decoration:underline;">Read Full Statement &rarr;</a>
+            </div>
+        </footer>
+    </div>
+</body>
+</html>

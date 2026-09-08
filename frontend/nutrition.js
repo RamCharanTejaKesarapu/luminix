@@ -237,35 +237,70 @@ window.renderBMIView = function(container) {
     const dispInches = totalInches % 12;
 
     container.innerHTML = `
+        <style>
+            .metric-control-box input,
+            .metric-control-box select {
+                background: #0c1017 !important;
+                background-color: #0c1017 !important;
+                border: 1px solid rgba(223, 231, 224, 0.22) !important;
+                color: #ffffff !important;
+                border-radius: 8px !important;
+                font-family: var(--font-body, system-ui, sans-serif) !important;
+                font-size: 0.95rem !important;
+                font-weight: 600 !important;
+                outline: none !important;
+                transition: border-color 0.2s ease, box-shadow 0.2s ease !important;
+            }
+            .metric-control-box input:focus,
+            .metric-control-box select:focus {
+                border-color: #e0231c !important;
+                box-shadow: 0 0 14px rgba(224, 35, 28, 0.45) !important;
+                background: #121820 !important;
+                background-color: #121820 !important;
+                color: #ffffff !important;
+            }
+            .metric-control-box select option {
+                background: #0c1017 !important;
+                background-color: #0c1017 !important;
+                color: #dfe7e0 !important;
+            }
+            .metric-control-box label {
+                color: #aab4ad !important;
+            }
+        </style>
+
         <!-- Hero Header -->
-        <div class="mb-6 relative overflow-hidden p-8 rounded-xl glass-card" style="background: linear-gradient(90deg, var(--black-1) 30%, transparent), url('/assets/media_1787652701395.jpg') center/cover; background-blend-mode: multiply; background-position: center 25%;">
+        <div class="mb-6 relative overflow-hidden p-8 rounded-xl glass-card" style="background: linear-gradient(90deg, var(--black-1) 30%, transparent), url('/assets/Toji fushiguro (2).jpeg') center/cover; background-blend-mode: multiply; background-position: center 25%;">
             <div class="relative z-10">
-                <div class="text-cyan mb-2" style="font-size: 0.65rem; font-weight: 700; letter-spacing: 0.2em; text-transform: uppercase;">MODULE // METABOLIC INTELLIGENCE</div>
-                <h2 style="font-family:var(--font-display);font-size:3rem;font-weight:800;text-transform:uppercase;line-height:1;margin-bottom:0.5rem">BMI & <span class="text-yellow" style="font-size:0.5em; letter-spacing:0.1em;">CALCULATOR</span></h2>
-                <p style="color:var(--text-secondary);font-size:0.85rem; max-width: 500px;">Compute Body Mass Index, BMR (Mifflin & Harris-Benedict), TDEE, and optimal macro distribution with precision.</p>
+                <div class="hero-category-tag mb-2"><span class="w-2 h-2 rounded-full bg-[var(--vermilion)] inline-block shadow-[0_0_8px_var(--vermilion)] mr-1.5"></span> MODULE // METABOLIC INTELLIGENCE</div>
+                <h2 class="module-title-large">BMI & <span class="text-vermilion font-display font-extrabold">CALCULATOR.</span></h2>
+                <p style="color:var(--bone-dim);font-size:0.85rem; max-width: 500px;">Compute Body Mass Index, BMR (Mifflin & Harris-Benedict), TDEE, and optimal macro distribution with precision.</p>
             </div>
         </div>
 
         <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 mb-8">
             <!-- Left: Interactive Form Controls (5 cols) -->
-            <div class="lg:col-span-5 glass-card p-6 rounded-xl space-y-5">
+            <div class="lg:col-span-5 glass-card p-6 rounded-xl space-y-5 metric-control-box">
                 <div class="flex items-center justify-between border-b border-white/10 pb-4">
-                    <h3 style="font-family:var(--font-display);font-weight:700;font-size:1.15rem;color:var(--white)">METRIC CONTROLS</h3>
+                    <h3 class="font-display font-extrabold text-[var(--vermilion)] tracking-wider text-base flex items-center gap-2" style="text-shadow: 0 0 16px rgba(224, 35, 28, 0.45);">
+                        <span class="w-2 h-2 rounded-full bg-[var(--vermilion)] inline-block shadow-[0_0_8px_var(--vermilion)]"></span>
+                        METRIC CONTROLS
+                    </h3>
                     <div class="flex items-center bg-black/40 p-1 rounded-lg border border-white/10">
-                        <button onclick="setUnits('metric')" class="px-3 py-1 text-xs rounded font-bold transition-all ${!isImperial ? 'bg-cyan text-black' : 'text-secondary'}">Metric (kg/cm)</button>
-                        <button onclick="setUnits('imperial')" class="px-3 py-1 text-xs rounded font-bold transition-all ${isImperial ? 'bg-cyan text-black' : 'text-secondary'}">Imperial (lbs/ft)</button>
+                        <button onclick="setUnits('metric')" class="px-3 py-1 text-xs rounded font-bold transition-all ${!isImperial ? 'bg-[var(--vermilion)] text-white shadow-[0_0_10px_rgba(224,35,28,0.4)]' : 'text-[var(--bone-dim)] hover:text-white'}">Metric (kg/cm)</button>
+                        <button onclick="setUnits('imperial')" class="px-3 py-1 text-xs rounded font-bold transition-all ${isImperial ? 'bg-[var(--vermilion)] text-white shadow-[0_0_10px_rgba(224,35,28,0.4)]' : 'text-[var(--bone-dim)] hover:text-white'}">Imperial (lbs/ft)</button>
                     </div>
                 </div>
 
                 <!-- Age & Gender -->
                 <div class="grid grid-cols-2 gap-4">
                     <div>
-                        <label class="text-xs text-dim block mb-1 font-semibold uppercase">Age (Years)</label>
-                        <input type="number" id="inp-age" min="10" max="100" value="${healthProfile.age}" class="auth-input w-full" oninput="onBMIParamChange()">
+                        <label class="text-xs text-[var(--bone-dim)] block mb-1 font-semibold uppercase tracking-wider">Age (Years)</label>
+                        <input type="number" id="inp-age" min="10" max="100" value="${healthProfile.age}" style="background:#0c1017 !important; color:#ffffff !important; border:1px solid rgba(223,231,224,0.22) !important; padding:0.65rem 0.85rem !important; border-radius:8px !important; font-weight:600 !important;" class="w-full" oninput="onBMIParamChange()">
                     </div>
                     <div>
-                        <label class="text-xs text-dim block mb-1 font-semibold uppercase">Biological Sex</label>
-                        <select id="inp-gender" class="auth-input w-full" onchange="onBMIParamChange()">
+                        <label class="text-xs text-[var(--bone-dim)] block mb-1 font-semibold uppercase tracking-wider">Biological Sex</label>
+                        <select id="inp-gender" style="background:#0c1017 !important; color:#ffffff !important; border:1px solid rgba(223,231,224,0.22) !important; padding:0.65rem 0.85rem !important; border-radius:8px !important; font-weight:600 !important;" class="w-full" onchange="onBMIParamChange()">
                             <option value="male" ${healthProfile.gender === 'male' ? 'selected' : ''}>Male</option>
                             <option value="female" ${healthProfile.gender === 'female' ? 'selected' : ''}>Female</option>
                             <option value="other" ${healthProfile.gender === 'other' ? 'selected' : ''}>Other</option>
@@ -277,23 +312,23 @@ window.renderBMIView = function(container) {
                 ${!isImperial ? `
                     <div>
                         <div class="flex justify-between text-xs mb-1">
-                            <span class="text-dim font-semibold uppercase">Height (cm)</span>
-                            <span class="text-cyan font-bold" id="val-height-cm">${healthProfile.height_cm} cm</span>
+                            <span class="text-[var(--bone-dim)] font-semibold uppercase tracking-wider">Height (cm)</span>
+                            <span class="text-[var(--vermilion)] font-bold font-mono" id="val-height-cm">${healthProfile.height_cm} cm</span>
                         </div>
-                        <input type="range" id="range-height-cm" min="120" max="230" value="${healthProfile.height_cm}" class="w-full accent-cyan" oninput="syncHeightMetric(this.value)">
-                        <input type="number" id="inp-height-cm" min="120" max="230" value="${healthProfile.height_cm}" class="auth-input w-full mt-2" oninput="syncHeightMetric(this.value)">
+                        <input type="range" id="range-height-cm" min="120" max="230" value="${healthProfile.height_cm}" class="w-full accent-[var(--vermilion)]" oninput="syncHeightMetric(this.value)">
+                        <input type="number" id="inp-height-cm" min="120" max="230" value="${healthProfile.height_cm}" style="background:#0c1017 !important; color:#ffffff !important; border:1px solid rgba(223,231,224,0.22) !important; padding:0.65rem 0.85rem !important; border-radius:8px !important; font-weight:600 !important;" class="w-full mt-2" oninput="syncHeightMetric(this.value)">
                     </div>
                 ` : `
                     <div>
-                        <span class="text-dim font-semibold uppercase text-xs block mb-1">Height (Feet & Inches)</span>
+                        <span class="text-[var(--bone-dim)] font-semibold uppercase text-xs block mb-1 tracking-wider">Height (Feet & Inches)</span>
                         <div class="grid grid-cols-2 gap-3">
                             <div>
-                                <label class="text-xs text-dim">Feet</label>
-                                <input type="number" id="inp-height-ft" min="3" max="8" value="${dispFeet}" class="auth-input w-full" oninput="syncHeightImperial()">
+                                <label class="text-xs text-[var(--bone-dim)]">Feet</label>
+                                <input type="number" id="inp-height-ft" min="3" max="8" value="${dispFeet}" style="background:#0c1017 !important; color:#ffffff !important; border:1px solid rgba(223,231,224,0.22) !important; padding:0.65rem 0.85rem !important; border-radius:8px !important; font-weight:600 !important;" class="w-full" oninput="syncHeightImperial()">
                             </div>
                             <div>
-                                <label class="text-xs text-dim">Inches</label>
-                                <input type="number" id="inp-height-in" min="0" max="11" value="${dispInches}" class="auth-input w-full" oninput="syncHeightImperial()">
+                                <label class="text-xs text-[var(--bone-dim)]">Inches</label>
+                                <input type="number" id="inp-height-in" min="0" max="11" value="${dispInches}" style="background:#0c1017 !important; color:#ffffff !important; border:1px solid rgba(223,231,224,0.22) !important; padding:0.65rem 0.85rem !important; border-radius:8px !important; font-weight:600 !important;" class="w-full" oninput="syncHeightImperial()">
                             </div>
                         </div>
                     </div>
@@ -303,27 +338,27 @@ window.renderBMIView = function(container) {
                 ${!isImperial ? `
                     <div>
                         <div class="flex justify-between text-xs mb-1">
-                            <span class="text-dim font-semibold uppercase">Weight (kg)</span>
-                            <span class="text-yellow font-bold" id="val-weight-kg">${healthProfile.weight_kg} kg</span>
+                            <span class="text-[var(--bone-dim)] font-semibold uppercase tracking-wider">Weight (kg)</span>
+                            <span class="text-[var(--ember)] font-bold font-mono" id="val-weight-kg">${healthProfile.weight_kg} kg</span>
                         </div>
-                        <input type="range" id="range-weight-kg" min="30" max="200" step="0.5" value="${healthProfile.weight_kg}" class="w-full accent-yellow" oninput="syncWeightMetric(this.value)">
-                        <input type="number" id="inp-weight-kg" min="30" max="200" step="0.1" value="${healthProfile.weight_kg}" class="auth-input w-full mt-2" oninput="syncWeightMetric(this.value)">
+                        <input type="range" id="range-weight-kg" min="30" max="200" step="0.5" value="${healthProfile.weight_kg}" class="w-full accent-[var(--ember)]" oninput="syncWeightMetric(this.value)">
+                        <input type="number" id="inp-weight-kg" min="30" max="200" step="0.1" value="${healthProfile.weight_kg}" style="background:#0c1017 !important; color:#ffffff !important; border:1px solid rgba(223,231,224,0.22) !important; padding:0.65rem 0.85rem !important; border-radius:8px !important; font-weight:600 !important;" class="w-full mt-2" oninput="syncWeightMetric(this.value)">
                     </div>
                 ` : `
                     <div>
                         <div class="flex justify-between text-xs mb-1">
-                            <span class="text-dim font-semibold uppercase">Weight (lbs)</span>
-                            <span class="text-yellow font-bold" id="val-weight-lbs">${dispWeight} lbs</span>
+                            <span class="text-[var(--bone-dim)] font-semibold uppercase tracking-wider">Weight (lbs)</span>
+                            <span class="text-[var(--ember)] font-bold font-mono" id="val-weight-lbs">${dispWeight} lbs</span>
                         </div>
-                        <input type="range" id="range-weight-lbs" min="65" max="450" step="1" value="${dispWeight}" class="w-full accent-yellow" oninput="syncWeightImperial(this.value)">
-                        <input type="number" id="inp-weight-lbs" min="65" max="450" step="1" value="${dispWeight}" class="auth-input w-full mt-2" oninput="syncWeightImperial(this.value)">
+                        <input type="range" id="range-weight-lbs" min="65" max="450" step="1" value="${dispWeight}" class="w-full accent-[var(--ember)]" oninput="syncWeightImperial(this.value)">
+                        <input type="number" id="inp-weight-lbs" min="65" max="450" step="1" value="${dispWeight}" style="background:#0c1017 !important; color:#ffffff !important; border:1px solid rgba(223,231,224,0.22) !important; padding:0.65rem 0.85rem !important; border-radius:8px !important; font-weight:600 !important;" class="w-full mt-2" oninput="syncWeightImperial(this.value)">
                     </div>
                 `}
 
                 <!-- Activity Level -->
                 <div>
-                    <label class="text-xs text-dim block mb-1 font-semibold uppercase">Daily Activity Factor</label>
-                    <select id="inp-activity" class="auth-input w-full" onchange="onBMIParamChange()">
+                    <label class="text-xs text-[var(--bone-dim)] block mb-1 font-semibold uppercase tracking-wider">Daily Activity Factor</label>
+                    <select id="inp-activity" style="background:#0c1017 !important; color:#ffffff !important; border:1px solid rgba(223,231,224,0.22) !important; padding:0.65rem 0.85rem !important; border-radius:8px !important; font-weight:600 !important;" class="w-full" onchange="onBMIParamChange()">
                         <option value="sedentary" ${healthProfile.activity_level === 'sedentary' ? 'selected' : ''}>Sedentary (Little or no exercise, desk job)</option>
                         <option value="light" ${healthProfile.activity_level === 'light' ? 'selected' : ''}>Lightly Active (Exercise 1-3 days/week)</option>
                         <option value="moderate" ${healthProfile.activity_level === 'moderate' ? 'selected' : ''}>Moderately Active (Exercise 3-5 days/week)</option>
@@ -335,16 +370,16 @@ window.renderBMIView = function(container) {
                 <!-- Fitness Goal -->
                 <div class="grid grid-cols-2 gap-4">
                     <div>
-                        <label class="text-xs text-dim block mb-1 font-semibold uppercase">Target Goal</label>
-                        <select id="inp-goal" class="auth-input w-full" onchange="onBMIParamChange()">
+                        <label class="text-xs text-[var(--bone-dim)] block mb-1 font-semibold uppercase tracking-wider">Target Goal</label>
+                        <select id="inp-goal" style="background:#0c1017 !important; color:#ffffff !important; border:1px solid rgba(223,231,224,0.22) !important; padding:0.65rem 0.85rem !important; border-radius:8px !important; font-weight:600 !important;" class="w-full" onchange="onBMIParamChange()">
                             <option value="fat_loss" ${healthProfile.fitness_goal === 'fat_loss' ? 'selected' : ''}>Fat Loss (-18% Deficit)</option>
                             <option value="maintenance" ${healthProfile.fitness_goal === 'maintenance' ? 'selected' : ''}>Maintenance (Recomp)</option>
                             <option value="muscle_gain" ${healthProfile.fitness_goal === 'muscle_gain' ? 'selected' : ''}>Muscle Gain (+12% Surplus)</option>
                         </select>
                     </div>
                     <div>
-                        <label class="text-xs text-dim block mb-1 font-semibold uppercase">Diet Type</label>
-                        <select id="inp-diet" class="auth-input w-full" onchange="onBMIParamChange()">
+                        <label class="text-xs text-[var(--bone-dim)] block mb-1 font-semibold uppercase tracking-wider">Diet Type</label>
+                        <select id="inp-diet" style="background:#0c1017 !important; color:#ffffff !important; border:1px solid rgba(223,231,224,0.22) !important; padding:0.65rem 0.85rem !important; border-radius:8px !important; font-weight:600 !important;" class="w-full" onchange="onBMIParamChange()">
                             <option value="omnivore" ${healthProfile.diet_preference === 'omnivore' ? 'selected' : ''}>Omnivore / Standard</option>
                             <option value="vegetarian" ${healthProfile.diet_preference === 'vegetarian' ? 'selected' : ''}>Vegetarian</option>
                             <option value="vegan" ${healthProfile.diet_preference === 'vegan' ? 'selected' : ''}>Vegan (Plant-Based)</option>
@@ -355,8 +390,8 @@ window.renderBMIView = function(container) {
 
                 <!-- Action Buttons -->
                 <div class="pt-2 flex gap-3">
-                    <button onclick="saveBMILog()" class="btn-primary flex-1 py-3 text-xs tracking-wider uppercase">
-                        Save to Health Profile
+                    <button onclick="saveBMILog()" class="btn-editorial-primary w-full py-3 text-xs tracking-wider uppercase font-mono">
+                        Save to Health Profile →
                     </button>
                     <button onclick="applyTargetsToTracker()" class="btn-secondary py-3 text-xs tracking-wider uppercase text-yellow">
                         Sync To Food Tracker →
@@ -787,7 +822,7 @@ window.renderFoodTrackerView = function(container) {
 
     container.innerHTML = `
         <!-- Hero Header -->
-        <div class="mb-6 relative overflow-hidden p-8 rounded-xl glass-card" style="background: linear-gradient(90deg, var(--black-1) 30%, transparent), url('/assets/media_1787652701429.jpg') center/cover; background-blend-mode: multiply; background-position: center 30%;">
+        <div class="mb-6 relative overflow-hidden p-8 rounded-xl glass-card" style="background: linear-gradient(90deg, var(--black-1) 30%, transparent), url('/assets/Toji Fushiguro (1).jpeg') center/cover; background-blend-mode: multiply; background-position: center 20%;">
             <div class="relative z-10">
                 <div class="text-cyan mb-2" style="font-size: 0.65rem; font-weight: 700; letter-spacing: 0.2em; text-transform: uppercase;">MODULE // NUTRITION & FUEL</div>
                 <h2 style="font-family:var(--font-display);font-size:3rem;font-weight:800;text-transform:uppercase;line-height:1;margin-bottom:0.5rem">Food <span class="text-yellow" style="font-size:0.5em; letter-spacing:0.1em;">TRACKER</span></h2>
@@ -1078,8 +1113,11 @@ window.openAddFoodModal = function(mealType) {
                 <button id="tab-btn-db" onclick="switchFoodModalTab('db')" class="btn-primary flex-1 text-xs py-2 uppercase font-bold text-black">
                     🔍 Search Database
                 </button>
+                <button id="tab-btn-ai" onclick="switchFoodModalTab('ai')" class="btn-secondary flex-1 text-xs py-2 uppercase font-bold">
+                    ✨ AI Analyzer
+                </button>
                 <button id="tab-btn-custom" onclick="switchFoodModalTab('custom')" class="btn-secondary flex-1 text-xs py-2 uppercase font-bold">
-                    ✏️ Custom Entry
+                    ✏️ Manual Entry
                 </button>
             </div>
 
@@ -1122,7 +1160,45 @@ window.openAddFoodModal = function(mealType) {
                 </button>
             </div>
 
-            <!-- Panel 2: Custom Food Entry -->
+            <!-- Panel 2: AI Food Analyzer -->
+            <div id="panel-food-ai" class="hidden space-y-4 pr-1">
+                <div>
+                    <label class="text-xs text-dim block mb-1 uppercase font-semibold">Describe Any Food or Meal</label>
+                    <textarea id="ai-food-query" rows="2" placeholder="e.g. 2 grilled chicken tacos with avocado salsa, or 1 bowl oatmeal with whey protein and berries" class="auth-input w-full text-xs p-3"></textarea>
+                </div>
+
+                <button onclick="analyzeFoodWithAI()" id="ai-analyze-btn" class="btn-primary w-full py-2.5 text-xs tracking-wider uppercase font-bold text-black">
+                    ✨ Analyze Meal with Luna AI
+                </button>
+
+                <div id="ai-analysis-result" class="hidden bg-black/40 p-4 rounded-xl border border-cyan/30 space-y-3">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <span class="text-xs font-bold text-white block" id="ai-res-name">--</span>
+                            <span class="text-[10px] text-dim" id="ai-res-serving">1 serving</span>
+                        </div>
+                        <div class="text-right">
+                            <span class="text-lg font-black text-yellow" id="ai-res-kcal">0 kcal</span>
+                            <span class="badge badge-cyan text-[10px] block mt-0.5" id="ai-res-score">Health: 85/100</span>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-4 gap-2 text-center bg-black/60 p-2 rounded-lg border border-white/5 text-xs">
+                        <div><span class="text-dim text-[10px] block">PROTEIN</span><b class="text-white" id="ai-res-p">0g</b></div>
+                        <div><span class="text-dim text-[10px] block">CARBS</span><b class="text-white" id="ai-res-c">0g</b></div>
+                        <div><span class="text-dim text-[10px] block">FAT</span><b class="text-white" id="ai-res-f">0g</b></div>
+                        <div><span class="text-dim text-[10px] block">FIBER</span><b class="text-cyan" id="ai-res-fiber">0g</b></div>
+                    </div>
+
+                    <p class="text-[11px] text-secondary leading-relaxed" id="ai-res-notes"></p>
+
+                    <button onclick="commitAddAiAnalyzedFood()" class="btn-editorial-primary w-full py-2 text-xs uppercase font-bold">
+                        + Add This Analyzed Meal to ${mealType.toUpperCase()}
+                    </button>
+                </div>
+            </div>
+
+            <!-- Panel 3: Custom Food Entry -->
             <div id="panel-food-custom" class="hidden space-y-4 pr-1">
                 <div>
                     <label class="text-xs text-dim block mb-1 uppercase font-semibold">Item Name</label>
@@ -1168,22 +1244,103 @@ window.closeAddFoodModal = function() {
     if (modal) modal.classList.add('hidden');
 };
 
+let currentAiAnalyzedItem = null;
+
+window.analyzeFoodWithAI = async function() {
+    const inp = document.getElementById('ai-food-query');
+    const query = inp?.value?.trim();
+    if (!query) return;
+
+    const btn = document.getElementById('ai-analyze-btn');
+    const resultBox = document.getElementById('ai-analysis-result');
+    if (btn) btn.textContent = '✨ Luna AI is analyzing...';
+
+    try {
+        const res = await fetch('/v1/nutrition/ai-food-analysis', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ food_query: query })
+        });
+        const data = await res.json();
+        const a = data.analysis;
+        currentAiAnalyzedItem = a;
+
+        if (resultBox && a) {
+            resultBox.classList.remove('hidden');
+            const nameEl = document.getElementById('ai-res-name');
+            const servingEl = document.getElementById('ai-res-serving');
+            const kcalEl = document.getElementById('ai-res-kcal');
+            const scoreEl = document.getElementById('ai-res-score');
+            const pEl = document.getElementById('ai-res-p');
+            const cEl = document.getElementById('ai-res-c');
+            const fEl = document.getElementById('ai-res-f');
+            const fiberEl = document.getElementById('ai-res-fiber');
+            const notesEl = document.getElementById('ai-res-notes');
+
+            if (nameEl) nameEl.textContent = a.food_name || query;
+            if (servingEl) servingEl.textContent = a.estimated_serving || '1 portion';
+            if (kcalEl) kcalEl.textContent = `${a.calories} kcal`;
+            if (scoreEl) scoreEl.textContent = `Health Score: ${a.health_score || 80}/100`;
+            if (pEl) pEl.textContent = `${a.protein_g}g`;
+            if (cEl) cEl.textContent = `${a.carbs_g}g`;
+            if (fEl) fEl.textContent = `${a.fat_g}g`;
+            if (fiberEl) fiberEl.textContent = `${a.fiber_g || 0}g`;
+            if (notesEl) notesEl.textContent = a.analysis_notes || '';
+        }
+    } catch (e) {
+        showToast('Failed to analyze food with AI.');
+    } finally {
+        if (btn) btn.textContent = '✨ Analyze Meal with Luna AI';
+    }
+};
+
+window.commitAddAiAnalyzedFood = function() {
+    if (!currentAiAnalyzedItem) return;
+    const a = currentAiAnalyzedItem;
+    const logData = getFoodLogs(activeTrackerDate);
+    if (!logData[addingToMealType]) logData[addingToMealType] = [];
+
+    logData[addingToMealType].push({
+        name: a.food_name || 'AI Analyzed Meal',
+        portion: a.estimated_serving || '1 serving',
+        kcal: a.calories || 250,
+        p: a.protein_g || 10,
+        c: a.carbs_g || 20,
+        f: a.fat_g || 5
+    });
+
+    saveFoodLogs(activeTrackerDate, logData);
+    closeAddFoodModal();
+    showToast(`Added "${a.food_name}" to ${addingToMealType}!`);
+    const c = document.getElementById('main-content');
+    if (c) window.renderFoodTrackerView(c.firstElementChild || c);
+};
+
 window.switchFoodModalTab = function(tab) {
     const pDb = document.getElementById('panel-food-db');
+    const pAi = document.getElementById('panel-food-ai');
     const pCust = document.getElementById('panel-food-custom');
     const bDb = document.getElementById('tab-btn-db');
+    const bAi = document.getElementById('tab-btn-ai');
     const bCust = document.getElementById('tab-btn-custom');
+
+    pDb?.classList.add('hidden');
+    pAi?.classList.add('hidden');
+    pCust?.classList.add('hidden');
+
+    bDb?.classList.replace('btn-primary', 'btn-secondary');
+    bAi?.classList.replace('btn-primary', 'btn-secondary');
+    bCust?.classList.replace('btn-primary', 'btn-secondary');
 
     if (tab === 'db') {
         pDb?.classList.remove('hidden');
-        pCust?.classList.add('hidden');
         bDb?.classList.replace('btn-secondary', 'btn-primary');
-        bCust?.classList.replace('btn-primary', 'btn-secondary');
+    } else if (tab === 'ai') {
+        pAi?.classList.remove('hidden');
+        bAi?.classList.replace('btn-secondary', 'btn-primary');
     } else {
-        pDb?.classList.add('hidden');
         pCust?.classList.remove('hidden');
         bCust?.classList.replace('btn-secondary', 'btn-primary');
-        bDb?.classList.replace('btn-primary', 'btn-secondary');
     }
 };
 
@@ -1273,7 +1430,8 @@ window.commitAddFoodFromDb = function() {
 window.commitAddCustomFood = function() {
     const name = document.getElementById('cust-food-name')?.value?.trim();
     if (!name) {
-        alert('Please enter a food name');
+        if (window.showError) window.showError('Please enter a food name');
+        else alert('Please enter a food name');
         return;
     }
     const portion = document.getElementById('cust-food-portion')?.value?.trim() || '1 serving';
@@ -1320,8 +1478,8 @@ let selectedPlanDay = 1;
 function renderWeeklyPlannerTab(targetKcal) {
     return `
         <div class="space-y-6">
-            <div class="glass-card p-6 rounded-xl">
-                <div class="flex flex-wrap items-center justify-between gap-4">
+            <div class="glass-card p-6 rounded-xl relative overflow-hidden" style="background: linear-gradient(90deg, var(--black-1) 50%, transparent), url('/assets/_ (1).jpeg') right center/cover; background-blend-mode: multiply;">
+                <div class="flex flex-wrap items-center justify-between gap-4 relative z-10">
                     <div>
                         <h3 style="font-family:var(--font-display);font-size:1.25rem;font-weight:700;color:var(--white)">AI 7-DAY NUTRITION SCHEDULE</h3>
                         <p class="text-xs text-dim">Generate an automated, goal-scaled weekly meal schedule with calculated macros.</p>
@@ -1578,7 +1736,42 @@ function renderRecipeList(data) {
         `;
     }
 
+    const aiCard = data.ai_recipe ? `
+        <div class="glass-card p-6 rounded-xl border border-cyan/40 mb-6 bg-gradient-to-r from-black/80 to-blue-950/30">
+            <div class="flex flex-wrap justify-between items-start gap-2 mb-3">
+                <div class="flex items-center gap-2">
+                    <span class="badge badge-cyan text-xs font-bold uppercase">✨ LUNA AI CHEF SPECIAL</span>
+                    <span class="text-xs text-dim">⏱ ${data.ai_recipe.prep_time_mins || 10}m prep • ${data.ai_recipe.cook_time_mins || 15}m cook</span>
+                </div>
+                <div class="text-right">
+                    <span class="text-lg font-black text-yellow">${data.ai_recipe.calories_per_serving || 420} kcal</span>
+                    <span class="text-[10px] text-dim block">P:${data.ai_recipe.protein_per_serving_g}g C:${data.ai_recipe.carbs_per_serving_g}g F:${data.ai_recipe.fat_per_serving_g}g</span>
+                </div>
+            </div>
+
+            <h3 class="text-xl font-bold text-white mb-2">${data.ai_recipe.recipe_name}</h3>
+            
+            <div class="mb-4 text-xs text-dim">
+                <b class="text-white">Ingredients:</b> ${(data.ai_recipe.ingredients_needed || []).join(' • ')}
+            </div>
+
+            <div class="bg-black/50 p-4 rounded-lg border border-white/5 text-xs text-secondary space-y-2 mb-4">
+                <b class="text-white block">Step-by-Step Cooking:</b>
+                <ol class="list-decimal list-inside space-y-1.5 leading-relaxed">
+                    ${(data.ai_recipe.cooking_steps || []).map(s => `<li>${s}</li>`).join('')}
+                </ol>
+                ${data.ai_recipe.chef_tips ? `<p class="mt-2 text-cyan italic">💡 Chef Tip: ${data.ai_recipe.chef_tips}</p>` : ''}
+            </div>
+
+            <button onclick="logAiRecipeDirectly('${data.ai_recipe.recipe_name.replace(/'/g, "\\'")}', ${data.ai_recipe.calories_per_serving || 400}, ${data.ai_recipe.protein_per_serving_g || 20}, ${data.ai_recipe.carbs_per_serving_g || 40}, ${data.ai_recipe.fat_per_serving_g || 10})" 
+                class="btn-primary w-full py-2.5 text-xs font-bold uppercase text-black">
+                + Log This AI Recipe to Today's Meals
+            </button>
+        </div>
+    ` : '';
+
     return `
+        ${aiCard}
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
             ${data.recipes.map((r, idx) => `
                 <div class="glass-card p-6 rounded-xl flex flex-col justify-between">
@@ -1610,6 +1803,22 @@ function renderRecipeList(data) {
         </div>
     `;
 }
+
+window.logAiRecipeDirectly = function(name, kcal, p, c, f) {
+    const logData = getFoodLogs(activeTrackerDate);
+    if (!logData.dinner) logData.dinner = [];
+    logData.dinner.push({
+        name: name,
+        portion: '1 serving',
+        kcal: kcal,
+        p: p,
+        c: c,
+        f: f
+    });
+    saveFoodLogs(activeTrackerDate, logData);
+    showToast(`Logged "${name}" to dinner!`);
+    setTrackerSubTab('daily-log');
+};
 
 window.logRecipeDirectly = function(recipeName) {
     const logData = getFoodLogs(activeTrackerDate);

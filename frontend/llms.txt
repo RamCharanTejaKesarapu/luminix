@@ -1,0 +1,24 @@
+# Luminix — Autonomous AI Health & Biomechanical Intelligence Platform
+
+> Private, client-side, zero-lag health ecosystem fusing 60 FPS computer vision kinematics, adaptive strength training, yoga posture guidance, and metabolic intelligence into a Kyoto cyber aesthetic.
+
+## System Overview
+- **Name**: Luminix
+- **Domain**: AI Health, Physical Biomechanics, Computer Vision, Functional Longevity
+- **Author & Creator**: Ram Charan Teja (@LUNO895)
+- **Contact**: ramcharantejak396@gmail.com
+- **Repository**: https://github.com/LUNO895
+- **Architecture**: Client-side MediaPipe WebAssembly (kinematics/angles) + Asynchronous FastAPI (Python 3.11) + Three.js WebGL (procedural sanctuary environment) + Google Gemini multi-model intelligence fallback.
+
+## Core Disciplines & Modules
+- **60 FPS Live Pose Engine (`/live-pose`)**: 33-point Landmark Kinematics calculating real-time joint angular geometry (`calculateAngle`), knee valgus, lumbar hyperextension, and postural risk factors directly in-browser. Zero camera streaming to third-party servers.
+- **Adaptive Gym Engine (`/gym`)**: Biomechanical discrete state machines (`idle` -> `descending` -> `inflection` -> `ascending` -> `completed`) tracking concentric and eccentric tempo for squats, deadlifts, push-ups, pull-ups, bench press, and bicep curls.
+- **17 Sacred Yoga Asanas (`/yoga`)**: Real-time angle bounds validation, balance scoring, and hold duration counters across beginner, intermediate, and master asanas.
+- **Metabolic Matrix & Nutrition (`/bmi`)**: Clinical Mifflin-St Jeor and Harris-Benedict formulas for BMR/TDEE calculation and macronutrient partitioning.
+- **Food & Hydration Intelligence (`/food-tracker`)**: Macro logging, hydration goals, and AI food analysis.
+- **Luna AI Assistant (`/luna`)**: Conversational wellness intelligence grounded in user kinematics and metabolic history with clinical guardrails.
+- **Clinical Export Studio (`/export`)**: Multi-format health dossiers, automated PDF generation, and explainer video briefings.
+
+## Privacy & Security Manifesto
+- **Client-Side Privacy**: Biometric camera frames are processed locally inside the browser memory via WebAssembly; no raw video streams leave the user's device.
+- **Application Security Firewall**: Built-in WAF middleware with token bucket rate limiting and strict CORS protection.
