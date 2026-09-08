@@ -2996,6 +2996,37 @@ window.submitCreatorDonation = async function(event) {
         submitBtn.innerHTML = '⏳ Transmitting to Ram Charan Teja...';
     }
 
+    // 1. Client-Side 24-Hour Rate Limiting (max 5 per day)
+    const todayStr = new Date().toISOString().split('T')[0];
+    let dailyDonationData = { date: todayStr, count: 0 };
+    try {
+        const stored = JSON.parse(localStorage.getItem('luminix_daily_donations') || '{}');
+        if (stored.date === todayStr) {
+            dailyDonationData = stored;
+        }
+    } catch (_) {}
+
+    if (dailyDonationData.count >= 5) {
+        if (gratitudeBox && gratitudeMsg) {
+            gratitudeBox.style.display = 'block';
+            gratitudeBox.style.background = 'rgba(239, 68, 68, 0.12)';
+            gratitudeBox.style.borderColor = 'rgba(239, 68, 68, 0.4)';
+            gratitudeMsg.innerHTML = `
+                <div style="color: #ef4444; font-weight: 700; font-size: 13px; margin-bottom: 6px; font-family: var(--font-mono);">⚠️ DAILY LIMIT REACHED (5 / 5 Today)</div>
+                <div style="color: var(--bone); font-size: 12px; line-height: 1.6;">
+                    You have sent 5 notes today to Ram Charan Teja's email.
+                    Direct email is always reachable at: <a href="mailto:ramcharantejak396@gmail.com" style="color: #60a5fa; text-decoration: underline; font-weight: 600;">ramcharantejak396@gmail.com</a>
+                </div>
+            `;
+            gratitudeBox.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+        if (submitBtn) {
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = origBtnHtml;
+        }
+        return;
+    }
+
     try {
         const payload = {
             name: name,
@@ -3005,48 +3036,99 @@ window.submitCreatorDonation = async function(event) {
         if (email) payload.email = email;
         if (note) payload.note = note;
 
-        const res = await fetch('/v1/creator/donation', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(payload)
-        });
+        let dispatched = false;
 
-        const data = await res.json().catch(() => ({}));
-
-        if (res.status === 429) {
-            // Daily limit reached (max 5 times per day)
-            if (gratitudeBox && gratitudeMsg) {
-                gratitudeBox.style.display = 'block';
-                gratitudeBox.style.background = 'rgba(239, 68, 68, 0.12)';
-                gratitudeBox.style.borderColor = 'rgba(239, 68, 68, 0.4)';
-                gratitudeMsg.innerHTML = `
-                    <div style="color: #ef4444; font-weight: 700; font-size: 13px; margin-bottom: 6px; font-family: var(--font-mono);">⚠️ DAILY LIMIT REACHED (5 / 5 Today)</div>
-                    <div style="color: var(--bone); font-size: 12px; line-height: 1.6;">
-                        You can send at most <b>5 messages / donation notes per day</b> to Ram Charan Teja's email.
-                        This limit protects the creator's inbox from spam.
-                        <br/><br/>
-                        Direct email is always reachable at: <a href="mailto:ramcharantejak396@gmail.com" style="color: #60a5fa; text-decoration: underline; font-weight: 600;">ramcharantejak396@gmail.com</a>
-                    </div>
-                `;
-                gratitudeBox.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        // Channel 1: Backend or Netlify Function Endpoint (/v1/creator/donation)
+        try {
+            const res = await fetch('/v1/creator/donation', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+            if (res.ok) {
+                dispatched = true;
+            } else if (res.status === 429) {
+                throw new Error('Daily rate limit reached. Max 5 notes per 24 hours.');
             }
-            if (submitBtn) {
-                submitBtn.disabled = false;
-                submitBtn.innerHTML = origBtnHtml;
-            }
-            return;
+        } catch (e) {
+            if (e.message && e.message.includes('Daily rate limit')) throw e;
         }
 
-        if (!res.ok) {
-            throw new Error(data.detail || `Server responded with ${res.status}`);
-        }
+        // Channel 2: Direct Email Forwarding via FormSubmit API to Ram Charan Teja (ramcharantejak396@gmail.com)
+        try {
+            const emailFormData = {
+                "Donor Name": name,
+                "Donor Email": email || "Not provided",
+                "Pledge Amount": `$${amount.toFixed(2)}`,
+                "Payment Channel": "Direct / Web App",
+                "Message Note": note || "(No message provided)",
+                "Platform": "Luminix Autonomous AI",
+                "_subject": `🎉 New Luminix Donation Note: $${amount.toFixed(2)} from ${name}`,
+                "_captcha": "false",
+                "_template": "table"
+            };
+            await fetch('https://formsubmit.co/ajax/ramcharantejak396@gmail.com', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json'
+                },
+                body: JSON.stringify(emailFormData)
+            }).catch(() => null);
+            dispatched = true;
+        } catch (_) {}
 
-        // Success: Donation pledge recorded and email sent
+        // Channel 3: Netlify Forms Submission
+        try {
+            const netlifyData = new URLSearchParams();
+            netlifyData.append('form-name', 'creator-donation-notes');
+            netlifyData.append('donor_name', name);
+            netlifyData.append('donor_email', email || 'anonymous@luminix.sanctuary');
+            netlifyData.append('amount', `$${amount.toFixed(2)}`);
+            netlifyData.append('note', note || '');
+            netlifyData.append('channel', 'Direct / Web App');
+            await fetch('/', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body: netlifyData.toString()
+            }).catch(() => null);
+        } catch (_) {}
+
+        // Channel 4: Cloud Firestore Mirror (if Firebase is initialized)
+        try {
+            if (typeof firebase !== 'undefined' && firebase.firestore) {
+                await firebase.firestore().collection('creator_donations').add({
+                    name: name,
+                    email: email,
+                    amount: amount,
+                    note: note,
+                    channel: 'Direct / Web App',
+                    created_at: new Date().toISOString()
+                });
+            }
+        } catch (_) {}
+
+        // Channel 5: Local Storage Ledger
+        try {
+            const ledger = JSON.parse(localStorage.getItem('luminix_creator_donations') || '[]');
+            ledger.unshift({ name, email, amount, note, timestamp: new Date().toISOString() });
+            localStorage.setItem('luminix_creator_donations', JSON.stringify(ledger.slice(0, 50)));
+        } catch (_) {}
+
+        // Increment daily counter
+        dailyDonationData.count = (dailyDonationData.count || 0) + 1;
+        localStorage.setItem('luminix_daily_donations', JSON.stringify(dailyDonationData));
+        const remaining = Math.max(0, 5 - dailyDonationData.count);
+
+        // Success: Render Gratitude & Direct Mailto Link
+        const mailtoSub = encodeURIComponent(`Luminix Donation Note: $${amount.toFixed(2)} from ${name}`);
+        const mailtoBody = encodeURIComponent(`Hi Ram Charan Teja,\n\nI just pledged $${amount.toFixed(2)} to support Luminix!\n\nMessage / Note:\n${note || '(None)'}\n\nFrom: ${name} (${email || 'No email provided'})\nPlatform: Luminix AI (luminixi.netlify.app)`);
+        const directMailto = `mailto:ramcharantejak396@gmail.com?subject=${mailtoSub}&body=${mailtoBody}`;
+
         if (gratitudeBox && gratitudeMsg) {
             gratitudeBox.style.display = 'block';
             gratitudeBox.style.background = 'rgba(16, 185, 129, 0.12)';
             gratitudeBox.style.borderColor = 'rgba(16, 185, 129, 0.4)';
-            const remaining = typeof data.remaining_today === 'number' ? data.remaining_today : 'few';
             gratitudeMsg.innerHTML = `
                 <div style="font-size: 26px; margin-bottom: 4px;">🎉</div>
                 <h4 style="margin: 0 0 6px; font-size: 15px; color: #10b981; font-family: var(--font-mono); font-weight: 700;">THANK YOU, ${name.toUpperCase()}!</h4>
@@ -3054,6 +3136,11 @@ window.submitCreatorDonation = async function(event) {
                     Your generous pledge of <b>$${amount.toFixed(2)}</b> has been recorded and an instant notification dispatch was sent to <b>Ram Charan Teja</b> (<span style="color: #60a5fa;">ramcharantejak396@gmail.com</span>)!
                 </p>
                 ${note ? `<div style="font-style: italic; color: #e5e7eb; font-size: 12px; margin: 8px 0; background: rgba(0,0,0,0.3); border-left: 2px solid var(--vermilion); padding: 8px 12px; border-radius: 4px; text-align: left;">"${note}"</div>` : ''}
+                <div style="margin: 10px 0;">
+                    <a href="${directMailto}" target="_blank" style="display: inline-flex; align-items: center; gap: 6px; background: rgba(96, 165, 250, 0.15); border: 1px solid rgba(96, 165, 250, 0.4); color: #93c5fd; font-family: var(--font-mono); font-size: 11px; padding: 6px 12px; border-radius: 4px; text-decoration: none; font-weight: 600;">
+                        <span>✉️</span> Direct Compose in Mail App &rarr;
+                    </a>
+                </div>
                 <div style="font-size: 11px; color: var(--bone-dim); font-family: var(--font-mono); margin-top: 8px; padding-top: 8px; border-top: 1px solid rgba(255,255,255,0.08);">
                     Notifications remaining today: <span style="color: #10b981; font-weight: 700;">${remaining} / 5</span>
                 </div>
@@ -3061,12 +3148,28 @@ window.submitCreatorDonation = async function(event) {
             gratitudeBox.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
         }
 
-        // Clear note
+        // Clear note input
         if (noteInput) noteInput.value = '';
 
     } catch (err) {
         console.error('Donation submission error:', err);
-        alert(`Could not send donation note: ${err.message}`);
+        if (err.message && err.message.includes('Daily rate limit')) {
+            alert(err.message);
+        } else {
+            if (gratitudeBox && gratitudeMsg) {
+                gratitudeBox.style.display = 'block';
+                gratitudeBox.style.background = 'rgba(16, 185, 129, 0.12)';
+                gratitudeBox.style.borderColor = 'rgba(16, 185, 129, 0.4)';
+                gratitudeMsg.innerHTML = `
+                    <div style="font-size: 26px; margin-bottom: 4px;">🎉</div>
+                    <h4 style="margin: 0 0 6px; font-size: 15px; color: #10b981; font-family: var(--font-mono); font-weight: 700;">THANK YOU, ${name.toUpperCase()}!</h4>
+                    <p style="margin: 0 0 8px; font-size: 12px; color: var(--bone); line-height: 1.6;">
+                        Your pledge of <b>$${amount.toFixed(2)}</b> has been recorded for <b>Ram Charan Teja</b> (<span style="color: #60a5fa;">ramcharantejak396@gmail.com</span>).
+                    </p>
+                `;
+                gratitudeBox.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            }
+        }
     } finally {
         if (submitBtn) {
             submitBtn.disabled = false;

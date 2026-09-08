@@ -7,6 +7,15 @@
   # Publish directory relative to base
   publish = "."
 
+[functions]
+  directory = "functions"
+
+# Serverless function rewrite for donation note submission
+[[redirects]]
+  from = "/v1/creator/donation"
+  to = "/.netlify/functions/donation"
+  status = 200
+
 [[headers]]
   for = "/*"
   [headers.values]

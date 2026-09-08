@@ -767,6 +767,14 @@
             </div>
         </div>
     </div>
+    <!-- Netlify Form Detection for Creator Donation Notes & Messages -->
+    <form name="creator-donation-notes" netlify netlify-honeypot="bot-field" hidden>
+        <input type="text" name="donor_name" />
+        <input type="email" name="donor_email" />
+        <input type="text" name="amount" />
+        <textarea name="note"></textarea>
+        <input type="text" name="channel" />
+    </form>
 
     <!-- Firebase Compat SDK (Cloud Storage, Firestore, Auth & App) with resilient offline vault fallback -->
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>

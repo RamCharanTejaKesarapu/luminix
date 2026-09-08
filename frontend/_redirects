@@ -1,3 +1,4 @@
+/v1/creator/donation  /.netlify/functions/donation  200
 /static/*          /:splat                 200
 /auth              /auth.html              200
 /privacy           /privacy.html           200
