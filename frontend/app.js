@@ -910,23 +910,15 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (window.luminixAuth?.isAuthenticated()) {
         document.getElementById('app-shell')?.classList.remove('auth-locked');
         nav('dashboard');
+
+        // Personalize Your Sanctuary filling modal: check after login/dashboard initialization
+        setTimeout(() => {
+            window.checkBiometricOnboarding?.();
+        }, 1200);
     } else {
         window.renderAuthView?.();
+        // NEVER prompt personalization onboarding while on unauthenticated login page
     }
-
-    // Auto-prompt Biometric Onboarding popup after 1.2s on first load if profile incomplete and not dismissed
-    setTimeout(() => {
-        const user = window.luminixAuth?.getUser();
-        const guest = (() => {
-            try { return JSON.parse(localStorage.getItem('luminix_guest_profile')); } catch (_) { return null; }
-        })();
-        const hasProfile = (user && user.profile_data && user.profile_data.weight && user.profile_data.age) ||
-                           (guest && guest.weight && guest.age);
-        const dismissed = sessionStorage.getItem('luminix_onboarding_dismissed');
-        if (!hasProfile && !dismissed) {
-            window.openBiometricOnboardingModal?.();
-        }
-    }, 1200);
 });
 
 // ══════════════════════════════════════════════════════════════════

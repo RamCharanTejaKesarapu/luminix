@@ -372,6 +372,13 @@ window.luminixAuth = {
             });
         } catch (_) {}
         this.clearSession();
+        localStorage.removeItem('luminix_sanctuary_personalized');
+        sessionStorage.removeItem('luminix_onboarding_dismissed');
+        const onboardingModal = document.getElementById('biometric-onboarding-modal');
+        if (onboardingModal) {
+            onboardingModal.classList.add('hidden');
+            onboardingModal.setAttribute('aria-hidden', 'true');
+        }
         if (window.stopYoga) window.stopYoga();
         if (window.stopGym) window.stopGym();
         window.closeUserProfileModal?.();
@@ -392,6 +399,12 @@ window.luminixAuth = {
 // ── Render Auth View ─────────────────────────────────────────────────────────
 
 window.renderAuthView = async function() {
+    // Ensure Personalize Sanctuary modal is strictly hidden on authentication page
+    const onboardingModal = document.getElementById('biometric-onboarding-modal');
+    if (onboardingModal) {
+        onboardingModal.classList.add('hidden');
+        onboardingModal.setAttribute('aria-hidden', 'true');
+    }
     const main = document.getElementById('main-content');
     const appShell = document.getElementById('app-shell');
     if (appShell) appShell.classList.add('auth-locked');
@@ -1186,6 +1199,16 @@ window.handleAvatarFileSelect = function(event) {
 };
 
 window.openBiometricOnboardingModal = function() {
+    // Personalize Sanctuary filling must strictly come AFTER authentication
+    if (!window.luminixAuth?.isAuthenticated()) {
+        const modal = document.getElementById('biometric-onboarding-modal');
+        if (modal) {
+            modal.classList.add('hidden');
+            modal.setAttribute('aria-hidden', 'true');
+        }
+        return;
+    }
+
     const modal = document.getElementById('biometric-onboarding-modal');
     if (!modal) return;
 
@@ -1239,6 +1262,34 @@ window.closeBiometricOnboardingModal = function(userSkipped = false) {
         sessionStorage.setItem('luminix_onboarding_dismissed', '1');
         window.showToast?.('Biometric setup postponed. Access profile anytime from the top bar.', 'info', 3000);
     }
+};
+
+window.checkBiometricOnboarding = function(force = false) {
+    // Personalize Sanctuary filling must strictly come AFTER authentication
+    if (!window.luminixAuth?.isAuthenticated()) {
+        const modal = document.getElementById('biometric-onboarding-modal');
+        if (modal) {
+            modal.classList.add('hidden');
+            modal.setAttribute('aria-hidden', 'true');
+        }
+        return false;
+    }
+
+    const user = window.luminixAuth.getUser();
+    const guest = (() => {
+        try { return JSON.parse(localStorage.getItem('luminix_guest_profile')); } catch (_) { return null; }
+    })();
+
+    const pData = user?.profile_data || guest || {};
+    const isPersonalized = (pData.terms_accepted && pData.weight && pData.age) ||
+                          localStorage.getItem('luminix_sanctuary_personalized') === '1';
+    const dismissed = sessionStorage.getItem('luminix_onboarding_dismissed');
+
+    if (force || (!isPersonalized && !dismissed)) {
+        window.openBiometricOnboardingModal();
+        return true;
+    }
+    return false;
 };
 
 window.handleBiometricOnboardingSubmit = async function(event) {
@@ -1334,6 +1385,9 @@ window.handleBiometricOnboardingSubmit = async function(event) {
             localStorage.setItem('luminix_nutrition_profile', JSON.stringify(nutProfile));
         } catch (_) {}
 
+        localStorage.setItem('luminix_sanctuary_personalized', '1');
+        sessionStorage.removeItem('luminix_onboarding_dismissed');
+
         window.updateUserProfileUI();
         window.closeBiometricOnboardingModal();
 
@@ -1342,7 +1396,7 @@ window.handleBiometricOnboardingSubmit = async function(event) {
             window.renderWearableHub?.(document.getElementById('main-content'));
         }
 
-        window.showToast?.(`✓ Biometrics & Avatar synchronized for ${name}. Zero-leak privacy covenant active.`, 'success', 4000);
+        window.showToast?.(`✓ Sanctuary personalized & synchronized for ${name}. Zero-leak privacy covenant active.`, 'success', 4000);
     } catch (err) {
         console.error('Onboarding submit error:', err);
         window.showToast?.('Error saving profile: ' + err.message, 'error', 4000);
@@ -1355,10 +1409,11 @@ window.handleBiometricOnboardingSubmit = async function(event) {
 };
 
 window.updateUserProfileUI = function() {
-    const user = window.luminixAuth.getUser();
-    const guest = (() => {
+    const isAuth = window.luminixAuth.isAuthenticated();
+    const user = isAuth ? window.luminixAuth.getUser() : null;
+    const guest = isAuth ? (() => {
         try { return JSON.parse(localStorage.getItem('luminix_guest_profile')); } catch (_) { return null; }
-    })();
+    })() : null;
     const profileEl = document.getElementById('user-profile');
     const navEl = document.getElementById('nav-menu');
     const appShell = document.getElementById('app-shell');
@@ -1371,7 +1426,7 @@ window.updateUserProfileUI = function() {
         profile_data: guest
     } : null);
 
-    if (activeUser) {
+    if (activeUser && isAuth) {
         if (profileEl) {
             profileEl.classList.remove('hidden');
             const initials = (activeUser.name || 'U').substring(0, 2).toUpperCase();
@@ -1389,14 +1444,14 @@ window.updateUserProfileUI = function() {
             `;
         }
         if (navEl) navEl.classList.remove('hidden');
-        if (user) appShell?.classList.remove('auth-locked');
+        appShell?.classList.remove('auth-locked');
     } else {
         if (profileEl) {
             profileEl.innerHTML = `
-                <button class="profile-pill" onclick="window.openBiometricOnboardingModal()" title="Set up personal biometrics & custom avatar">
+                <button class="profile-pill" onclick="window.renderAuthView ? window.renderAuthView() : (window.location.href='/auth')" title="Sign In to Sanctuary">
                     <span class="profile-avatar-ph">👤</span>
-                    <span id="profile-name">JOIN SANCTUARY</span>
-                    <span class="logout-tag">+</span>
+                    <span id="profile-name">SIGN IN</span>
+                    <span class="logout-tag">→</span>
                 </button>
             `;
             profileEl.classList.remove('hidden');
@@ -1405,6 +1460,10 @@ window.updateUserProfileUI = function() {
 };
 
 window.openUserProfileModal = async function() {
+    if (!window.luminixAuth.isAuthenticated()) {
+        window.renderAuthView?.();
+        return;
+    }
     let user = window.luminixAuth.getUser();
     const guest = (() => {
         try { return JSON.parse(localStorage.getItem('luminix_guest_profile')); } catch (_) { return null; }
@@ -1425,7 +1484,7 @@ window.openUserProfileModal = async function() {
     } : null);
 
     if (!activeUser) {
-        window.openBiometricOnboardingModal();
+        window.renderAuthView?.();
         return;
     }
 
@@ -1851,6 +1910,9 @@ window.showChaosLoading = function(onComplete) {
 };
 
 window.onAuthSuccess = async function() {
+    // Clear any prior dismissal so user is prompted to personalize their sanctuary after login
+    sessionStorage.removeItem('luminix_onboarding_dismissed');
+
     window.showChaosLoading(async () => {
         window.updateUserProfileUI?.();
         document.getElementById('app-shell')?.classList.remove('auth-locked');
@@ -1862,6 +1924,11 @@ window.onAuthSuccess = async function() {
         } else {
             window.location.href = '/';
         }
+
+        // AFTER LOGIN: Prompt "Personalize Your Sanctuary" filling modal if not yet personalized
+        setTimeout(() => {
+            window.checkBiometricOnboarding?.();
+        }, 1000);
     });
 };
 
