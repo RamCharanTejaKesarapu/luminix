@@ -354,13 +354,20 @@ window.dismissBanner = function() {
             pBar.setAttribute('aria-valuenow', Math.round(scrolled));
         }
 
-        // Back to top button
+        // Back to top button & Floating CTA handling
         const topBtn = document.getElementById('back-to-top-btn');
-        if (topBtn) {
-            if (scrollY > 280) {
-                topBtn.classList.add('visible');
-            } else {
-                topBtn.classList.remove('visible');
+        const ctaContainer = document.getElementById('floating-cta-container');
+        if (scrollY > 280) {
+            if (topBtn) topBtn.classList.add('visible');
+            if (ctaContainer && window.innerWidth <= 768) {
+                ctaContainer.style.opacity = '0';
+                ctaContainer.style.pointerEvents = 'none';
+            }
+        } else {
+            if (topBtn) topBtn.classList.remove('visible');
+            if (ctaContainer && (window.currentView === 'dashboard' || !window.currentView)) {
+                ctaContainer.style.opacity = '1';
+                ctaContainer.style.pointerEvents = 'auto';
             }
         }
     }, { passive: true });
