@@ -492,12 +492,14 @@ async function startYogaVideoStream() {
         yogaCameraStream = null;
     }
 
+    const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent) || (window.innerWidth <= 768);
+
     const constraints = {
         video: {
             facingMode: yogaFacingMode,
-            width: { ideal: 1280, max: 1920, min: 640 },
-            height: { ideal: 720, max: 1080, min: 480 },
-            frameRate: { ideal: 240, max: 240, min: 60 }
+            width: isMobile ? { ideal: 480, max: 720 } : { ideal: 1280, max: 1280 },
+            height: isMobile ? { ideal: 640, max: 1280 } : { ideal: 720, max: 720 },
+            frameRate: isMobile ? { ideal: 30, max: 30 } : { ideal: 60, max: 60 }
         },
         audio: false
     };
@@ -507,7 +509,7 @@ async function startYogaVideoStream() {
     } catch (_) {
         try {
             yogaCameraStream = await navigator.mediaDevices.getUserMedia({
-                video: { facingMode: yogaFacingMode, frameRate: { ideal: 120, min: 60 } },
+                video: { facingMode: yogaFacingMode, width: { ideal: 640 }, height: { ideal: 480 }, frameRate: { ideal: 30 } },
                 audio: false
             });
         } catch (e2) {
@@ -555,13 +557,14 @@ async function initYogaCamera() {
         await yogaPoseEngine.initialize();
         await startYogaVideoStream();
 
-        // ── Ultra-High Refresh Visual Rendering Loop (120Hz - 240Hz) ──────────────
+        // ── High-Performance Visual Rendering Loop ────────────────────────────
         isRunningYogaInference = true;
         let lastYogaRenderTimestamp = performance.now();
         const yogaOffscreenCanvas = document.createElement('canvas');
-        yogaOffscreenCanvas.width = 192;
-        yogaOffscreenCanvas.height = 144;
         const yogaOffscreenCtx = yogaOffscreenCanvas.getContext('2d', { willReadFrequently: true });
+        let lastYogaInferenceTimestamp = 0;
+        const isMobileDevice = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent) || (window.innerWidth <= 768);
+        const minYogaInferenceDelta = isMobileDevice ? 38 : 30; // ~26 FPS mobile, ~33 FPS desktop
 
         function renderYogaHighSpeedFrame(timestamp) {
             if (!yogaPoseEngine) return;
@@ -577,6 +580,8 @@ async function initYogaCamera() {
             const w = canvas.width;
             const h = canvas.height;
 
+            const vp = window.luminixPose.computeCoverViewport(video.videoWidth, video.videoHeight, w, h);
+
             ctx.save();
             if (yogaFacingMode === 'user') {
                 ctx.translate(w, 0);
@@ -584,7 +589,7 @@ async function initYogaCamera() {
             }
 
             if (video.readyState >= 2) {
-                ctx.drawImage(video, 0, 0, w, h);
+                ctx.drawImage(video, vp.x, vp.y, vp.width, vp.height);
             }
 
             if (yogaTargetLandmarks && yogaTargetLandmarks.length > 0) {
@@ -606,7 +611,10 @@ async function initYogaCamera() {
                 window.luminixPose.drawLuminixSkeleton(ctx, yogaInterpolatedLandmarks, w, h, {
                     showAngles: true,
                     showFaceTree: true,
-                    theme: 'cyan'
+                    theme: 'cyan',
+                    viewport: vp,
+                    aspect: vp.aspect,
+                    mirrored: (yogaFacingMode === 'user')
                 });
             }
             ctx.restore();
@@ -614,12 +622,23 @@ async function initYogaCamera() {
             yogaAnimFrameId = requestAnimationFrame(renderYogaHighSpeedFrame);
         }
 
-        // ── Hardware-Synced Inference Loop ───────────────────────────
+        // ── Hardware-Synced & Throttled Inference Loop ───────────────────
         async function runYogaInferencePass() {
             if (!yogaPoseEngine || !isRunningYogaInference) return;
-            if (video && video.readyState >= 2 && !isYogaProcessingInference) {
+            const now = performance.now();
+            if (now - lastYogaInferenceTimestamp < minYogaInferenceDelta) return;
+
+            if (video && video.readyState >= 2 && !isYogaProcessingInference && video.videoWidth > 0 && video.videoHeight > 0) {
                 isYogaProcessingInference = true;
-                yogaOffscreenCtx.drawImage(video, 0, 0, 192, 144);
+                lastYogaInferenceTimestamp = now;
+
+                const dims = window.luminixPose.getInferenceDimensions(video.videoWidth, video.videoHeight);
+                if (yogaOffscreenCanvas.width !== dims.width || yogaOffscreenCanvas.height !== dims.height) {
+                    yogaOffscreenCanvas.width = dims.width;
+                    yogaOffscreenCanvas.height = dims.height;
+                }
+
+                yogaOffscreenCtx.drawImage(video, 0, 0, dims.width, dims.height);
                 try {
                     await yogaPoseEngine.send({ image: yogaOffscreenCanvas });
                 } catch (_) {
@@ -654,7 +673,9 @@ async function initYogaCamera() {
 
 function evaluateYogaPoseMatch(landmarks) {
     if (!currentYogaPose) return;
-    const metrics = window.luminixPose.evaluatePostureRisk(landmarks);
+    const video = document.getElementById('yoga-video');
+    const aspect = (video && video.videoWidth && video.videoHeight) ? (video.videoWidth / video.videoHeight) : 1.0;
+    const metrics = window.luminixPose.evaluatePostureRisk(landmarks, { aspect });
     window.luminixPose.renderPostureAlert('yoga-posture-alert-toast', metrics);
 
     const criteria = YOGA_CRITERIA[currentYogaPose.name] || {

@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import base64
+import html as html_mod
 import os
 import smtplib
 from email.mime.application import MIMEApplication
@@ -198,6 +199,12 @@ Luminix Autonomous AI Biomechanics Platform
 https://luminix-a0363.firebaseapp.com
 """
 
+    html_name = html_mod.escape(donor_name)
+    html_email = html_mod.escape(donor_email or 'Not provided')
+    html_note = html_mod.escape(note or 'No message provided')
+    html_channel = html_mod.escape(channel)
+    html_ip = html_mod.escape(client_ip)
+
     html_body = f"""
     <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; max-width: 600px; margin: 0 auto; background: #0c1016; color: #f3f4f6; border-radius: 12px; overflow: hidden; border: 1px solid rgba(224, 35, 28, 0.3); box-shadow: 0 10px 30px rgba(0,0,0,0.5);">
         <div style="background: linear-gradient(135deg, rgba(224, 35, 28, 0.25), rgba(16, 21, 29, 0.95)); padding: 24px; border-bottom: 1px solid rgba(224, 35, 28, 0.2);">
@@ -212,27 +219,27 @@ https://luminix-a0363.firebaseapp.com
             <table style="width: 100%; border-collapse: collapse; font-size: 14px; margin-bottom: 20px;">
                 <tr style="border-bottom: 1px solid rgba(255,255,255,0.06);">
                     <td style="padding: 10px 0; color: #9ca3af; width: 140px;">Donor Name:</td>
-                    <td style="padding: 10px 0; color: #ffffff; font-weight: 600;">{donor_name}</td>
+                    <td style="padding: 10px 0; color: #ffffff; font-weight: 600;">{html_name}</td>
                 </tr>
                 <tr style="border-bottom: 1px solid rgba(255,255,255,0.06);">
                     <td style="padding: 10px 0; color: #9ca3af;">Donor Email:</td>
-                    <td style="padding: 10px 0; color: #60a5fa;"><a href="mailto:{donor_email or ''}" style="color: #60a5fa; text-decoration: none;">{donor_email or 'Not provided'}</a></td>
+                    <td style="padding: 10px 0; color: #60a5fa;"><a href="mailto:{html_email}" style="color: #60a5fa; text-decoration: none;">{html_email}</a></td>
                 </tr>
                 <tr style="border-bottom: 1px solid rgba(255,255,255,0.06);">
                     <td style="padding: 10px 0; color: #9ca3af;">Payment Channel:</td>
-                    <td style="padding: 10px 0; color: #f59e0b; font-family: monospace;">{channel}</td>
+                    <td style="padding: 10px 0; color: #f59e0b; font-family: monospace;">{html_channel}</td>
                 </tr>
                 <tr>
                     <td style="padding: 10px 0; color: #9ca3af;">Client IP:</td>
-                    <td style="padding: 10px 0; color: #9ca3af; font-family: monospace; font-size: 12px;">{client_ip}</td>
+                    <td style="padding: 10px 0; color: #9ca3af; font-family: monospace; font-size: 12px;">{html_ip}</td>
                 </tr>
             </table>
             <div style="background: rgba(224, 35, 28, 0.08); border-left: 3px solid #e0231c; padding: 14px; border-radius: 4px; margin-bottom: 20px;">
                 <div style="font-size: 11px; font-family: monospace; color: #ff524d; text-transform: uppercase; margin-bottom: 6px;">PERSONAL NOTE FROM DONOR:</div>
-                <div style="font-size: 14px; font-style: italic; color: #e5e7eb; line-height: 1.5;">"{note or 'No message provided'}"</div>
+                <div style="font-size: 14px; font-style: italic; color: #e5e7eb; line-height: 1.5;">"{html_note}"</div>
             </div>
             <div style="text-align: center; margin-top: 24px; padding-top: 16px; border-top: 1px solid rgba(255,255,255,0.08); font-size: 12px; color: #6b7280; font-family: monospace;">
-                Luminix Autonomous AI Health & Biomechanical Sanctuary • Ram Charan Teja
+                Luminix Autonomous AI Health &amp; Biomechanical Sanctuary • Ram Charan Teja
             </div>
         </div>
     </div>

@@ -492,12 +492,14 @@ async function startGymVideoStream() {
         gymCameraStream = null;
     }
 
+    const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent) || (window.innerWidth <= 768);
+
     const constraints = {
         video: {
             facingMode: gymFacingMode,
-            width: { ideal: 1280, max: 1920, min: 640 },
-            height: { ideal: 720, max: 1080, min: 480 },
-            frameRate: { ideal: 240, max: 240, min: 60 }
+            width: isMobile ? { ideal: 480, max: 720 } : { ideal: 1280, max: 1280 },
+            height: isMobile ? { ideal: 640, max: 1280 } : { ideal: 720, max: 720 },
+            frameRate: isMobile ? { ideal: 30, max: 30 } : { ideal: 60, max: 60 }
         },
         audio: false
     };
@@ -507,7 +509,7 @@ async function startGymVideoStream() {
     } catch (_) {
         try {
             gymCameraStream = await navigator.mediaDevices.getUserMedia({
-                video: { facingMode: gymFacingMode, frameRate: { ideal: 120, min: 60 } },
+                video: { facingMode: gymFacingMode, width: { ideal: 640 }, height: { ideal: 480 }, frameRate: { ideal: 30 } },
                 audio: false
             });
         } catch (e2) {
@@ -556,13 +558,14 @@ async function initGymCamera() {
         await gymPoseEngine.initialize();
         await startGymVideoStream();
 
-        // ── Ultra-High Refresh Visual Rendering Loop (120Hz - 240Hz) ──────────────
+        // ── High-Performance Visual Rendering Loop ────────────────────────────
         isRunningGymInference = true;
         let lastGymRenderTimestamp = performance.now();
         const gymOffscreenCanvas = document.createElement('canvas');
-        gymOffscreenCanvas.width = 192;
-        gymOffscreenCanvas.height = 144;
         const gymOffscreenCtx = gymOffscreenCanvas.getContext('2d', { willReadFrequently: true });
+        let lastGymInferenceTimestamp = 0;
+        const isMobileDevice = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent) || (window.innerWidth <= 768);
+        const minGymInferenceDelta = isMobileDevice ? 38 : 30; // ~26 FPS mobile, ~33 FPS desktop
 
         function renderGymHighSpeedFrame(timestamp) {
             if (!gymPoseEngine) return;
@@ -578,6 +581,8 @@ async function initGymCamera() {
             const w = canvas.width;
             const h = canvas.height;
 
+            const vp = window.luminixPose.computeCoverViewport(video.videoWidth, video.videoHeight, w, h);
+
             ctx.save();
             if (gymFacingMode === 'user') {
                 ctx.translate(w, 0);
@@ -585,7 +590,7 @@ async function initGymCamera() {
             }
 
             if (video.readyState >= 2) {
-                ctx.drawImage(video, 0, 0, w, h);
+                ctx.drawImage(video, vp.x, vp.y, vp.width, vp.height);
             }
 
             if (gymTargetLandmarks && gymTargetLandmarks.length > 0) {
@@ -607,7 +612,10 @@ async function initGymCamera() {
                 window.luminixPose.drawLuminixSkeleton(ctx, gymInterpolatedLandmarks, w, h, {
                     showAngles: true,
                     showFaceTree: true,
-                    theme: 'yellow'
+                    theme: 'yellow',
+                    viewport: vp,
+                    aspect: vp.aspect,
+                    mirrored: (gymFacingMode === 'user')
                 });
             }
             ctx.restore();
@@ -615,12 +623,23 @@ async function initGymCamera() {
             gymAnimFrameId = requestAnimationFrame(renderGymHighSpeedFrame);
         }
 
-        // ── Hardware-Synced Inference Loop ───────────────────────────
+        // ── Hardware-Synced & Throttled Inference Loop ───────────────────
         async function runGymInferencePass() {
             if (!gymPoseEngine || !isRunningGymInference) return;
-            if (video && video.readyState >= 2 && !isGymProcessingInference) {
+            const now = performance.now();
+            if (now - lastGymInferenceTimestamp < minGymInferenceDelta) return;
+
+            if (video && video.readyState >= 2 && !isGymProcessingInference && video.videoWidth > 0 && video.videoHeight > 0) {
                 isGymProcessingInference = true;
-                gymOffscreenCtx.drawImage(video, 0, 0, 192, 144);
+                lastGymInferenceTimestamp = now;
+
+                const dims = window.luminixPose.getInferenceDimensions(video.videoWidth, video.videoHeight);
+                if (gymOffscreenCanvas.width !== dims.width || gymOffscreenCanvas.height !== dims.height) {
+                    gymOffscreenCanvas.width = dims.width;
+                    gymOffscreenCanvas.height = dims.height;
+                }
+
+                gymOffscreenCtx.drawImage(video, 0, 0, dims.width, dims.height);
                 try {
                     await gymPoseEngine.send({ image: gymOffscreenCanvas });
                 } catch (_) {
@@ -653,7 +672,7 @@ async function initGymCamera() {
     }
 }
 
-function getJointAngleWithVisibility(landmarks, idxA, idxB, idxC, minVisibility = 0.5) {
+function getJointAngleWithVisibility(landmarks, idxA, idxB, idxC, minVisibility = 0.5, aspect = 1.0) {
     const a = landmarks[idxA], b = landmarks[idxB], c = landmarks[idxC];
     if (!a || !b || !c) return null;
     if ((a.visibility !== undefined && a.visibility < minVisibility) ||
@@ -661,7 +680,7 @@ function getJointAngleWithVisibility(landmarks, idxA, idxB, idxC, minVisibility 
         (c.visibility !== undefined && c.visibility < minVisibility)) {
         return null;
     }
-    return window.luminixPose.calculateAngle(a, b, c);
+    return window.luminixPose.calculateAngle(a, b, c, aspect);
 }
 
 function processGymExerciseRep(landmarks) {
@@ -673,9 +692,11 @@ function processGymExerciseRep(landmarks) {
 
     const angleEl = document.getElementById('gym-active-angle');
     const formEl = document.getElementById('gym-form-status');
+    const video = document.getElementById('gym-video');
+    const aspect = (video && video.videoWidth && video.videoHeight) ? (video.videoWidth / video.videoHeight) : 1.0;
 
     // ── Check Posture & Camera Angle Alert ────────────────────────
-    const postureMetrics = window.luminixPose.evaluatePostureRisk(landmarks);
+    const postureMetrics = window.luminixPose.evaluatePostureRisk(landmarks, { aspect });
     window.luminixPose.renderPostureAlert('gym-posture-alert-toast', postureMetrics);
 
     // ── 1. Calculate Joint Angles with Visibility Filtering ──────
@@ -692,8 +713,8 @@ function processGymExerciseRep(landmarks) {
     if (name.includes('squat') || name.includes('lunge') || name.includes('leg press')) {
         // Legs / Squats: Knee joint (23-25-27, 24-26-28)
         jointName = 'Knee Flexion';
-        leftAngle = getJointAngleWithVisibility(landmarks, 23, 25, 27, 0.45);
-        rightAngle = getJointAngleWithVisibility(landmarks, 24, 26, 28, 0.45);
+        leftAngle = getJointAngleWithVisibility(landmarks, 23, 25, 27, 0.45, aspect);
+        rightAngle = getJointAngleWithVisibility(landmarks, 24, 26, 28, 0.45, aspect);
         startThreshold = 150;      // Standing upright
         inflectionThreshold = 100;  // Deep squat depth
         returnThreshold = 145;     // Returned to standing
@@ -702,8 +723,8 @@ function processGymExerciseRep(landmarks) {
     } else if (name.includes('bicep') || name.includes('curl')) {
         // Arms / Bicep Curls: Elbow joint (11-13-15, 12-14-16)
         jointName = 'Elbow Flexion';
-        leftAngle = getJointAngleWithVisibility(landmarks, 11, 13, 15, 0.45);
-        rightAngle = getJointAngleWithVisibility(landmarks, 12, 14, 16, 0.45);
+        leftAngle = getJointAngleWithVisibility(landmarks, 11, 13, 15, 0.45, aspect);
+        rightAngle = getJointAngleWithVisibility(landmarks, 12, 14, 16, 0.45, aspect);
         startThreshold = 140;      // Arms extended downward
         inflectionThreshold = 65;  // Top peak squeeze
         returnThreshold = 135;     // Lowered back down
@@ -712,8 +733,8 @@ function processGymExerciseRep(landmarks) {
     } else if (name.includes('overhead') || (name.includes('press') && name.includes('shoulder'))) {
         // Shoulders / Overhead Press: Start is low (elbows bent), peak is high (elbows locked)
         jointName = 'Elbow Press';
-        leftAngle = getJointAngleWithVisibility(landmarks, 11, 13, 15, 0.45);
-        rightAngle = getJointAngleWithVisibility(landmarks, 12, 14, 16, 0.45);
+        leftAngle = getJointAngleWithVisibility(landmarks, 11, 13, 15, 0.45, aspect);
+        rightAngle = getJointAngleWithVisibility(landmarks, 12, 14, 16, 0.45, aspect);
         startThreshold = 95;       // Dumbbells at shoulder level
         inflectionThreshold = 150; // Pressed high overhead
         returnThreshold = 100;     // Lowered back to shoulders
@@ -723,8 +744,8 @@ function processGymExerciseRep(landmarks) {
     } else if (name.includes('push-up') || name.includes('bench') || name.includes('press') || name.includes('fly')) {
         // Chest / Push-ups / Bench: Elbow joint
         jointName = 'Elbow Angle';
-        leftAngle = getJointAngleWithVisibility(landmarks, 11, 13, 15, 0.45);
-        rightAngle = getJointAngleWithVisibility(landmarks, 12, 14, 16, 0.45);
+        leftAngle = getJointAngleWithVisibility(landmarks, 11, 13, 15, 0.45, aspect);
+        rightAngle = getJointAngleWithVisibility(landmarks, 12, 14, 16, 0.45, aspect);
         startThreshold = 145;      // Arms locked out
         inflectionThreshold = 90;  // Chest to floor/bar
         returnThreshold = 140;     // Pushed back to lockout
@@ -733,8 +754,8 @@ function processGymExerciseRep(landmarks) {
     } else if (name.includes('row') || name.includes('pull')) {
         // Back / Rows: Elbow joint
         jointName = 'Elbow Pull';
-        leftAngle = getJointAngleWithVisibility(landmarks, 11, 13, 15, 0.45);
-        rightAngle = getJointAngleWithVisibility(landmarks, 12, 14, 16, 0.45);
+        leftAngle = getJointAngleWithVisibility(landmarks, 11, 13, 15, 0.45, aspect);
+        rightAngle = getJointAngleWithVisibility(landmarks, 12, 14, 16, 0.45, aspect);
         startThreshold = 140;      // Arms extended forward
         inflectionThreshold = 80;  // Pulled into abdomen
         returnThreshold = 135;     // Extended
@@ -747,7 +768,7 @@ function processGymExerciseRep(landmarks) {
         const midShY = (landmarks[11].y + landmarks[12].y) / 2;
         const midHipX = (landmarks[23].x + landmarks[24].x) / 2;
         const midHipY = (landmarks[23].y + landmarks[24].y) / 2;
-        leftAngle = Math.round(Math.abs(Math.atan2(midShX - midHipX, midHipY - midShY) * (180 / Math.PI)));
+        leftAngle = Math.round(Math.abs(Math.atan2((midShX - midHipX) * aspect, midHipY - midShY) * (180 / Math.PI)));
         rightAngle = leftAngle;
         startThreshold = 20;
         inflectionThreshold = 20;

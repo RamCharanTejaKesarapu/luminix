@@ -35,6 +35,7 @@ from database.firebase_admin_service import (  # noqa: E402
     save_telemetry_to_firestore,
 )
 from api.auth_routes import get_optional_user, router as auth_router  # noqa: E402
+from api.health_routes import router as health_router  # noqa: E402
 from auth.firewall import SecurityFirewallMiddleware, firewall  # noqa: E402
 from auth.oauth import google_configured, github_configured  # noqa: E402
 from gym_module.exercises import GYM_PLANS, generate_daily_workout, get_gym_plan  # noqa: E402
@@ -48,11 +49,25 @@ from video_module.video_creator import render_health_video  # noqa: E402
 from cooking_module.recipes import suggest_recipes  # noqa: E402
 
 OUTPUT = PROJECT_ROOT / "output"
-OUTPUT.mkdir(parents=True, exist_ok=True)
+if os.environ.get("VERCEL") or os.environ.get("AWS_LAMBDA_FUNCTION_NAME"):
+    OUTPUT = Path("/tmp") / "luminix_output"
+try:
+    OUTPUT.mkdir(parents=True, exist_ok=True)
+except OSError:
+    OUTPUT = Path("/tmp") / "luminix_output"
+    OUTPUT.mkdir(parents=True, exist_ok=True)
+
 STATIC_DIR = PROJECT_ROOT / "frontend"
 ASSETS_DIR = PROJECT_ROOT / "assets"
-STATIC_DIR.mkdir(parents=True, exist_ok=True)
-ASSETS_DIR.mkdir(parents=True, exist_ok=True)
+try:
+    STATIC_DIR.mkdir(parents=True, exist_ok=True)
+except OSError:
+    pass
+try:
+    ASSETS_DIR.mkdir(parents=True, exist_ok=True)
+except OSError:
+    pass
+
 init_db(ROOT / "data" / "health_intel.sqlite")
 
 
@@ -143,6 +158,7 @@ IMAGES_DIR = STATIC_DIR / "images"
 if IMAGES_DIR.exists():
     app.mount("/images", StaticFiles(directory=str(IMAGES_DIR)), name="images")
 app.include_router(auth_router)
+app.include_router(health_router)
 
 
 @app.api_route("/", methods=["GET", "HEAD"])
@@ -875,6 +891,12 @@ def reset_telemetry() -> Dict[str, Any]:
         "last_sync": None,
         "raw_packets_received": 0
     }
+    try:
+        from api.health_routes import _registered_devices, _active_live_sessions
+        _registered_devices.clear()
+        _active_live_sessions.clear()
+    except Exception:
+        pass
     return {"status": "reset", "connected": False}
 
 # BLE device cache for instant, non-blocking proximity and scan queries
@@ -944,7 +966,6 @@ def force_pair_request() -> Dict[str, Any]:
 def get_bluetooth_hardware_state() -> Dict[str, Any]:
     """Returns real physical hardware power status of the Bluetooth controller."""
     import subprocess
-    import json
     is_on = True
     state_str = "Powered On"
     try:
@@ -967,7 +988,6 @@ def get_bluetooth_hardware_state() -> Dict[str, Any]:
 async def scan_bluetooth_devices() -> Dict[str, Any]:
     """Scans for real BLE smartwatches, mobile phones, and reads system Bluetooth devices."""
     import subprocess
-    import json
     import asyncio
     import time
     global _ble_device_cache, _last_ble_scan_time, _known_system_devices
@@ -1152,6 +1172,22 @@ def connect_bluetooth_device(payload: BluetoothConnectPayload) -> Dict[str, Any]
             if battery is not None:
                 existing["battery"] = battery
 
+        # Also register in health_routes for system-wide real device tracking
+        try:
+            from api.health_routes import _registered_devices
+            dev_id = payload.device_name.lower().replace(" ", "_")
+            _registered_devices[dev_id] = {
+                "id": dev_id,
+                "name": payload.device_name,
+                "device_type": payload.device_type or "smartwatch",
+                "source": "direct_ble",
+                "platform": payload.connection_type or "Web Bluetooth GATT BLE 5.3",
+                "connected_at": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
+                "status": "connected",
+            }
+        except Exception:
+            pass
+
     dist = round(steps * 0.00076, 2) if steps is not None else None
     cal = round(steps * 0.045) if steps is not None else None
 
@@ -1238,7 +1274,7 @@ def record_metric_history(
 
 
 @app.get("/v1/telemetry/history")
-def get_metric_history(
+def get_telemetry_metric_history(
     current_user: Optional[Dict[str, Any]] = Depends(get_optional_user),
 ) -> Dict[str, Any]:
     """Returns stored metric snapshots from memory or Cloud Firestore scoped to the caller."""
@@ -1585,5 +1621,7 @@ def submit_creator_donation(
 def serve_companion_page() -> FileResponse:
     """Serve the dedicated Mobile Companion Pedometer & Biometric Bridge."""
     companion_path = STATIC_DIR / "companion.html"
+    if not companion_path.is_file():
+        raise HTTPException(status_code=404, detail="frontend/companion.html missing")
     return FileResponse(companion_path, media_type="text/html")
 

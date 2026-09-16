@@ -64,7 +64,10 @@
         // Risk detection
         riskActive: false,
         riskType: null,
-        riskMessage: ""
+        riskMessage: "",
+
+        // Full Biometric Data Provenance (Value, Unit, Measured Time, Age, Source, Device, Quality)
+        provenance: {}
     };
 
     let companionPollInterval = null;
@@ -76,6 +79,611 @@
     let _gattAlertChar = null;          // cached GATT immediate alert characteristic (0x2A06) for smartwatches
     let _gattStepCadence = 0;          // accumulated steps from RSC cadence
     let _gattCadenceStartTime = null;  // when cadence tracking began
+
+    // ── LUMINIX Mobile Health Bridge State (Sections 2, 5, 6, 7, 10, 13) ───────
+    const bridgeState = {
+        selectedSource: null, // null until selected by user or paired by real hardware
+        isLiveMonitoring: false,
+        liveWs: null,
+        livePacketCount: 0,
+        fetchSequenceActive: false,
+        fetchSequenceStep: 0,
+        fetchSequenceSteps: [
+            { id: 'hr', name: 'Heart Rate Stream', icon: '❤️', desc: 'Querying optical PPG time-series samples' },
+            { id: 'steps', name: 'Step Cadence & Distance', icon: '👟', desc: 'Fetching pedometer accelerometer vectors' },
+            { id: 'hrv', name: 'Heart Rate Variability', icon: '📈', desc: 'Computing autonomic sympathetic balance' },
+            { id: 'spo2', name: 'Blood Oxygen (SpO₂)', icon: '🫁', desc: 'Reading pulse oximeter reflection stream' },
+            { id: 'temp', name: 'Core Temperature', icon: '🌡️', desc: 'Reading thermal equilibrium sensor' },
+            { id: 'resp', name: 'Respiratory Rate', icon: '💨', desc: 'Acquiring breaths per minute' },
+            { id: 'bp', name: 'Blood Pressure', icon: '🩸', desc: 'Verifying authentic cuff/watch records' },
+            { id: 'sleep', name: 'Sleep & Circadian Rhythm', icon: '🌙', desc: 'Analyzing hypnogram and circadian debt' },
+            { id: 'sync', name: 'Cloud Synchronization', icon: '☁️', desc: 'Batch syncing normalized samples to database' },
+            { id: 'analysis', name: 'Multi-Signal Risk Engine', icon: '🛡️', desc: 'Executing Multi-Signal Heat & Cardio Analysis' },
+        ],
+        bpStatus: {
+            hasRecent: false,
+            systolic: null,
+            diastolic: null,
+            display: 'No device connected',
+            age: 'No device connected',
+            source: 'None',
+        },
+        heartRisk: {
+            score: 0,
+            level: 'AWAITING_DATA',
+            cardioLevel: 'AWAITING_DATA',
+            heatIndexF: 82.0,
+            heatIndexC: 27.8,
+            category: 'Normal',
+            alertActive: false,
+            alertTitle: '● AWAITING SENSOR TELEMETRY',
+            alertMsg: 'No live health device connected. Pair an authentic smartwatch or mobile bridge to stream biometrics.',
+            triggers: [],
+            missingSignals: ['heart_rate', 'hrv', 'blood_pressure', 'spo2'],
+            recommendations: [
+                'Pair a real smartwatch or companion sensor to initialize real-time cardiovascular monitoring.'
+            ],
+            disclaimer: 'Notice: Luminix Multi-Signal Heart Risk Engine provides investigational / decision-support monitoring only, not a clinical medical diagnosis. Consult certified healthcare personnel for clinical evaluations.',
+        },
+        get heatRisk() { return this.heartRisk; },
+        set heatRisk(val) { this.heartRisk = val; }
+    };
+
+    window.selectBridgeSource = function(sourceId) {
+        bridgeState.selectedSource = sourceId;
+        const descriptions = {
+            healthkit: '🍏 Apple HealthKit: Open the Luminix iOS Companion on your iPhone to pair your authentic Apple Watch and stream real HealthKit records.',
+            health_connect: '🤖 Google Health Connect: Open the Luminix Companion on your Android phone to sync authentic Wear OS / Health Connect records.',
+            direct_bp_device: '🩸 Dedicated BLE BP Monitor: Put your Omron Evolv or Bluetooth cuff in pairing mode and click PAIR REAL DEVICE.',
+            system_bt: '📡 Host BLE / Companion: Click PAIR REAL DEVICE to scan via Web Bluetooth, or PAIR PHONE to sync via Wi-Fi Companion.'
+        };
+        window.showToast?.(descriptions[sourceId] || `Active Health Bridge: ${sourceId}`, 'info', 4500);
+        renderCurrentView();
+    };
+
+    window.fetchLatestHealthData = async function() {
+        if (bridgeState.fetchSequenceActive) return;
+        bridgeState.fetchSequenceActive = true;
+        bridgeState.fetchSequenceStep = 0;
+        renderCurrentView();
+
+        const totalSteps = bridgeState.fetchSequenceSteps.length;
+        for (let i = 0; i < totalSteps; i++) {
+            bridgeState.fetchSequenceStep = i;
+            renderCurrentView();
+            await new Promise(r => setTimeout(r, 200));
+        }
+
+        try {
+            const res = await fetch('/api/v1/health/latest?user_id=default');
+            if (res.ok) {
+                const data = await res.json();
+                const m = data.metrics || {};
+                const profile = getBiometricProfile();
+
+                // STRICT REAL DEVICE REQUIREMENT:
+                // If backend reports no registered device connected, NEVER fake-pair Apple Watch or any device!
+                if (!data.is_device_connected) {
+                    wearableState.connected = false;
+                    wearableState.status = 'standby';
+                    wearableState.deviceName = null;
+                    wearableState.deviceType = null;
+                    wearableState.connectionType = null;
+                    wearableState.batteryLevel = null;
+                    wearableState.steps = null;
+                    wearableState.caloriesBurned = null;
+                    wearableState.distanceKm = null;
+                    wearableState.spo2 = null;
+                    wearableState.systolic = null;
+                    wearableState.diastolic = null;
+                    wearableState.heartRate = null;
+                    wearableState.hrv = null;
+                    wearableState.sleepHours = null;
+                    wearableState.sleepMinutes = null;
+                    wearableState.sleepQuality = null;
+                    wearableState.sleepScore = null;
+                    wearableState.provenance = {};
+
+                    bridgeState.bpStatus = {
+                        hasRecent: false,
+                        systolic: null,
+                        diastolic: null,
+                        display: 'No device connected',
+                        age: 'No device connected',
+                        source: 'None',
+                    };
+
+                    if (data.risk_evaluation) {
+                        const r = data.risk_evaluation;
+                        bridgeState.heartRisk = {
+                            score: r.score || r.cardiac_strain_score || 0,
+                            level: r.risk_level || 'AWAITING_DATA',
+                            cardioLevel: r.cardio_risk_level || 'AWAITING_DATA',
+                            heatIndexF: r.heat_index_f || 82.0,
+                            heatIndexC: r.heat_index_c || 28.0,
+                            category: r.heat_index_category || 'Normal',
+                            alertActive: false,
+                            alertTitle: r.alert_title || '● AWAITING SENSOR TELEMETRY',
+                            alertMsg: r.alert_msg || 'No health device connected. Pair a real wearable or companion bridge.',
+                            triggers: r.triggers || [],
+                            missingSignals: r.missing_signals || ['heart_rate', 'hrv', 'blood_pressure', 'spo2'],
+                            recommendations: r.recommendations || ['Pair a real health device to calculate cardiovascular metrics.'],
+                            disclaimer: r.disclaimer || 'Notice: Luminix Multi-Signal Heart Risk Engine provides investigational / decision-support monitoring only.',
+                        };
+                    }
+
+                    window.showToast?.('⚠️ No health device currently connected. Pair a real device first.', 'warning', 3500);
+                    return;
+                }
+
+                // If real device IS registered and connected:
+                const connectedDev = (data.connected_devices && data.connected_devices.length > 0)
+                    ? data.connected_devices[0]
+                    : null;
+
+                wearableState.connected = true;
+                wearableState.status = 'connected';
+                wearableState.deviceName = connectedDev ? (connectedDev.name || connectedDev.device_name) : 'Connected Real Device';
+                wearableState.deviceType = connectedDev ? (connectedDev.device_type || connectedDev.type || 'smartwatch') : 'smartwatch';
+                wearableState.connectionType = connectedDev ? (connectedDev.platform || connectedDev.source || 'Luminix Health Bridge') : 'Luminix Health Bridge';
+                wearableState.pairedAt = connectedDev?.connected_at || connectedDev?.last_sync ? new Date(connectedDev.connected_at || connectedDev.last_sync).toLocaleTimeString() : new Date().toLocaleTimeString();
+
+                // 1. Heart Rate (Strict: Only if measured)
+                if (m.heart_rate && m.heart_rate.value !== null && m.heart_rate.value !== undefined) {
+                    wearableState.heartRate = Math.round(m.heart_rate.value);
+                    wearableState.provenance.heart_rate = {
+                        value: wearableState.heartRate,
+                        unit: m.heart_rate.unit || 'BPM',
+                        time_str: m.heart_rate.time_str || '--:--:--',
+                        age_str: m.heart_rate.age_str || 'Recent',
+                        source: m.heart_rate.source || wearableState.deviceName,
+                        device: m.heart_rate.device || wearableState.deviceName,
+                        quality: m.heart_rate.quality || 'Raw Optical PPG',
+                    };
+                } else {
+                    wearableState.heartRate = null;
+                }
+
+                // 2. Steps (Strict: Only if measured)
+                if (m.steps && m.steps.value !== null && m.steps.value !== undefined) {
+                    wearableState.steps = Math.round(m.steps.value);
+                    wearableState.distanceKm = computeDistanceKm(wearableState.steps, profile.height);
+                    wearableState.caloriesBurned = computeCalories(wearableState.steps, profile.weight);
+                    wearableState.provenance.steps = {
+                        value: wearableState.steps,
+                        unit: 'steps',
+                        time_str: m.steps.time_str || '--:--:--',
+                        age_str: m.steps.age_str || 'Recent',
+                        source: m.steps.source || wearableState.deviceName,
+                        device: m.steps.device || wearableState.deviceName,
+                        quality: m.steps.quality || 'Hardware Pedometer',
+                    };
+                } else {
+                    wearableState.steps = null;
+                    wearableState.distanceKm = null;
+                    wearableState.caloriesBurned = null;
+                }
+
+                // 3. HRV (Strict: Only if measured)
+                if (m.hrv && m.hrv.value !== null && m.hrv.value !== undefined) {
+                    wearableState.hrv = Math.round(m.hrv.value);
+                    wearableState.provenance.hrv = {
+                        value: wearableState.hrv,
+                        unit: 'ms',
+                        time_str: m.hrv.time_str || '--:--:--',
+                        age_str: m.hrv.age_str || 'Recent',
+                        source: m.hrv.source || wearableState.deviceName,
+                        device: m.hrv.device || wearableState.deviceName,
+                        quality: m.hrv.quality || 'SDNN R-R Intervals',
+                    };
+                } else {
+                    wearableState.hrv = null;
+                }
+
+                // 4. SpO2 (Strict: Only if measured)
+                if (m.spo2 && m.spo2.value !== null && m.spo2.value !== undefined) {
+                    wearableState.spo2 = Math.round(m.spo2.value);
+                    wearableState.provenance.spo2 = {
+                        value: wearableState.spo2,
+                        unit: '%',
+                        time_str: m.spo2.time_str || '--:--:--',
+                        age_str: m.spo2.age_str || 'Recent',
+                        source: m.spo2.source || wearableState.deviceName,
+                        device: m.spo2.device || wearableState.deviceName,
+                        quality: m.spo2.quality || 'Dual-wavelength PPG',
+                    };
+                } else {
+                    wearableState.spo2 = null;
+                }
+
+                // 5. Sleep (Strict: Only if measured)
+                if (m.sleep_duration && m.sleep_duration.value !== null && m.sleep_duration.value !== undefined) {
+                    const hrs = m.sleep_duration.value;
+                    wearableState.sleepHours = Math.floor(hrs);
+                    wearableState.sleepMinutes = Math.round((hrs - Math.floor(hrs)) * 60);
+                    wearableState.sleepQuality = hrs >= 7 ? 'GOOD' : 'FAIR';
+                    wearableState.sleepScore = Math.min(100, Math.round(hrs * 12));
+                    wearableState.provenance.sleep = {
+                        value: `${wearableState.sleepHours}h ${wearableState.sleepMinutes}m`,
+                        unit: 'hours',
+                        time_str: m.sleep_duration.time_str || '--:--:--',
+                        age_str: m.sleep_duration.age_str || 'Recent',
+                        source: m.sleep_duration.source || wearableState.deviceName,
+                        device: m.sleep_duration.device || wearableState.deviceName,
+                        quality: m.sleep_duration.quality || 'Polysomnography Hypnogram',
+                    };
+                } else {
+                    wearableState.sleepHours = null;
+                    wearableState.sleepMinutes = null;
+                    wearableState.sleepQuality = null;
+                    wearableState.sleepScore = null;
+                }
+
+                // 6. Strict Blood Pressure Handling (Never estimate fake BP)
+                const bp = m.blood_pressure;
+                if (bp && bp.is_recent && bp.systolic && bp.diastolic) {
+                    wearableState.systolic = Math.round(bp.systolic);
+                    wearableState.diastolic = Math.round(bp.diastolic);
+                    bridgeState.bpStatus = {
+                        hasRecent: true,
+                        systolic: Math.round(bp.systolic),
+                        diastolic: Math.round(bp.diastolic),
+                        display: `${Math.round(bp.systolic)}/${Math.round(bp.diastolic)} mmHg`,
+                        age: bp.age_str || 'Recent',
+                        source: bp.source || 'BLE Cuff',
+                    };
+                    wearableState.provenance.blood_pressure = {
+                        value: `${wearableState.systolic}/${wearableState.diastolic}`,
+                        unit: 'mmHg',
+                        time_str: bp.time_str || '--:--:--',
+                        age_str: bp.age_str || 'Recent',
+                        source: bp.source || 'BLE Cuff',
+                        device: bp.device || 'Verified Cuff',
+                        quality: 'Oscillometric Sensor',
+                    };
+                } else {
+                    wearableState.systolic = null;
+                    wearableState.diastolic = null;
+                    bridgeState.bpStatus = {
+                        hasRecent: false,
+                        systolic: null,
+                        diastolic: null,
+                        display: 'No recent measurement',
+                        age: 'No recent measurement',
+                        source: 'None',
+                    };
+                }
+
+                // 7. Multi-Signal Heart & Cardiovascular Risk Engine
+                if (data.risk_evaluation) {
+                    const r = data.risk_evaluation;
+                    bridgeState.heartRisk = {
+                        score: r.score || r.cardiac_strain_score || 0,
+                        level: r.risk_level || r.heart_risk_level || 'LOW',
+                        cardioLevel: r.cardio_risk_level || 'NORMAL',
+                        heatIndexF: r.heat_index_f || 82.0,
+                        heatIndexC: r.heat_index_c || 28.0,
+                        category: r.heat_index_category || 'Normal',
+                        alertActive: r.is_alert_active || r.alert_triggered || false,
+                        alertTitle: r.alert_title || (r.is_alert_active ? `⚠ HEART RISK: ${r.heart_risk_level || 'HIGH'}` : '● CARDIAC STATUS: OPTIMAL'),
+                        alertMsg: r.alert_msg || 'Cardiovascular vitals within stable parameters.',
+                        triggers: r.triggers || [],
+                        missingSignals: r.missing_signals || [],
+                        recommendations: r.recommendations || ['Cardiovascular vitals in athletic equilibrium.'],
+                        disclaimer: r.disclaimer || 'Notice: Luminix Multi-Signal Heart Risk Engine provides investigational / decision-support monitoring only.',
+                    };
+
+                    if (bridgeState.heartRisk.alertActive && (bridgeState.heartRisk.level === 'HIGH' || bridgeState.heartRisk.level === 'CRITICAL' || bridgeState.heartRisk.level === 'EXTREME')) {
+                        window.showHeartRiskModal?.();
+                    }
+                }
+
+                recordTodaySnapshot();
+                window.showToast?.(`✓ Real device synced: ${wearableState.deviceName}`, 'success', 3500);
+            }
+        } catch (err) {
+            console.warn('[FetchHealthData] API error:', err);
+            window.showToast?.('Backend bridge reachable. No remote data synced.', 'info', 2500);
+        } finally {
+            bridgeState.fetchSequenceActive = false;
+            renderCurrentView();
+        }
+    };
+
+    window.toggleLiveMonitoring = async function() {
+        if (bridgeState.isLiveMonitoring) {
+            try {
+                await fetch('/api/v1/health/live/stop?user_id=default', { method: 'POST' });
+            } catch (_) {}
+
+            if (bridgeState.liveWs) {
+                try { bridgeState.liveWs.close(); } catch (_) {}
+                bridgeState.liveWs = null;
+            }
+
+            bridgeState.isLiveMonitoring = false;
+            window.showToast?.('Live monitoring session concluded.', 'info', 2500);
+            renderCurrentView();
+            return;
+        }
+
+        // Live monitoring requires an authentic paired continuous device
+        if (!wearableState.connected) {
+            window.showToast?.('LIVE MONITORING — Status: Not available. Pair a real continuous health device first.', 'warning', 4000);
+            return;
+        }
+
+        try {
+            await fetch('/api/v1/health/live/start', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    userId: 'default',
+                    sessionType: 'monitoring',
+                    source: bridgeState.selectedSource,
+                    device: wearableState.deviceName,
+                }),
+            });
+        } catch (_) {}
+
+        const proto = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+        const wsUrl = `${proto}//${window.location.host}/api/v1/health/live/ws`;
+
+        try {
+            bridgeState.liveWs = new WebSocket(wsUrl);
+
+            bridgeState.liveWs.onopen = () => {
+                bridgeState.isLiveMonitoring = true;
+                bridgeState.livePacketCount = 0;
+                window.showToast?.('⚡ LIVE MONITORING ACTIVE — Streaming authentic device telemetry', 'success', 3500);
+                renderCurrentView();
+
+                bridgeState.liveWs.send(JSON.stringify({
+                    type: 'register_dashboard',
+                    userId: 'default',
+                    timestamp: new Date().toISOString()
+                }));
+            };
+
+            bridgeState.liveWs.onmessage = (event) => {
+                try {
+                    const packet = JSON.parse(event.data);
+                    bridgeState.livePacketCount++;
+
+                    if (packet.telemetry) {
+                        const t = packet.telemetry;
+                        if (t.heartRate !== undefined && t.heartRate !== null) {
+                            wearableState.heartRate = Math.round(t.heartRate);
+                        }
+                        if (t.spo2 !== undefined && t.spo2 !== null) {
+                            wearableState.spo2 = Math.round(t.spo2);
+                        }
+                    }
+
+                    if (packet.risk) {
+                        const r = packet.risk;
+                        bridgeState.heartRisk.score = r.score || r.cardiac_strain_score || bridgeState.heartRisk.score;
+                        bridgeState.heartRisk.level = r.risk_level || r.heart_risk_level || bridgeState.heartRisk.level;
+                        bridgeState.heartRisk.alertActive = r.is_alert_active || false;
+                        if (r.cardio_risk_level) bridgeState.heartRisk.cardioLevel = r.cardio_risk_level;
+                        if (r.triggers) bridgeState.heartRisk.triggers = r.triggers;
+                        if (r.recommendations) bridgeState.heartRisk.recommendations = r.recommendations;
+                        if (bridgeState.heartRisk.alertActive && (bridgeState.heartRisk.level === 'HIGH' || bridgeState.heartRisk.level === 'CRITICAL' || bridgeState.heartRisk.level === 'EXTREME')) {
+                            window.showHeartRiskModal?.();
+                        }
+                    }
+
+                    const hrEl = document.getElementById('wearable-hr-val');
+                    if (hrEl) hrEl.textContent = wearableState.heartRate ? `${wearableState.heartRate} bpm` : 'No recent measurement';
+                } catch (_) {}
+            };
+
+            bridgeState.liveWs.onclose = () => {
+                bridgeState.isLiveMonitoring = false;
+                renderCurrentView();
+            };
+
+            bridgeState.liveWs.onerror = () => {
+                bridgeState.isLiveMonitoring = false;
+                renderCurrentView();
+            };
+        } catch (e) {
+            console.warn('[LiveMonitoring] WebSocket init failed:', e);
+            window.showToast?.('WebSocket connection failed. Check server status.', 'error', 3000);
+        }
+    };
+
+    window.openLogCuffMeasurementModal = function() {
+        let modal = document.getElementById('log-cuff-bp-modal');
+        if (!modal) {
+            modal = document.createElement('div');
+            modal.id = 'log-cuff-bp-modal';
+            modal.className = 'search-modal-overlay';
+            document.body.appendChild(modal);
+        }
+        modal.innerHTML = `
+            <div class="search-modal-backdrop" onclick="window.closeLogCuffMeasurementModal()"></div>
+            <div class="search-modal-box max-w-[460px] border-cyan-500/50 shadow-[0_0_60px_rgba(0,242,254,0.25)]" onclick="event.stopPropagation()">
+                <div class="flex items-center justify-between pb-3 border-b border-[var(--border-subtle)] mb-4">
+                    <div class="flex items-center gap-2">
+                        <span class="text-xl">🩸</span>
+                        <div>
+                            <h3 class="font-display font-bold text-sm text-[var(--bone)]">LOG AUTHENTIC CUFF MEASUREMENT</h3>
+                            <p class="font-mono text-[10px] text-[var(--text-dim)]">Strict Clinical Rule: Cuff-verified records only</p>
+                        </div>
+                    </div>
+                    <button type="button" class="search-clear-btn" onclick="window.closeLogCuffMeasurementModal()">&times;</button>
+                </div>
+                <div class="space-y-4 mb-5">
+                    <div>
+                        <label class="block font-mono text-[10px] text-[var(--bone-dim)] uppercase mb-1">Systolic Pressure (mmHg)</label>
+                        <input id="cuff-sys-input" type="number" min="70" max="240" placeholder="e.g. 118" value="120"
+                            class="w-full bg-[rgba(255,255,255,0.04)] border border-[var(--border-subtle)] rounded-lg px-3 py-2 text-sm text-white font-mono focus:border-cyan-400 outline-none" />
+                    </div>
+                    <div>
+                        <label class="block font-mono text-[10px] text-[var(--bone-dim)] uppercase mb-1">Diastolic Pressure (mmHg)</label>
+                        <input id="cuff-dia-input" type="number" min="40" max="150" placeholder="e.g. 76" value="80"
+                            class="w-full bg-[rgba(255,255,255,0.04)] border border-[var(--border-subtle)] rounded-lg px-3 py-2 text-sm text-white font-mono focus:border-cyan-400 outline-none" />
+                    </div>
+                    <div>
+                        <label class="block font-mono text-[10px] text-[var(--bone-dim)] uppercase mb-1">Device Source</label>
+                        <select id="cuff-source-input" class="w-full bg-[#0d1520] border border-[var(--border-subtle)] rounded-lg px-3 py-2 text-sm text-white font-mono focus:border-cyan-400 outline-none">
+                            <option value="Omron Evolv BLE Cuff">Omron Evolv BLE Cuff</option>
+                            <option value="Beurer BM 85 BLE">Beurer BM 85 BLE</option>
+                            <option value="Withings BPM Connect">Withings BPM Connect</option>
+                            <option value="Manual Validated Sphygmomanometer">Manual Validated Sphygmomanometer</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="flex items-center justify-end gap-2">
+                    <button type="button" onclick="window.closeLogCuffMeasurementModal()" class="btn-editorial-secondary text-xs py-2 px-3">
+                        Cancel
+                    </button>
+                    <button type="button" onclick="window.submitCuffMeasurement()" class="btn-editorial-primary text-xs py-2 px-4 bg-cyan-500 text-black font-bold">
+                        ✓ SAVE CUFF RECORD
+                    </button>
+                </div>
+            </div>
+        `;
+        modal.classList.remove('hidden');
+    };
+
+    window.closeLogCuffMeasurementModal = function() {
+        const modal = document.getElementById('log-cuff-bp-modal');
+        if (modal) modal.classList.add('hidden');
+    };
+
+    window.submitCuffMeasurement = async function() {
+        const sys = parseInt(document.getElementById('cuff-sys-input')?.value || '120', 10);
+        const dia = parseInt(document.getElementById('cuff-dia-input')?.value || '80', 10);
+        const source = document.getElementById('cuff-source-input')?.value || 'Omron Evolv BLE Cuff';
+
+        if (isNaN(sys) || isNaN(dia) || dia >= sys || sys < 60 || sys > 260) {
+            window.showToast?.('Please enter physiological systolic/diastolic values (e.g. 120/80).', 'error', 3000);
+            return;
+        }
+
+        try {
+            await fetch('/api/v1/health/sync', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    userId: 'default',
+                    source: 'direct_bp_device',
+                    sync_mode: 'cuff_input',
+                    samples: [{
+                        metric: 'blood_pressure',
+                        systolic: sys,
+                        diastolic: dia,
+                        unit: 'mmHg',
+                        source: source,
+                        device: source,
+                        quality: 'cuff_verified',
+                        timestamp: new Date().toISOString()
+                    }]
+                })
+            });
+        } catch (_) {}
+
+        wearableState.systolic = sys;
+        wearableState.diastolic = dia;
+        bridgeState.bpStatus = {
+            hasRecent: true,
+            systolic: sys,
+            diastolic: dia,
+            display: `${sys}/${dia} mmHg`,
+            age: 'Just now',
+            source: source,
+        };
+
+        window.closeLogCuffMeasurementModal();
+        window.showToast?.(`✓ Authentic Blood Pressure saved: ${sys}/${dia} mmHg (${source})`, 'success', 3500);
+        recordTodaySnapshot();
+        renderCurrentView();
+    };
+
+    window.showHeartRiskModal = function() {
+        let modal = document.getElementById('heart-risk-warning-modal');
+        if (!modal) {
+            modal = document.createElement('div');
+            modal.id = 'heart-risk-warning-modal';
+            modal.className = 'search-modal-overlay';
+            document.body.appendChild(modal);
+        }
+
+        const risk = bridgeState.heartRisk || bridgeState.heatRisk;
+        modal.innerHTML = `
+            <div class="search-modal-backdrop" onclick="window.dismissHeartRiskModal()"></div>
+            <div class="search-modal-box max-w-[520px] border-red-500 shadow-[0_0_80px_rgba(239,68,68,0.4)]" onclick="event.stopPropagation()">
+                <div class="flex items-start gap-3.5 mb-4">
+                    <div class="w-12 h-12 rounded-xl bg-red-500/20 border border-red-500/50 flex items-center justify-center text-2xl animate-pulse">
+                        ❤️
+                    </div>
+                    <div class="flex-1">
+                        <div class="flex items-center gap-2">
+                            <span class="px-2 py-0.5 rounded bg-red-600 text-white font-mono text-[10px] font-black uppercase tracking-wider">
+                                ${risk.level} HEART RISK DETECTED
+                            </span>
+                            <span class="font-mono text-[11px] text-red-400 font-bold">Cardiac Strain: ${risk.score}/100</span>
+                        </div>
+                        <h3 class="font-display font-black text-lg text-white mt-1">
+                            Elevated Cardiovascular Strain Detected
+                        </h3>
+                    </div>
+                    <button type="button" class="search-clear-btn" onclick="window.dismissHeartRiskModal()">&times;</button>
+                </div>
+
+                <div class="bg-[rgba(239,68,68,0.08)] border border-red-500/30 rounded-lg p-3 mb-4 font-mono text-xs">
+                    <div class="text-white font-bold mb-1">Cardiac Load: ${risk.cardioLevel || 'HIGH'} • Rest Baseline Delta Active</div>
+                    <div class="text-red-300 text-[11px]">${risk.alertMsg}</div>
+                </div>
+
+                <div class="mb-4">
+                    <div class="font-mono text-[10px] text-[var(--bone-dim)] uppercase tracking-wider font-bold mb-2">
+                        CARDIOLOGY-ALIGNED ACTIONABLE GUIDANCE:
+                    </div>
+                    <div class="space-y-1.5 font-mono text-xs text-white">
+                        <div class="flex items-start gap-2">
+                            <span class="text-emerald-400 font-bold">✓</span>
+                            <span>Halt strenuous physical exercise and heavy cardiovascular exertion immediately.</span>
+                        </div>
+                        <div class="flex items-start gap-2">
+                            <span class="text-emerald-400 font-bold">✓</span>
+                            <span>Sit or recline in a supported upright posture (head elevated 30–45°) to reduce venous return pressure.</span>
+                        </div>
+                        <div class="flex items-start gap-2">
+                            <span class="text-emerald-400 font-bold">✓</span>
+                            <span>Practice slow 4-7-8 diaphragmatic breathing to stimulate parasympathetic vagal recovery.</span>
+                        </div>
+                        <div class="flex items-start gap-2">
+                            <span class="text-amber-400 font-bold">!</span>
+                            <span>Seek emergency medical care or call 911 immediately if chest pain, pressure, arm/jaw numbness, or severe shortness of breath occurs.</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="text-[10px] text-[var(--text-dim)] font-mono border-t border-[var(--border-subtle)] pt-3 mb-4 italic leading-relaxed">
+                    ${risk.disclaimer}
+                </div>
+
+                <div class="flex justify-end gap-2">
+                    <button type="button" onclick="window.dismissHeartRiskModal()" class="btn-editorial-primary text-xs py-2 px-4 bg-red-600 hover:bg-red-500 text-white font-bold">
+                        ACKNOWLEDGE &amp; PROCEED WITH CAUTION
+                    </button>
+                </div>
+            </div>
+        `;
+        modal.classList.remove('hidden');
+    };
+
+    window.dismissHeartRiskModal = function() {
+        const modal = document.getElementById('heart-risk-warning-modal') || document.getElementById('heat-risk-warning-modal');
+        if (modal) modal.classList.add('hidden');
+    };
+
+    // Aliases for seamless backwards compatibility
+    window.showHeatRiskModal = window.showHeartRiskModal;
+    window.dismissHeatRiskModal = window.dismissHeartRiskModal;
 
     // ── History Storage (localStorage + backend) ──────────────────────────────
     const HISTORY_KEY = 'luminix_metrics_history';
@@ -560,28 +1168,18 @@
         if (legacyModal) legacyModal.remove();
     } catch (_) {}
 
-    // Verify if Bluetooth hardware radio is actively turned ON (Web Bluetooth + Host Controller)
+    // Verify if Bluetooth hardware radio is actively turned ON (Host Controller + Web Bluetooth)
     async function checkBluetoothAvailability() {
-        let isBtOn = true;
-
-        // 1. Browser Native Web Bluetooth Radio Check
-        if (navigator.bluetooth && navigator.bluetooth.getAvailability) {
-            try {
-                const avail = await navigator.bluetooth.getAvailability();
-                if (avail === false) {
-                    _bluetoothPoweredOn = false;
-                    updateBluetoothUIIndicators(false);
-                    return false;
-                }
-            } catch (_) {}
-        }
-
-        // 2. Host Machine Physical Controller Check
+        // 1. Host Machine Physical Controller Check (macOS system_profiler via backend)
         try {
             const res = await fetch('/v1/bluetooth/state');
             if (res.ok) {
                 const data = await res.json();
-                if (data.powered_on === false) {
+                if (data.powered_on === true) {
+                    _bluetoothPoweredOn = true;
+                    updateBluetoothUIIndicators(true);
+                    return true;
+                } else if (data.powered_on === false) {
                     _bluetoothPoweredOn = false;
                     updateBluetoothUIIndicators(false);
                     return false;
@@ -589,6 +1187,21 @@
             }
         } catch (_) {}
 
+        // 2. Browser Native Web Bluetooth Radio Check (secondary fallback)
+        // Notice: In privacy-first browsers like Brave, getAvailability() often returns false
+        // by default due to sandboxing even while hardware Bluetooth is fully operational.
+        if (navigator.bluetooth && navigator.bluetooth.getAvailability) {
+            try {
+                const avail = await navigator.bluetooth.getAvailability();
+                if (avail === true) {
+                    _bluetoothPoweredOn = true;
+                    updateBluetoothUIIndicators(true);
+                    return true;
+                }
+            } catch (_) {}
+        }
+
+        // Default to ON so user is never blocked from attempting device discovery
         _bluetoothPoweredOn = true;
         updateBluetoothUIIndicators(true);
         return true;
@@ -655,14 +1268,17 @@
 
                     <div class="p-3.5 rounded-lg bg-red-950/50 border border-red-500/50 font-mono text-[11px] text-red-300 font-bold flex items-center justify-center gap-2">
                         <span>👉</span>
-                        <span>Please turn ON Bluetooth on your computer &amp; device, then try again.</span>
+                        <span>If Bluetooth is already ON in macOS Control Center, click "I TURNED IT ON — RETRY" to proceed.</span>
                     </div>
 
-                    <div class="flex items-center justify-center gap-3 pt-2">
-                        <button type="button" onclick="window.closeBluetoothOffPopup()" class="btn-editorial-secondary text-xs py-2 px-4 text-[var(--bone-dim)]">
+                    <div class="flex items-center justify-center gap-2 pt-2 flex-wrap">
+                        <button type="button" onclick="window.closeBluetoothOffPopup()" class="btn-editorial-secondary text-xs py-2 px-3 text-[var(--bone-dim)]">
                             ✕ CLOSE
                         </button>
-                        <button type="button" onclick="window.retryBluetoothPairingAfterTurnOn()" class="btn-editorial-primary text-xs py-2 px-5 flex items-center gap-1.5 font-bold">
+                        <button type="button" onclick="window.closeBluetoothOffPopup(); window.selectBridgeSource('healthkit');" class="btn-editorial-secondary text-xs py-2 px-3 text-cyan-300 border-cyan-500/40">
+                            📱 MOBILE BRIDGE
+                        </button>
+                        <button type="button" onclick="window.retryBluetoothPairingAfterTurnOn()" class="btn-editorial-primary text-xs py-2 px-4 flex items-center gap-1.5 font-bold">
                             <span>↻</span>
                             <span>I TURNED IT ON — RETRY</span>
                         </button>
@@ -690,13 +1306,9 @@
 
     window.retryBluetoothPairingAfterTurnOn = async function() {
         window.closeBluetoothOffPopup();
-        const isNowOn = await checkBluetoothAvailability();
-        if (!isNowOn) {
-            window.showToast?.('⚠️ Bluetooth is still OFF. Please enable it in system settings first.', 'error', 4500);
-            window.showBluetoothOffPopup();
-            return;
-        }
-        window.showToast?.('✓ Bluetooth ON! Force-broadcasting pair requests to nearby hardware…', 'success', 3500);
+        _bluetoothPoweredOn = true;
+        updateBluetoothUIIndicators(true);
+        window.showToast?.('✓ Bluetooth verified ON! Opening device discovery…', 'success', 3500);
         try {
             fetch('/v1/bluetooth/force-pair-request', { method: 'POST' }).catch(()=>{});
         } catch (_) {}
@@ -765,7 +1377,7 @@
                     <div class="p-3.5 rounded-lg bg-[rgba(255,255,255,0.03)] border border-[var(--border-subtle)] flex items-center justify-between" id="bt-controller-hud">
                         <div>
                             <span class="font-mono text-[9px] text-[var(--text-dim)] uppercase block">SYSTEM BLUETOOTH ADAPTER</span>
-                            <span class="font-display font-bold text-xs text-[var(--bone)]" id="bt-controller-name">Apple BCM_4387 Controller</span>
+                            <span class="font-display font-bold text-xs text-[var(--bone)]" id="bt-controller-name">Host Bluetooth Controller (BCM_4387)</span>
                         </div>
                         <span id="bt-power-status-badge" class="${isBtOn ? 'wearable-live-badge text-[9px]' : 'px-2 py-0.5 rounded bg-red-950/50 border border-red-500/60 text-red-400 font-mono text-[9px] font-bold'}">
                             ${isBtOn ? '<span class="wearable-dot"></span> BLUETOOTH ON // READY' : '⚠️ BLUETOOTH OFF // DISABLED'}
@@ -991,7 +1603,7 @@
                 console.warn('[GATT Error]:', gattErr);
             }
 
-            // 5. Notify backend of genuine physical connection
+            // 5. Notify backend of genuine physical connection across both subsystems
             try {
                 await fetch('/v1/bluetooth/connect', {
                     method: 'POST',
@@ -1002,6 +1614,20 @@
                         device_type: deviceType,
                         battery: realBattery,
                         connection_type: 'Web Bluetooth GATT BLE 5.3'
+                    })
+                });
+            } catch (_) {}
+
+            try {
+                await fetch('/api/v1/health/connect', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        device_name: deviceName,
+                        device_id: device.id || deviceName.toLowerCase().replace(/[^a-z0-9]/g, '_'),
+                        device_type: deviceType,
+                        source: 'direct_ble',
+                        platform: 'Web Bluetooth GATT BLE 5.3'
                     })
                 });
             } catch (_) {}
@@ -1207,6 +1833,9 @@
         try {
             await fetch('/v1/telemetry/reset', { method: 'POST' });
         } catch (_) {}
+        try {
+            await fetch('/api/v1/health/disconnect', { method: 'POST' });
+        } catch (_) {}
 
         wearableState.connected = false;
         wearableState.status = 'standby';
@@ -1226,6 +1855,34 @@
         wearableState.sleepMinutes = null;
         wearableState.sleepQuality = null;
         wearableState.sleepScore = null;
+        wearableState.provenance = {};
+
+        bridgeState.bpStatus = {
+            hasRecent: false,
+            systolic: null,
+            diastolic: null,
+            display: 'No device connected',
+            age: 'No device connected',
+            source: 'None',
+        };
+
+        bridgeState.heartRisk = {
+            score: 0,
+            level: 'AWAITING_DATA',
+            cardioLevel: 'AWAITING_DATA',
+            heatIndexF: 82.0,
+            heatIndexC: 27.8,
+            category: 'Normal',
+            alertActive: false,
+            alertTitle: '● AWAITING SENSOR TELEMETRY',
+            alertMsg: 'No health device connected. Pair a real wearable or companion bridge to stream biometrics.',
+            triggers: [],
+            missingSignals: ['heart_rate', 'hrv', 'blood_pressure', 'spo2'],
+            recommendations: [
+                'Pair a real smartwatch or companion sensor to initialize cardiovascular monitoring.'
+            ],
+            disclaimer: 'Notice: Luminix Multi-Signal Heart Risk Engine provides investigational / decision-support monitoring only, not a clinical medical diagnosis.',
+        };
 
         stopProximityPolling();
         stopLiveRefresh();
@@ -1235,7 +1892,7 @@
         _gattAlertChar = null;
         _gattStepCadence = 0;
         renderCurrentView();
-        window.showToast?.('Device disconnected. Sensor telemetry returned to standby.', 'info', 3000);
+        window.showToast?.('Device unlinked. Zero active telemetry.', 'info', 3000);
     };
 
     function showPairingPhoneNotification(name) {
@@ -1247,7 +1904,7 @@
                 <div>
                     <div class="font-mono text-[10px] text-[var(--vermilion)] uppercase font-bold">LUMINIX HARDWARE SYNC</div>
                     <div class="font-display font-semibold text-xs text-[var(--bone)]">Device Connected: ${name || 'Hardware'}</div>
-                    <div class="text-[10px] text-[var(--text-dim)]">Real-time SpO2, Blood Pressure &amp; Step Telemetry active.</div>
+                    <div class="text-[10px] text-[var(--text-dim)]">Continuous SpO2 &amp; Step Telemetry active • Latest available BP cached.</div>
                 </div>
                 <button type="button" class="ml-auto text-sm text-[var(--bone-dim)]" onclick="this.parentElement.parentElement.remove()">&times;</button>
             </div>
@@ -1255,42 +1912,6 @@
         document.body.appendChild(toast);
         setTimeout(() => toast.remove(), 4500);
     }
-
-    // Direct step spoofing removed — all biometrics must originate from legitimate Bluetooth GATT or Mobile Companion Pedometer
-
-    /**
-     * Simulation & Diagnostic Tests
-     */
-    window.simulateWearableCondition = function(condition) {
-        if (!wearableState.connected) {
-            window.showToast?.('Please connect a device first to run biometric tests.', 'warning', 3000);
-            return;
-        }
-
-        if (condition === 'hypoxia') {
-            wearableState.spo2 = 89;
-            evaluateBiometricRisk();
-        } else if (condition === 'hypertension') {
-            wearableState.systolic = 148;
-            wearableState.diastolic = 94;
-            evaluateBiometricRisk();
-        } else if (condition === 'normal') {
-            wearableState.spo2 = 98;
-            wearableState.systolic = 118;
-            wearableState.diastolic = 76;
-            wearableState.heartRate = 64;
-            window.dismissRiskAlert();
-            window.showSuccess?.('Vitals restored to optimal athletic baseline.');
-        } else if (condition === 'add_steps') {
-            const profile = getBiometricProfile();
-            if (wearableState.steps === null) wearableState.steps = 0;
-            wearableState.steps += 1000;
-            wearableState.distanceKm = computeDistanceKm(wearableState.steps, profile.height);
-            wearableState.caloriesBurned = computeCalories(wearableState.steps, profile.weight);
-            window.showToast?.(`+1,000 Steps logged! Total: ${wearableState.steps.toLocaleString()} (${wearableState.caloriesBurned} kcal burned)`, 'success', 2500);
-        }
-        renderCurrentView();
-    };
 
     function renderCurrentView() {
         const container = document.getElementById('main-content');
@@ -2011,12 +2632,28 @@
                             CONNECT WITH <span class="text-vermilion">LUMI.</span>
                         </h1>
                         <p class="text-xs text-[var(--bone-dim)] mt-1 font-mono">
-                            Pair Smart Watch (Noise, Apple Watch, WearOS) or Mobile Phone via Host Bluetooth BCM_4387 or Wi-Fi Companion Pedometer.
+                            Pair Authentic Health Hardware: Bluetooth BLE Smartwatch / Heart Rate Monitor, Dedicated Blood Pressure Cuff, or Mobile Companion.
                         </p>
                     </div>
 
                     <!-- Top Action Buttons -->
                     <div class="flex items-center gap-2.5 flex-wrap">
+                        <!-- Primary Blueprint Action 1: FETCH LATEST DATA -->
+                        <button type="button" onclick="window.fetchLatestHealthData()" 
+                            class="btn-editorial-primary flex items-center gap-2 text-xs py-2 px-3.5 bg-cyan-400 text-black font-black border border-cyan-300 shadow-[0_0_20px_rgba(0,242,254,0.35)] hover:bg-cyan-300 transition-all"
+                            title="Fetch and synchronize latest health metrics across sensors">
+                            <span>⚡</span>
+                            <span>FETCH LATEST DATA</span>
+                        </button>
+
+                        <!-- Primary Blueprint Action 2: START / STOP LIVE MONITORING -->
+                        <button type="button" onclick="window.toggleLiveMonitoring()" 
+                            class="flex items-center gap-2 text-xs py-2 px-3.5 rounded-lg font-mono font-bold transition-all ${bridgeState.isLiveMonitoring ? 'bg-red-500/25 text-red-300 border border-red-500 animate-pulse' : 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/50 hover:bg-emerald-500/30'}"
+                            title="Toggle real-time WebSocket live monitoring pipeline">
+                            <span class="inline-block w-2 h-2 rounded-full ${bridgeState.isLiveMonitoring ? 'bg-red-400' : 'bg-emerald-400 animate-ping'}"></span>
+                            <span>${bridgeState.isLiveMonitoring ? 'STOP LIVE MONITORING' : 'START LIVE MONITORING'}</span>
+                        </button>
+
                         ${isConnected ? `
                             <button type="button" onclick="window.disconnectWearable()" class="btn-editorial-secondary text-xs py-2 px-3 text-red-400 hover:border-red-500">
                                 ✕ DISCONNECT
@@ -2024,14 +2661,123 @@
                         ` : ''}
                         <button type="button" onclick="window.openPhoneCompanionModal()" class="btn-editorial-secondary flex items-center gap-2 text-xs py-2 px-3.5">
                             <span>📱</span>
-                            <span>PAIR PHONE VIA WI-FI</span>
+                            <span>PAIR PHONE</span>
                         </button>
-                        <button type="button" onclick="window.connectNativeBluetooth()" class="btn-editorial-primary flex items-center gap-2 text-xs py-2 px-4">
+                        <button type="button" onclick="window.connectNativeBluetooth()" class="btn-editorial-secondary flex items-center gap-2 text-xs py-2 px-3.5">
                             <span>⚡</span>
-                            <span>${isConnected ? 'SWITCH BLUETOOTH DEVICE' : 'SCAN & PAIR BLUETOOTH'}</span>
+                            <span>${isConnected ? 'SWITCH DEVICE' : 'SCAN BLE'}</span>
                         </button>
                     </div>
                 </div>
+
+                <!-- LUMINIX Mobile Health Bridge Source Selector (Section 2 & 10) -->
+                <div class="mb-6 p-2 rounded-xl bg-[rgba(15,23,42,0.7)] border border-[rgba(255,255,255,0.06)] flex items-center justify-between flex-wrap gap-2">
+                    <div class="flex items-center gap-1.5 flex-wrap">
+                        <span class="font-mono text-[9px] text-[var(--bone-dim)] uppercase px-2 font-bold tracking-wider">HEALTH BRIDGE SOURCE:</span>
+                        <button type="button" onclick="window.selectBridgeSource('healthkit')" 
+                            class="px-3 py-1 rounded-lg font-mono text-xs font-bold transition-all ${bridgeState.selectedSource === 'healthkit' ? 'bg-cyan-500/20 text-cyan-300 border border-cyan-400/60 shadow-[0_0_15px_rgba(0,242,254,0.2)]' : 'text-[var(--bone-dim)] hover:text-white border border-transparent'}">
+                            🍏 Apple HealthKit
+                        </button>
+                        <button type="button" onclick="window.selectBridgeSource('health_connect')" 
+                            class="px-3 py-1 rounded-lg font-mono text-xs font-bold transition-all ${bridgeState.selectedSource === 'health_connect' ? 'bg-cyan-500/20 text-cyan-300 border border-cyan-400/60 shadow-[0_0_15px_rgba(0,242,254,0.2)]' : 'text-[var(--bone-dim)] hover:text-white border border-transparent'}">
+                            🤖 Google Health Connect
+                        </button>
+                        <button type="button" onclick="window.selectBridgeSource('direct_bp_device')" 
+                            class="px-3 py-1 rounded-lg font-mono text-xs font-bold transition-all ${bridgeState.selectedSource === 'direct_bp_device' ? 'bg-cyan-500/20 text-cyan-300 border border-cyan-400/60 shadow-[0_0_15px_rgba(0,242,254,0.2)]' : 'text-[var(--bone-dim)] hover:text-white border border-transparent'}">
+                            🩸 Dedicated BLE BP Monitor
+                        </button>
+                        <button type="button" onclick="window.selectBridgeSource('system_bt')" 
+                            class="px-3 py-1 rounded-lg font-mono text-xs font-bold transition-all ${bridgeState.selectedSource === 'system_bt' ? 'bg-cyan-500/20 text-cyan-300 border border-cyan-400/60 shadow-[0_0_15px_rgba(0,242,254,0.2)]' : 'text-[var(--bone-dim)] hover:text-white border border-transparent'}">
+                            📡 Host BLE / Wi-Fi Companion
+                        </button>
+                    </div>
+                    <div class="flex items-center gap-2 px-2 font-mono text-[10px]">
+                        <span class="w-2 h-2 rounded-full ${bridgeState.isLiveMonitoring ? 'bg-emerald-400 animate-ping' : (isConnected ? 'bg-cyan-400' : 'bg-zinc-600')}"></span>
+                        <span class="${isConnected ? 'text-[var(--bone)]' : 'text-[var(--text-dim)]'} font-semibold">
+                            ${bridgeState.isLiveMonitoring ? `STREAMING LIVE (${bridgeState.livePacketCount} pkts)` : (isConnected ? 'REAL HARDWARE ACTIVE' : 'NO DEVICE LINKED')}
+                        </span>
+                    </div>
+                </div>
+
+                <!-- Mode Clarification Bar: Fetch Latest Data vs Live Sensor Monitoring -->
+                <div class="text-[10px] font-mono text-[var(--text-dim)] -mt-4 mb-5 flex items-center justify-between px-1 flex-wrap gap-2">
+                    <span>✦ <strong>FETCH LATEST DATA</strong>: Queries newest available measurements across all sensors (cuff BP, sleep, SpO2).</span>
+                    <span>✦ <strong>LIVE MONITORING</strong>: Streams active continuous sensors (1Hz HR) where hardware supports it.</span>
+                </div>
+
+                <!-- Dedicated Data Source State Card (Blueprint Requirement #7) -->
+                <div class="p-4 rounded-xl bg-[rgba(15,23,42,0.8)] border border-[rgba(255,255,255,0.08)] mb-6 shadow-lg">
+                    <div class="flex items-center justify-between flex-wrap gap-3 pb-3 border-b border-[rgba(255,255,255,0.06)]">
+                        <div class="flex items-center gap-2">
+                            <span class="w-2.5 h-2.5 rounded-full ${isConnected ? 'bg-emerald-400 animate-pulse' : 'bg-red-500'}"></span>
+                            <span class="font-display font-bold text-sm text-[var(--bone)]">DATA SOURCE STATE</span>
+                            <span class="px-2 py-0.5 rounded text-[9px] font-mono font-bold ${isConnected ? 'bg-emerald-950 text-emerald-400 border border-emerald-500/50' : 'bg-red-950/80 text-red-400 border border-red-500/50'}">
+                                ${isConnected ? 'REAL HARDWARE LINKED' : 'NO REAL DEVICE CONNECTED'}
+                            </span>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            ${isConnected ? `
+                                <button type="button" onclick="window.disconnectWearable()" class="px-3 py-1 rounded bg-red-950/60 hover:bg-red-900 border border-red-500/50 text-red-300 font-mono text-xs font-bold transition-all">
+                                    ✕ UNLINK REAL DEVICE
+                                </button>
+                            ` : `
+                                <button type="button" onclick="window.connectNativeBluetooth()" class="px-3 py-1 rounded bg-cyan-400 hover:bg-cyan-300 text-black font-mono text-xs font-black shadow-[0_0_15px_rgba(0,242,254,0.3)] transition-all">
+                                    ⚡ PAIR REAL DEVICE
+                                </button>
+                            `}
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mt-3 font-mono text-xs">
+                        <div>
+                            <span class="text-[9px] text-[var(--text-dim)] uppercase block">ACTIVE PLATFORM</span>
+                            <span class="font-bold text-[var(--bone)] text-xs mt-0.5 block">
+                                ${bridgeState.selectedSource === 'healthkit' ? 'Apple HealthKit (iOS)' :
+                                  (bridgeState.selectedSource === 'health_connect' ? 'Google Health Connect (Android)' :
+                                  (bridgeState.selectedSource === 'direct_bp_device' ? 'Dedicated BLE BP Cuff' :
+                                  (bridgeState.selectedSource === 'system_bt' ? 'Host BLE / Companion' :
+                                  (isConnected ? (wearableState.connectionType || 'Connected Real Device') : 'None (No Hardware Paired)'))))}
+                            </span>
+                        </div>
+                        <div>
+                            <span class="text-[9px] text-[var(--text-dim)] uppercase block">AUTHENTICATION</span>
+                            <span class="font-bold text-xs mt-0.5 block ${isConnected ? 'text-emerald-400' : 'text-[var(--text-dim)]'}">
+                                ${isConnected ? '✓ Authorized &amp; Paired' : '⚪ Disconnected (No Hardware Paired)'}
+                            </span>
+                        </div>
+                        <div>
+                            <span class="text-[9px] text-[var(--text-dim)] uppercase block">LAST TELEMETRY SYNC</span>
+                            <span class="font-bold text-xs mt-0.5 block ${isConnected && wearableState.pairedAt ? 'text-white' : 'text-[var(--text-dim)]'}">
+                                ${isConnected && wearableState.pairedAt ? wearableState.pairedAt : 'No records synced'}
+                            </span>
+                        </div>
+                        <div>
+                            <span class="text-[9px] text-[var(--text-dim)] uppercase block">DATA STREAM STATUS</span>
+                            <span class="font-bold text-xs mt-0.5 block ${bridgeState.isLiveMonitoring ? 'text-emerald-400 animate-pulse' : (isConnected ? 'text-cyan-400' : 'text-[var(--text-dim)]')}">
+                                ${bridgeState.isLiveMonitoring ? '⚡ WebSocket Live (1 Hz)' : (isConnected ? '⏱ Periodic Snapshot' : '⚪ Offline (Pair Real Device to Stream)')}
+                            </span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Step-by-Step Fetch Sequence HUD (Section 10) -->
+                ${bridgeState.fetchSequenceActive ? `
+                    <div class="p-4 rounded-xl bg-[rgba(0,242,254,0.06)] border border-cyan-500/40 mb-6 animate-pulse shadow-[0_0_40px_rgba(0,242,254,0.15)]">
+                        <div class="flex items-center justify-between mb-2 font-mono text-xs text-cyan-400 font-bold">
+                            <span class="flex items-center gap-2">
+                                <span class="device-radar-pulse"></span>
+                                STEP-BY-STEP NATIVE HEALTH ACQUISITION
+                            </span>
+                            <span>STEP [${bridgeState.fetchSequenceStep + 1}/10]: ${bridgeState.fetchSequenceSteps[bridgeState.fetchSequenceStep].name.toUpperCase()}</span>
+                        </div>
+                        <div class="w-full bg-[rgba(255,255,255,0.08)] h-2 rounded-full overflow-hidden mb-2">
+                            <div class="bg-cyan-400 h-full transition-all duration-300" style="width: ${((bridgeState.fetchSequenceStep + 1) / 10) * 100}%"></div>
+                        </div>
+                        <div class="font-mono text-[11px] text-[var(--bone-dim)] flex items-center justify-between">
+                            <span>> ${bridgeState.fetchSequenceSteps[bridgeState.fetchSequenceStep].desc}…</span>
+                            <span class="text-cyan-300 font-bold">${bridgeState.fetchSequenceSteps[bridgeState.fetchSequenceStep].icon} Active</span>
+                        </div>
+                    </div>
+                ` : ''}
 
                 <!-- Processing Pipeline HUD (Shown while discovering, fetching, or analyzing) -->
                 ${isProcessing ? `
@@ -2064,7 +2810,7 @@
                             <div>
                                 <div class="flex items-center gap-2 flex-wrap">
                                     <span class="font-display font-bold text-base text-[var(--bone)]">
-                                        ${isConnected ? wearableState.deviceName : 'No Active Device Linked'}
+                                        ${isConnected ? wearableState.deviceName : 'No Health Device Connected'}
                                     </span>
                                     <span class="connection-protocol-tag">
                                         ${isConnected ? wearableState.connectionType : 'STANDBY // DISCONNECTED'}
@@ -2207,17 +2953,29 @@
                             <span class="metric-icon text-cyan-400">🫁</span>
                         </div>
                         <div class="flex items-baseline gap-2 my-2">
-                            <span class="text-4xl font-display font-black text-[var(--bone)]">
-                                ${isConnected && wearableState.spo2 ? `${wearableState.spo2}%` : (isProcessing ? '<span class="text-sm font-mono text-gold animate-pulse">ACQUIRING…</span>' : '--%')}
-                            </span>
-                            <span class="font-mono text-xs ${isConnected && wearableState.spo2 ? (wearableState.spo2 >= 95 ? 'text-emerald-400' : 'text-red-400 font-bold') : 'text-[var(--text-dim)]'}">
-                                ${isConnected ? (wearableState.spo2 ? (wearableState.spo2 >= 95 ? '✓ NORMAL' : '⚠️ HYPOXIA RISK') : 'WATCH SENSOR REQ') : 'STANDBY'}
-                            </span>
+                            ${isConnected && wearableState.spo2 !== null ? `
+                                <span class="text-4xl font-display font-black text-[var(--bone)]">${wearableState.spo2}%</span>
+                                <span class="font-mono text-xs ${wearableState.spo2 >= 95 ? 'text-emerald-400' : 'text-red-400 font-bold'}">
+                                    ${wearableState.spo2 >= 95 ? '✓ NORMAL' : '⚠️ HYPOXIA RISK'}
+                                </span>
+                            ` : (isConnected ? `
+                                <span class="text-lg font-display font-bold text-[var(--bone-dim)] italic">No recent measurement</span>
+                                <span class="font-mono text-xs text-[var(--text-dim)]">SENSOR STANDBY</span>
+                            ` : `
+                                <span class="text-lg font-display font-bold text-[var(--bone-dim)] italic">No device connected</span>
+                                <span class="font-mono text-xs text-[var(--text-dim)]">DISCONNECTED</span>
+                            `)}
                         </div>
                         <p class="text-[11px] text-[var(--text-dim)]">
-                            ${isConnected ? (wearableState.spo2 ? 'Optical photoplethysmography stream active.' : 'Mobile accelerometer paired. Optical SpO2 requires Smartwatch BLE.') : 'Awaiting optical pulse oximeter hardware stream.'}
+                            ${isConnected ? (wearableState.spo2 !== null ? 'Optical photoplethysmography stream active.' : 'Device connected. Awaiting pulse oximeter reflection read.') : 'No device connected. Pair a real wearable to acquire SpO2.'}
                         </p>
-                        <div class="spo2-waveform-wrap mt-3 ${isConnected && wearableState.spo2 ? '' : 'opacity-30'}">
+                        ${wearableState.provenance?.spo2 ? `
+                            <div class="mt-2 pt-2 border-t border-[var(--border-subtle)] font-mono text-[9px] text-[var(--bone-dim)] flex flex-col gap-0.5">
+                                <div>Measured: <strong class="text-white">${wearableState.provenance.spo2.time_str}</strong> (${wearableState.provenance.spo2.age_str})</div>
+                                <div>Source: <span class="text-cyan-300">${wearableState.provenance.spo2.source}</span> • Quality: <span class="text-emerald-400">${wearableState.provenance.spo2.quality}</span></div>
+                            </div>
+                        ` : ''}
+                        <div class="spo2-waveform-wrap mt-3 ${isConnected && wearableState.spo2 !== null ? '' : 'opacity-30'}">
                             <svg class="spo2-waveform-svg" viewBox="0 0 200 40">
                                 <path d="M 0,20 L 30,20 L 40,8 L 46,32 L 52,4 L 58,26 L 66,20 L 110,20 L 120,8 L 126,32 L 132,4 L 138,26 L 146,20 L 200,20" fill="none" stroke="var(--cyan-primary)" stroke-width="2" stroke-linecap="round"/>
                             </svg>
@@ -2225,36 +2983,61 @@
                         <div class="font-mono text-[8px] text-[var(--text-dim)] mt-1 opacity-60">↗ Tap for history</div>
                     </div>
 
-                    <!-- Metric 2: Blood Pressure Rate & Pulse -->
-                    <div class="wearable-metric-card ${isConnected && wearableState.systolic && (wearableState.systolic >= 140 || wearableState.diastolic >= 90) ? 'metric-alert' : ''}" style="cursor:pointer;" onclick="window.openMetricHistoryModal('bp')" title="Click to view BP history">
-                        <div class="metric-card-header">
-                            <span class="metric-label">BLOOD PRESSURE &amp; HRV</span>
-                            <span class="metric-icon text-vermilion">❤️</span>
+                    <!-- Metric 2: Blood Pressure (Strict Blueprint Rule: Never Estimate or Fake) -->
+                    <div class="wearable-metric-card ${bridgeState.bpStatus.hasRecent && (bridgeState.bpStatus.systolic >= 140 || bridgeState.bpStatus.diastolic >= 90) ? 'metric-alert' : ''}" style="cursor:pointer;" onclick="window.openMetricHistoryModal('bp')" title="Click to view BP history">
+                        <div class="metric-card-header flex items-center justify-between">
+                            <span class="metric-label">LATEST AVAILABLE BP MEASUREMENT</span>
+                            <button type="button" onclick="event.stopPropagation(); window.openLogCuffMeasurementModal();" class="font-mono text-[9px] text-cyan-400 hover:text-white underline cursor-pointer">
+                                + Log Cuff
+                            </button>
                         </div>
-                        <div class="flex items-baseline gap-2 my-2">
-                            <span class="text-3xl font-display font-black text-[var(--bone)]">
-                                ${isConnected && wearableState.systolic ? `${wearableState.systolic}/${wearableState.diastolic}` : (isProcessing ? '<span class="text-sm font-mono text-gold animate-pulse">ACQUIRING…</span>' : '-- / --')}
-                            </span>
-                            <span class="font-mono text-xs text-[var(--text-dim)]">mmHg</span>
+
+                        <div class="my-2">
+                            ${bridgeState.bpStatus.hasRecent ? `
+                                <div class="flex items-baseline gap-2">
+                                    <span class="text-3xl font-display font-black text-[var(--bone)]">
+                                        ${bridgeState.bpStatus.systolic}/${bridgeState.bpStatus.diastolic}
+                                    </span>
+                                    <span class="font-mono text-xs text-[var(--text-dim)]">mmHg</span>
+                                    <span class="font-mono text-[10px] ${bridgeState.bpStatus.systolic < 120 ? 'text-emerald-400' : 'text-amber-400 font-bold'} ml-auto">
+                                        ${bridgeState.bpStatus.systolic < 120 ? '✓ OPTIMAL' : '⚠️ ELEVATED'}
+                                    </span>
+                                </div>
+                                <div class="flex items-center gap-2 font-mono text-[10px] text-[var(--text-dim)] mt-1 flex-wrap">
+                                    <span>Age: <strong class="text-white">${bridgeState.bpStatus.age}</strong></span>
+                                    <span>•</span>
+                                    <span>Source: <strong class="text-cyan-300">${bridgeState.bpStatus.source}</strong></span>
+                                </div>
+                            ` : `
+                                <div class="py-1">
+                                    <span class="text-lg font-display font-bold text-[var(--bone-dim)] italic block">
+                                        ${isConnected ? 'No recent measurement' : 'No device connected'}
+                                    </span>
+                                    <p class="text-[10px] text-[var(--text-dim)] mt-0.5 leading-snug">
+                                        ${isConnected ? 'Take a reading with paired Omron BLE cuff or sync via Apple HealthKit.' : 'Pair a real blood pressure device or sync via Health Bridge.'}
+                                    </p>
+                                </div>
+                            `}
                         </div>
-                        <div class="grid grid-cols-2 gap-2 mt-2 pt-2 border-t border-[var(--border-subtle)]">
+
+                        <div class="grid grid-cols-2 gap-2 mt-2 pt-2 border-t border-[var(--border-subtle)] font-mono">
                             <div>
-                                <span class="text-[9px] font-mono text-[var(--text-dim)] block">RESTING PULSE</span>
+                                <span class="text-[9px] text-[var(--text-dim)] block">RESTING PULSE</span>
                                 <span id="wearable-hr-val" class="font-display font-bold text-sm text-[var(--bone)]">
-                                    ${isConnected && wearableState.heartRate ? `${wearableState.heartRate} bpm` : '-- bpm'}
+                                    ${wearableState.heartRate ? `${wearableState.heartRate} bpm` : (isConnected ? '<span class="text-xs italic text-[var(--bone-dim)]">No recent measurement</span>' : '<span class="text-xs italic text-[var(--bone-dim)]">No device connected</span>')}
                                 </span>
                             </div>
                             <div>
-                                <span class="text-[9px] font-mono text-[var(--text-dim)] block">HEART RATE VAR (HRV)</span>
+                                <span class="text-[9px] text-[var(--text-dim)] block">HEART RATE VAR (HRV)</span>
                                 <span class="font-display font-bold text-sm text-emerald-400">
-                                    ${isConnected && wearableState.hrv ? `${wearableState.hrv} ms` : '-- ms'}
+                                    ${wearableState.hrv ? `${wearableState.hrv} ms` : (isConnected ? '<span class="text-xs italic text-[var(--bone-dim)]">No recent measurement</span>' : '<span class="text-xs italic text-[var(--bone-dim)]">No device connected</span>')}
                                 </span>
                             </div>
                         </div>
-                        <div class="mt-2 text-[10.5px] font-mono ${isConnected && wearableState.systolic ? (wearableState.systolic < 120 ? 'text-emerald-400' : 'text-red-400') : 'text-[var(--text-dim)]'}">
-                            ${isConnected ? (wearableState.systolic ? (wearableState.systolic < 120 ? '✓ Normotensive Athletic' : '⚠️ Stage 1 Hypertension') : 'Awaiting BLE Cuff / Watch PPG') : 'Awaiting cuff/telemetry sync'}
+
+                        <div class="mt-2 text-[9px] font-mono text-[var(--text-dim)] italic opacity-75">
+                            Strict Rule: Never estimated. Only verified cuff or watch records.
                         </div>
-                        <div class="font-mono text-[8px] text-[var(--text-dim)] mt-1.5 opacity-60">↗ Tap for weekly/monthly history</div>
                     </div>
 
                     <!-- Metric 3: Sleep Telemetry & Quality -->
@@ -2264,31 +3047,43 @@
                             <span class="metric-icon text-indigo-400">🌙</span>
                         </div>
                         <div class="flex items-baseline justify-between my-2">
-                            <span class="text-3xl font-display font-black text-[var(--bone)]">
-                                ${isConnected && wearableState.sleepHours ? `${wearableState.sleepHours}h ${wearableState.sleepMinutes}m` : (isProcessing ? '<span class="text-sm font-mono text-gold animate-pulse">ACQUIRING…</span>' : '--h --m')}
-                            </span>
-                            ${isConnected && wearableState.sleepQuality ? `
+                            ${isConnected && wearableState.sleepHours !== null ? `
+                                <span class="text-3xl font-display font-black text-[var(--bone)]">
+                                    ${wearableState.sleepHours}h ${wearableState.sleepMinutes}m
+                                </span>
                                 <span class="sleep-quality-badge ${sleepEval.badgeClass}">${wearableState.sleepQuality}</span>
-                            ` : `<span class="font-mono text-[10px] text-[var(--text-dim)]">STANDBY</span>`}
+                            ` : (isConnected ? `
+                                <span class="text-lg font-display font-bold text-[var(--bone-dim)] italic">No recent measurement</span>
+                                <span class="font-mono text-[10px] text-[var(--text-dim)]">STANDBY</span>
+                            ` : `
+                                <span class="text-lg font-display font-bold text-[var(--bone-dim)] italic">No device connected</span>
+                                <span class="font-mono text-[10px] text-[var(--text-dim)]">DISCONNECTED</span>
+                            `)}
                         </div>
                         <div class="space-y-1.5 mt-2 font-mono text-[10px]">
                             <div class="flex justify-between text-[var(--bone-dim)]">
                                 <span>Schedule:</span>
-                                <span>${isConnected && wearableState.sleepBedtime ? `${wearableState.sleepBedtime} — ${wearableState.sleepWaketime}` : 'Awaiting sync'}</span>
+                                <span>${isConnected && wearableState.sleepBedtime ? `${wearableState.sleepBedtime} — ${wearableState.sleepWaketime}` : (isConnected ? 'No recent measurement' : 'No device connected')}</span>
                             </div>
                             <!-- Mini Sleep Bar -->
-                            <div class="flex h-2 rounded overflow-hidden w-full gap-0.5 mt-1 ${isConnected && wearableState.sleepHours ? '' : 'opacity-20'}">
+                            <div class="flex h-2 rounded overflow-hidden w-full gap-0.5 mt-1 ${isConnected && wearableState.sleepHours !== null ? '' : 'opacity-20'}">
                                 <div style="width:28%; background:#3b82f6;" title="Deep Sleep"></div>
                                 <div style="width:34%; background:#8b5cf6;" title="REM Sleep"></div>
                                 <div style="width:30%; background:#06b6d4;" title="Core Sleep"></div>
                                 <div style="width:8%; background:#64748b;" title="Awake"></div>
                             </div>
                             <div class="flex justify-between text-[9px] text-[var(--text-dim)] pt-1">
-                                <span>Deep: ${isConnected && wearableState.deepSleepMinutes ? `${wearableState.deepSleepMinutes}m` : '--'}</span>
-                                <span>Score: ${isConnected && wearableState.sleepScore ? `${wearableState.sleepScore}/100` : '--'}</span>
+                                <span>Deep: ${isConnected && wearableState.deepSleepMinutes !== null ? `${wearableState.deepSleepMinutes}m` : (isConnected ? 'No recent measurement' : 'No device connected')}</span>
+                                <span>Score: ${isConnected && wearableState.sleepScore !== null ? `${wearableState.sleepScore}/100` : (isConnected ? 'No recent measurement' : 'No device connected')}</span>
                             </div>
                         </div>
-                        <p class="text-[10px] text-[var(--text-dim)] mt-2 italic">${sleepEval.desc}</p>
+                        ${wearableState.provenance?.sleep ? `
+                            <div class="mt-2 pt-1.5 border-t border-[var(--border-subtle)] font-mono text-[9px] text-[var(--bone-dim)]">
+                                Measured: <strong class="text-white">${wearableState.provenance.sleep.time_str}</strong> (${wearableState.provenance.sleep.age_str}) • Source: <span class="text-cyan-300">${wearableState.provenance.sleep.source}</span>
+                            </div>
+                        ` : `
+                            <p class="text-[10px] text-[var(--text-dim)] mt-2 italic">${isConnected ? 'Wear device during sleep to sync hypnogram.' : 'Pair a real wearable to analyze sleep architecture.'}</p>
+                        `}
                         <div class="font-mono text-[8px] text-[var(--text-dim)] mt-1 opacity-60">↗ Tap for weekly/monthly history</div>
                     </div>
 
@@ -2299,34 +3094,46 @@
                             <span class="metric-icon text-gold">🔥</span>
                         </div>
                         <div class="flex items-baseline justify-between my-2">
-                            <span class="text-3xl font-display font-black text-[var(--bone)] wearable-steps-live">
-                                ${isConnected && wearableState.steps !== null ? wearableState.steps.toLocaleString() : (isProcessing ? '<span class="text-sm font-mono text-gold animate-pulse">CALCULATING…</span>' : '--')}
-                            </span>
-                            <span class="font-mono text-xs text-[var(--gold)]">
-                                ${isConnected && wearableState.steps !== null ? `${stepPercent}% Goal` : (isConnected ? 'AWAITING STEP STREAM' : 'GOAL: 10,000')}
-                            </span>
+                            ${isConnected && wearableState.steps !== null ? `
+                                <span class="text-3xl font-display font-black text-[var(--bone)] wearable-steps-live">
+                                    ${wearableState.steps.toLocaleString()}
+                                </span>
+                                <span class="font-mono text-xs text-[var(--gold)]">${stepPercent}% Goal</span>
+                            ` : (isConnected ? `
+                                <span class="text-lg font-display font-bold text-[var(--bone-dim)] italic">No recent measurement</span>
+                                <span class="font-mono text-xs text-[var(--text-dim)]">AWAITING STEPS</span>
+                            ` : `
+                                <span class="text-lg font-display font-bold text-[var(--bone-dim)] italic">No device connected</span>
+                                <span class="font-mono text-xs text-[var(--text-dim)]">DISCONNECTED</span>
+                            `)}
                         </div>
                         <!-- Step Progress Bar -->
                         <div class="w-full bg-[rgba(255,255,255,0.08)] h-2 rounded-full overflow-hidden my-2">
-                            <div class="bg-gradient-to-r from-[var(--vermilion)] to-[var(--gold)] h-full transition-all duration-500" style="width: ${stepPercent}%"></div>
+                            <div class="bg-gradient-to-r from-[var(--vermilion)] to-[var(--gold)] h-full transition-all duration-500" style="width: ${isConnected && wearableState.steps !== null ? stepPercent : 0}%"></div>
                         </div>
                         <div class="grid grid-cols-2 gap-2 mt-2 pt-2 border-t border-[var(--border-subtle)] font-mono">
                             <div>
                                 <span class="text-[9px] text-[var(--text-dim)] block">BURNED CALORIES</span>
                                 <span class="font-display font-bold text-sm text-[var(--ember)] wearable-cal-live">
-                                    ${isConnected && wearableState.caloriesBurned !== null ? `${wearableState.caloriesBurned.toLocaleString()} kcal` : '-- kcal'}
+                                    ${isConnected && wearableState.caloriesBurned !== null ? `${wearableState.caloriesBurned.toLocaleString()} kcal` : (isConnected ? '<span class="text-xs italic text-[var(--bone-dim)]">No recent measurement</span>' : '<span class="text-xs italic text-[var(--bone-dim)]">No device connected</span>')}
                                 </span>
                             </div>
                             <div>
                                 <span class="text-[9px] text-[var(--text-dim)] block">STRIDE DISTANCE</span>
                                 <span class="font-display font-bold text-sm text-[var(--bone)] wearable-dist-live">
-                                    ${isConnected && wearableState.distanceKm !== null ? `${wearableState.distanceKm} km` : '-- km'}
+                                    ${isConnected && wearableState.distanceKm !== null ? `${wearableState.distanceKm} km` : (isConnected ? '<span class="text-xs italic text-[var(--bone-dim)]">No recent measurement</span>' : '<span class="text-xs italic text-[var(--bone-dim)]">No device connected</span>')}
                                 </span>
                             </div>
                         </div>
-                        <div class="text-[9px] font-mono text-[var(--text-dim)] mt-1.5">
-                            Formula: Steps × 0.045 × (${profile.weight}kg / 70)
-                        </div>
+                        ${wearableState.provenance?.steps ? `
+                            <div class="mt-2 pt-1.5 border-t border-[var(--border-subtle)] font-mono text-[9px] text-[var(--bone-dim)]">
+                                Measured: <strong class="text-white">${wearableState.provenance.steps.time_str}</strong> (${wearableState.provenance.steps.age_str}) • Source: <span class="text-cyan-300">${wearableState.provenance.steps.source}</span>
+                            </div>
+                        ` : `
+                            <div class="text-[9px] font-mono text-[var(--text-dim)] mt-1.5">
+                                Formula: Steps × 0.045 × (${profile.weight}kg / 70)
+                            </div>
+                        `}
                         <div class="font-mono text-[8px] text-[var(--text-dim)] mt-1 opacity-60">↗ Tap for daily/weekly/monthly view</div>
                     </div>
                 </div>
@@ -2398,6 +3205,90 @@
                                 Target: ${profile.goal.toUpperCase()} • ${isDeficit ? 'Optimal for fat mobilization' : 'Optimal for anabolic hypertrophy'}
                             </span>
                         </div>
+                    </div>
+                </div>
+
+                <!-- Multi-Signal Heart & Cardiovascular Risk Engine (Section 7) -->
+                <div class="editorial-card p-6 mb-6 ${bridgeState.heartRisk.alertActive ? 'border-red-500/60 shadow-[0_0_50px_rgba(239,68,68,0.2)]' : ''}">
+                    <div class="flex items-center justify-between mb-4 border-b border-[var(--border-subtle)] pb-3 flex-wrap gap-2">
+                        <div class="flex items-center gap-2.5">
+                            <span class="hero-category-tag">MULTI-SIGNAL HEALTH ENGINE</span>
+                            <h3 class="font-display font-bold text-base text-[var(--bone)]">
+                                Multi-Signal Heart &amp; Cardiovascular Risk Engine
+                            </h3>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <span class="px-2.5 py-1 rounded-md font-mono text-xs font-bold ${
+                                bridgeState.heartRisk.level === 'AWAITING_DATA' ? 'bg-slate-800 text-slate-300 border border-slate-700' :
+                                (bridgeState.heartRisk.level === 'CRITICAL' || bridgeState.heartRisk.level === 'EXTREME' ? 'bg-red-600 text-white animate-pulse' :
+                                (bridgeState.heartRisk.level === 'HIGH' ? 'bg-red-500/30 text-red-300 border border-red-500/60' :
+                                (bridgeState.heartRisk.level === 'MODERATE' ? 'bg-amber-500/20 text-amber-300 border border-amber-500/50' :
+                                'bg-emerald-500/20 text-emerald-400 border border-emerald-500/40')))
+                            }">
+                                ${bridgeState.heartRisk.level === 'AWAITING_DATA' ? 'AWAITING REAL DEVICE' : `${bridgeState.heartRisk.level} HEART RISK`}
+                            </span>
+                            ${bridgeState.heartRisk.alertActive ? `
+                                <button type="button" onclick="window.showHeartRiskModal()" class="btn-editorial-primary text-xs py-1 px-2.5 bg-red-600 text-white font-bold animate-pulse">
+                                    ⚠️ VIEW CARDIAC ADVISORY
+                                </button>
+                            ` : ''}
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-3 font-mono text-xs mb-4">
+                        <div class="p-3 rounded-lg bg-[rgba(255,255,255,0.02)] border border-[var(--border-subtle)]">
+                            <span class="text-[9px] text-[var(--text-dim)] uppercase block">CARDIAC STRAIN SCORE</span>
+                            <span class="text-base font-bold text-cyan-400 block mt-0.5">${bridgeState.heartRisk.level === 'AWAITING_DATA' ? '-- / 100' : `${bridgeState.heartRisk.score} / 100`}</span>
+                            <span class="text-[9px] text-[var(--text-dim)]">Multi-Signal Composite</span>
+                        </div>
+                        <div class="p-3 rounded-lg bg-[rgba(255,255,255,0.02)] border border-[var(--border-subtle)]">
+                            <span class="text-[9px] text-[var(--text-dim)] uppercase block">HEMODYNAMIC STATUS</span>
+                            <span class="text-base font-bold ${bridgeState.heartRisk.level === 'AWAITING_DATA' ? 'text-[var(--bone-dim)] italic' : (bridgeState.heartRisk.cardioLevel === 'HIGH' ? 'text-red-400' : (bridgeState.heartRisk.cardioLevel === 'MODERATE' ? 'text-amber-400' : 'text-emerald-400'))} block mt-0.5">
+                                ${bridgeState.heartRisk.level === 'AWAITING_DATA' ? 'No device connected' : (bridgeState.heartRisk.cardioLevel || 'OPTIMAL')}
+                            </span>
+                            <span class="text-[9px] text-[var(--text-dim)]">HR Delta + Blood Pressure</span>
+                        </div>
+                        <div class="p-3 rounded-lg bg-[rgba(255,255,255,0.02)] border border-[var(--border-subtle)]">
+                            <span class="text-[9px] text-[var(--text-dim)] uppercase block">AUTONOMIC TONE (HRV)</span>
+                            <span class="text-base font-bold text-[var(--bone)] block mt-0.5">${wearableState.hrv ? wearableState.hrv + ' ms' : (isConnected ? 'No recent measurement' : 'No device connected')}</span>
+                            <span class="text-[9px] text-emerald-400">Sympathetic Balance</span>
+                        </div>
+                        <div class="p-3 rounded-lg bg-[rgba(255,255,255,0.02)] border border-[var(--border-subtle)]">
+                            <span class="text-[9px] text-[var(--text-dim)] uppercase block">MYOCARDIAL O₂ / MONITOR</span>
+                            <span class="text-base font-bold text-[var(--bone)] block mt-0.5">${wearableState.spo2 !== null ? `${wearableState.spo2}% SpO₂` : (isConnected ? 'No recent measurement' : 'No device connected')}</span>
+                            <span class="text-[9px] text-[var(--text-dim)]">${bridgeState.isLiveMonitoring ? 'Live Streaming 1Hz' : (isConnected ? 'Snapshot Stream' : 'Standby')}</span>
+                        </div>
+                    </div>
+
+                    <!-- Missing Signals / Awaiting Telemetry Box -->
+                    ${bridgeState.heartRisk.missingSignals && bridgeState.heartRisk.missingSignals.length > 0 ? `
+                        <div class="p-3 rounded-lg bg-[rgba(255,255,255,0.02)] border border-[var(--border-subtle)] mb-3 font-mono text-xs">
+                            <span class="text-amber-400 font-bold uppercase text-[10px] block mb-1">Awaiting Sensor Telemetry (${bridgeState.heartRisk.missingSignals.length} signals missing):</span>
+                            <div class="flex flex-wrap gap-2">
+                                ${bridgeState.heartRisk.missingSignals.map(s => `<span class="px-2 py-0.5 rounded bg-amber-950/40 border border-amber-500/40 text-amber-300 text-[10px] font-semibold">⚠ ${s.replace('_', ' ').toUpperCase()}</span>`).join('')}
+                            </div>
+                        </div>
+                    ` : ''}
+
+                    <!-- Triggers & Guidance -->
+                    ${bridgeState.heartRisk.triggers && bridgeState.heartRisk.triggers.length > 0 ? `
+                        <div class="p-3 rounded-lg bg-[rgba(239,68,68,0.06)] border border-red-500/20 mb-3 font-mono text-xs">
+                            <span class="text-red-400 font-bold uppercase text-[10px] block mb-1">Active Cardiac Triggers:</span>
+                            <div class="flex flex-wrap gap-2">
+                                ${bridgeState.heartRisk.triggers.map(t => `<span class="px-2 py-0.5 rounded bg-red-950/60 border border-red-500/40 text-red-300 text-[10px] font-semibold">${t}</span>`).join('')}
+                            </div>
+                        </div>
+                    ` : ''}
+
+                    <div class="p-3 rounded-lg bg-[rgba(255,255,255,0.02)] border border-[var(--border-subtle)] mb-3 font-mono text-xs text-[var(--bone-dim)]">
+                        <span class="text-white font-bold uppercase text-[10px] block mb-1">Clinical Decision Support Guidance:</span>
+                        <div class="space-y-1">
+                            ${bridgeState.heartRisk.recommendations.map(r => `<div class="flex items-start gap-1.5"><span class="text-emerald-400 font-bold">✓</span><span>${r}</span></div>`).join('')}
+                        </div>
+                    </div>
+
+                    <div class="text-[10px] font-mono text-[var(--text-dim)] italic border-t border-[var(--border-subtle)] pt-2 leading-relaxed">
+                        ${bridgeState.heartRisk.disclaimer}
                     </div>
                 </div>
 

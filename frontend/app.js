@@ -63,7 +63,7 @@ window.nav = function(view) {
         'bmi': 'Metabolic Matrix & Nutrition Calculator | Luminix',
         'food-tracker': 'Food & Hydration Intelligence Tracker | Luminix',
         'luna': 'Luna AI & Clinical Studio — Health Intelligence & Reporting | Luminix',
-        'connect': 'Connect with Lumi — Apple Watch, WearOS & Mobile Hub | Luminix',
+        'connect': 'Connect with Lumi — Wearable & Health Hardware Hub | Luminix',
         'export': 'Luna AI & Clinical Studio — Health Intelligence & Reporting | Luminix',
         'privacy': 'Privacy Policy — Zero-Leak Telemetry Covenant | Luminix',
         'terms': 'Terms of Service — Biomechanical Telemetry Covenant | Luminix',
@@ -1699,36 +1699,99 @@ async function fetchDemoBMI() {
 //  02. LIVE POSE DETECTION VIEW (MediaPipe Biometrics)
 // ══════════════════════════════════════════════════════════════════
 window.luminixPose = {
-    calculateAngle(a, b, c) {
+    calculateAngle(a, b, c, aspect = 1.0) {
         if (!a || !b || !c) return 0;
-        const radians = Math.atan2(c.y - b.y, c.x - b.x) - Math.atan2(a.y - b.y, a.x - b.x);
+        // Factor in aspect ratio (videoWidth / videoHeight) so angles are isotropic in pixel space
+        const cbX = (c.x - b.x) * aspect;
+        const cbY = c.y - b.y;
+        const abX = (a.x - b.x) * aspect;
+        const abY = a.y - b.y;
+        const radians = Math.atan2(cbY, cbX) - Math.atan2(abY, abX);
         let angle = Math.abs((radians * 180.0) / Math.PI);
         if (angle > 180.0) angle = 360.0 - angle;
         return Math.round(angle);
     },
 
+    computeCoverViewport(videoW, videoH, canvasW, canvasH) {
+        if (!videoW || !videoH || !canvasW || !canvasH) {
+            return { x: 0, y: 0, width: canvasW, height: canvasH, aspect: 1.0 };
+        }
+        const videoAspect = videoW / videoH;
+        const canvasAspect = canvasW / canvasH;
+        let drawW = canvasW;
+        let drawH = canvasH;
+        let offX = 0;
+        let offY = 0;
+
+        if (videoAspect > canvasAspect) {
+            // Video wider than canvas: fill height, crop sides symmetrically
+            drawW = canvasH * videoAspect;
+            offX = (canvasW - drawW) / 2;
+        } else {
+            // Video taller than canvas: fill width, crop top/bottom symmetrically
+            drawH = canvasW / videoAspect;
+            offY = (canvasH - drawH) / 2;
+        }
+        return { x: offX, y: offY, width: drawW, height: drawH, aspect: videoAspect };
+    },
+
+    getInferenceDimensions(videoW, videoH) {
+        const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent) || (window.innerWidth <= 768);
+        const targetMax = isMobile ? 384 : 480;
+        const aspect = (videoW && videoH) ? (videoW / videoH) : (4 / 3);
+        let targetW, targetH;
+        if (aspect >= 1.0) {
+            targetW = targetMax;
+            targetH = Math.max(120, Math.round(targetMax / aspect));
+        } else {
+            targetH = targetMax;
+            targetW = Math.max(120, Math.round(targetMax * aspect));
+        }
+        return { width: targetW, height: targetH, aspect };
+    },
+
     drawLuminixSkeleton(ctx, landmarks, w, h, options = {}) {
         if (!landmarks || landmarks.length === 0) return;
         const showAngles = options.showAngles !== false;
+        const showFaceTree = options.showFaceTree !== false;
+        const aspect = options.aspect || 1.0;
+        const isMirrored = options.mirrored === true;
+        const vp = options.viewport || { x: 0, y: 0, width: w, height: h };
+
+        const toX = (normX) => vp.x + normX * vp.width;
+        const toY = (normY) => vp.y + normY * vp.height;
+
+        let primaryColor = '#2F4DFF';
+        let secondaryColor = '#2F4DFF';
+        let nodeFill = '#FFFFFF';
+        if (options.theme === 'yellow') {
+            primaryColor = '#EAB308';
+            secondaryColor = '#CA8A04';
+        } else if (options.theme === 'cyan') {
+            primaryColor = '#00E5FF';
+            secondaryColor = '#0891B2';
+        }
 
         // 1. Facial Landmark Tree
-        const FACE_TREE = [
-            [0, 1], [1, 2], [2, 3], [3, 7],
-            [0, 4], [4, 5], [5, 6], [6, 8],
-            [1, 4], [2, 5], [9, 10], [0, 9], [0, 10],
-            [11, 7], [12, 8]
-        ];
+        if (showFaceTree) {
+            const FACE_TREE = [
+                [0, 1], [1, 2], [2, 3], [3, 7],
+                [0, 4], [4, 5], [5, 6], [6, 8],
+                [1, 4], [2, 5], [9, 10], [0, 9], [0, 10],
+                [11, 7], [12, 8]
+            ];
 
-        ctx.lineWidth = 1.5;
-        ctx.strokeStyle = '#2F4DFF';
+            ctx.lineWidth = 1.5;
+            ctx.strokeStyle = secondaryColor;
 
-        for (const [a, b] of FACE_TREE) {
-            const la = landmarks[a], lb = landmarks[b];
-            if (!la || !lb || (la.visibility !== undefined && la.visibility < 0.25) || (lb.visibility !== undefined && lb.visibility < 0.25)) continue;
-            ctx.beginPath();
-            ctx.moveTo(la.x * w, la.y * h);
-            ctx.lineTo(lb.x * w, lb.y * h);
-            ctx.stroke();
+            for (const [a, b] of FACE_TREE) {
+                const la = landmarks[a], lb = landmarks[b];
+                if (!la || !lb || (la.visibility !== undefined && la.visibility < 0.20) || (lb.visibility !== undefined && lb.visibility < 0.20)) continue;
+                ctx.beginPath();
+                ctx.moveTo(toX(la.x), toY(la.y));
+                ctx.lineTo(toX(lb.x), toY(lb.y));
+                ctx.stroke();
+            }
         }
 
         // 2. Full Body Core Kinematic Skeleton
@@ -1740,28 +1803,28 @@ window.luminixPose = {
         ];
 
         ctx.lineWidth = 2.5;
-        ctx.strokeStyle = '#2F4DFF';
+        ctx.strokeStyle = primaryColor;
         for (const [a, b] of BODY_CONNECTIONS) {
             const la = landmarks[a], lb = landmarks[b];
-            if (!la || !lb || (la.visibility !== undefined && la.visibility < 0.3) || (lb.visibility !== undefined && lb.visibility < 0.3)) continue;
+            if (!la || !lb || (la.visibility !== undefined && la.visibility < 0.25) || (lb.visibility !== undefined && lb.visibility < 0.25)) continue;
             ctx.beginPath();
-            ctx.moveTo(la.x * w, la.y * h);
-            ctx.lineTo(lb.x * w, lb.y * h);
+            ctx.moveTo(toX(la.x), toY(la.y));
+            ctx.lineTo(toX(lb.x), toY(lb.y));
             ctx.stroke();
         }
 
         // 3. Precision Node Points
         for (let i = 0; i < landmarks.length; i++) {
             const pt = landmarks[i];
-            if (!pt || (pt.visibility !== undefined && pt.visibility < 0.3)) continue;
-            const px = pt.x * w, py = pt.y * h;
+            if (!pt || (pt.visibility !== undefined && pt.visibility < 0.25)) continue;
+            const px = toX(pt.x), py = toY(pt.y);
 
-            ctx.fillStyle = '#FFFFFF';
+            ctx.fillStyle = nodeFill;
             ctx.beginPath();
             ctx.arc(px, py, 3.5, 0, Math.PI * 2);
             ctx.fill();
 
-            ctx.strokeStyle = '#2F4DFF';
+            ctx.strokeStyle = primaryColor;
             ctx.lineWidth = 1.5;
             ctx.beginPath();
             ctx.arc(px, py, 3.5, 0, Math.PI * 2);
@@ -1783,22 +1846,33 @@ window.luminixPose = {
 
             joints.forEach(j => {
                 const la = landmarks[j.a], lb = landmarks[j.b], lc = landmarks[j.c];
-                if (!la || !lb || !lc || (lb.visibility !== undefined && lb.visibility < 0.35)) return;
+                if (!la || !lb || !lc || (lb.visibility !== undefined && lb.visibility < 0.30)) return;
 
-                const angle = this.calculateAngle(la, lb, lc);
-                const px = lb.x * w + 16;
-                const py = lb.y * h - 6;
+                const angle = this.calculateAngle(la, lb, lc, aspect);
+                const px = toX(lb.x) + 16;
+                const py = toY(lb.y) - 6;
 
-                ctx.fillStyle = '#2F4DFF';
-                ctx.fillRect(px - 14, py - 8, 28, 16);
-
-                ctx.fillStyle = '#FFFFFF';
-                ctx.fillText(`${angle}°`, px, py);
+                ctx.save();
+                if (isMirrored) {
+                    ctx.translate(px, py);
+                    ctx.scale(-1, 1);
+                    ctx.fillStyle = primaryColor;
+                    ctx.fillRect(-14, -8, 28, 16);
+                    ctx.fillStyle = '#FFFFFF';
+                    ctx.fillText(`${angle}°`, 0, 0);
+                } else {
+                    ctx.fillStyle = primaryColor;
+                    ctx.fillRect(px - 14, py - 8, 28, 16);
+                    ctx.fillStyle = '#FFFFFF';
+                    ctx.fillText(`${angle}°`, px, py);
+                }
+                ctx.restore();
             });
         }
     },
 
-    evaluatePostureRisk(landmarks) {
+    evaluatePostureRisk(landmarks, options = {}) {
+        const aspect = (typeof options === 'number') ? options : (options.aspect || 1.0);
         if (!landmarks || landmarks.length < 25) {
             return {
                 score: 85,
@@ -1813,22 +1887,26 @@ window.luminixPose = {
             };
         }
 
-        const leftElbow = this.calculateAngle(landmarks[11], landmarks[13], landmarks[15]);
-        const rightElbow = this.calculateAngle(landmarks[12], landmarks[14], landmarks[16]);
-        const leftKnee = this.calculateAngle(landmarks[23], landmarks[25], landmarks[27]);
-        const rightKnee = this.calculateAngle(landmarks[24], landmarks[26], landmarks[28]);
-        const leftHip = this.calculateAngle(landmarks[11], landmarks[23], landmarks[25]);
-        const rightHip = this.calculateAngle(landmarks[12], landmarks[24], landmarks[26]);
+        const leftElbow = this.calculateAngle(landmarks[11], landmarks[13], landmarks[15], aspect);
+        const rightElbow = this.calculateAngle(landmarks[12], landmarks[14], landmarks[16], aspect);
+        const leftKnee = this.calculateAngle(landmarks[23], landmarks[25], landmarks[27], aspect);
+        const rightKnee = this.calculateAngle(landmarks[24], landmarks[26], landmarks[28], aspect);
+        const leftHip = this.calculateAngle(landmarks[11], landmarks[23], landmarks[25], aspect);
+        const rightHip = this.calculateAngle(landmarks[12], landmarks[24], landmarks[26], aspect);
 
         const midShX = (landmarks[11].x + landmarks[12].x) / 2;
         const midShY = (landmarks[11].y + landmarks[12].y) / 2;
         const midHipX = (landmarks[23].x + landmarks[24].x) / 2;
         const midHipY = (landmarks[23].y + landmarks[24].y) / 2;
-        const spineAngle = Math.round(Math.abs(Math.atan2(midShX - midHipX, midHipY - midShY) * (180 / Math.PI)));
+        
+        // Use aspect-scaled horizontal delta to preserve physical spine inclination angle
+        const dxSpine = (midShX - midHipX) * aspect;
+        const dySpine = midHipY - midShY;
+        const spineAngle = Math.round(Math.abs(Math.atan2(dxSpine, dySpine) * (180 / Math.PI)));
 
         const shoulderDiff = Math.abs(landmarks[11].y - landmarks[12].y);
         const hipDiff = Math.abs(landmarks[23].y - landmarks[24].y);
-        const symmetry = Math.max(40, Math.min(100, Math.round(100 - (shoulderDiff * 150 + hipDiff * 120))));
+        const symmetry = Math.max(40, Math.min(100, Math.round(100 - (shoulderDiff * 140 + hipDiff * 100))));
 
         let risky = false;
         let penalty = 0;
@@ -1845,24 +1923,28 @@ window.luminixPose = {
         let alertMsg = '';
         let alertTips = [];
 
-        if (shLVis < 0.45 || shRVis < 0.45 || hipLVis < 0.45 || hipRVis < 0.45) {
+        // Threshold 0.35 allows reliable posture tracking on mobile without spurious node alerts
+        if (shLVis < 0.35 || shRVis < 0.35 || hipLVis < 0.35 || hipRVis < 0.35) {
             hasAlert = true;
-            penalty += 35;
+            penalty += 25;
             alertTitle = 'NODE CONNECTION & CAMERA ANGLE ALERT';
-            alertMsg = 'Posture is not correct / Poor node connection: Some key joints are out of frame or occluded.';
+            alertMsg = 'Posture check in progress / Node connection: Ensure shoulders and hips are framed.';
             alertTips = [
-                '• Adjust camera angle and step back 2–3 meters',
+                '• Adjust camera angle and step back 1.5–2.5 meters',
                 '• Ensure shoulders and hips are clearly framed in good lighting',
                 '• Stand upright facing the lens'
             ];
-            feedback = '⚠️ Poor node connection: Adjust camera angle to frame full body.';
+            feedback = '⚠️ Node connection: Frame full torso for precision tracking.';
         } else {
             const shoulderSpan = Math.abs(landmarks[11].x - landmarks[12].x);
-            if (shoulderSpan > 0.60 || landmarks[23].y > 0.93) {
+            // In mobile portrait (aspect < 0.8), shoulders occupy larger percentage of width
+            const shoulderSpanThreshold = aspect < 0.8 ? 0.75 : 0.60;
+
+            if (shoulderSpan > shoulderSpanThreshold || (landmarks[23].y > 0.96 && landmarks[24].y > 0.96)) {
                 hasAlert = true;
-                penalty += 25;
+                penalty += 20;
                 alertTitle = 'CAMERA DISTANCE ALERT';
-                alertMsg = 'You are too close to the camera lens. Torso is cutting off lower joints.';
+                alertMsg = 'You are close to the camera lens. Torso is cutting off lower joints.';
                 alertTips = [
                     '• Step back 1–2 steps so knees and hips are visible',
                     '• Tilt camera slightly downward if placed on a desk'
@@ -1879,9 +1961,9 @@ window.luminixPose = {
                     '• Lift chest and align head over spine'
                 ];
                 feedback = '⚠️ Severe lumbar flexion detected: Shoulders below hips. Protect spine!';
-            } else if (spineAngle > 32) {
+            } else if (spineAngle > 30) {
                 hasAlert = true;
-                penalty += 30;
+                penalty += 25;
                 alertTitle = 'POSTURE & SPINE ALIGNMENT ALERT';
                 alertMsg = `Posture is not correct: High spinal tilt (${spineAngle}°). Re-center torso vertically.`;
                 alertTips = [
@@ -1889,9 +1971,9 @@ window.luminixPose = {
                     '• Re-center torso vertically over hips'
                 ];
                 feedback = '⚠️ High spinal inclination: Re-center torso vertically over hips.';
-            } else if (shoulderDiff > 0.08) {
+            } else if (shoulderDiff > 0.10) {
                 hasAlert = true;
-                penalty += 20;
+                penalty += 15;
                 alertTitle = 'POSTURE ASYMMETRY ALERT';
                 alertMsg = 'Posture is not correct: Significant shoulder asymmetry. Level your collarbone.';
                 alertTips = [
@@ -1925,9 +2007,14 @@ window.luminixPose = {
         if (!el) return;
 
         if (!metrics || !metrics.hasAlert) {
+            el._consecutiveAlerts = 0;
             el.classList.add('hidden');
             return;
         }
+
+        // Require 2 consecutive alert frames to prevent single-frame occlusion spikes
+        el._consecutiveAlerts = (el._consecutiveAlerts || 0) + 1;
+        if (el._consecutiveAlerts < 2) return;
 
         // If temporarily dismissed by user, keep hidden
         if (el.dataset.dismissedUntil && Date.now() < parseInt(el.dataset.dismissedUntil, 10)) {
@@ -2124,12 +2211,14 @@ async function startVideoStream() {
         currentCameraStream = null;
     }
 
+    const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent) || (window.innerWidth <= 768);
+
     const constraints = {
         video: {
             facingMode: cameraFacingMode,
-            width: { ideal: 1280, max: 1920, min: 640 },
-            height: { ideal: 720, max: 1080, min: 480 },
-            frameRate: { ideal: 240, max: 240, min: 60 }
+            width: isMobile ? { ideal: 480, max: 720 } : { ideal: 1280, max: 1280 },
+            height: isMobile ? { ideal: 640, max: 1280 } : { ideal: 720, max: 720 },
+            frameRate: isMobile ? { ideal: 30, max: 30 } : { ideal: 60, max: 60 }
         },
         audio: false
     };
@@ -2139,7 +2228,7 @@ async function startVideoStream() {
     } catch (_) {
         try {
             currentCameraStream = await navigator.mediaDevices.getUserMedia({
-                video: { facingMode: cameraFacingMode, frameRate: { ideal: 120, min: 60 } },
+                video: { facingMode: cameraFacingMode, width: { ideal: 640 }, height: { ideal: 480 }, frameRate: { ideal: 30 } },
                 audio: false
             });
         } catch (e2) {
@@ -2198,7 +2287,8 @@ window.toggleCamera = async function() {
             if (loading && loading.style.display !== 'none') loading.style.display = 'none';
             if (results.poseLandmarks) {
                 targetLandmarks = results.poseLandmarks;
-                const metrics = window.luminixPose.evaluatePostureRisk(results.poseLandmarks);
+                const aspect = (video && video.videoWidth && video.videoHeight) ? (video.videoWidth / video.videoHeight) : 1.0;
+                const metrics = window.luminixPose.evaluatePostureRisk(results.poseLandmarks, { aspect });
                 updateLivePoseHUD(metrics);
             } else {
                 targetLandmarks = null;
@@ -2209,17 +2299,18 @@ window.toggleCamera = async function() {
         await poseEngine.initialize();
         await startVideoStream();
 
-        // ── Max-Refresh Visual Rendering Loop (120Hz / 144Hz / 240Hz) ───────────
+        // ── High-Performance Visual Rendering Loop ───────────────────────────
         lastFrameTime = performance.now();
         let lastRenderTimestamp = performance.now();
         frameCount = 0;
         let isRunningInference = true;
 
-        // Dedicated lightweight offscreen canvas for ultra-low latency ML inference (192x144)
+        // Dynamic aspect-preserving offscreen canvas for zero-distortion ML inference
         const offscreenCanvas = document.createElement('canvas');
-        offscreenCanvas.width = 192;
-        offscreenCanvas.height = 144;
         const offscreenCtx = offscreenCanvas.getContext('2d', { willReadFrequently: true });
+        let lastInferenceTimestamp = 0;
+        const isMobileDevice = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent) || (window.innerWidth <= 768);
+        const minInferenceDelta = isMobileDevice ? 38 : 30; // ~26 FPS mobile, ~33 FPS desktop
 
         function renderHighSpeedFrame(timestamp) {
             if (!poseEngine) return;
@@ -2233,7 +2324,7 @@ window.toggleCamera = async function() {
                 frameCount = 0;
                 lastFrameTime = timestamp;
                 const fpsBadge = document.getElementById('pose-fps-badge');
-                if (fpsBadge) fpsBadge.textContent = `${currentFps} FPS // HIGH REFRESH STREAM`;
+                if (fpsBadge) fpsBadge.textContent = `${currentFps} FPS // ACTIVE STREAM`;
             }
 
             if (canvas.width !== canvas.clientWidth || canvas.height !== canvas.clientHeight) {
@@ -2244,6 +2335,8 @@ window.toggleCamera = async function() {
             const w = canvas.width;
             const h = canvas.height;
 
+            const vp = window.luminixPose.computeCoverViewport(video.videoWidth, video.videoHeight, w, h);
+
             ctx.save();
             if (isCameraMirrored && cameraFacingMode === 'user') {
                 ctx.translate(w, 0);
@@ -2251,7 +2344,7 @@ window.toggleCamera = async function() {
             }
 
             if (video.readyState >= 2) {
-                ctx.drawImage(video, 0, 0, w, h);
+                ctx.drawImage(video, vp.x, vp.y, vp.width, vp.height);
             }
 
             if (targetLandmarks && targetLandmarks.length > 0) {
@@ -2271,7 +2364,10 @@ window.toggleCamera = async function() {
                 }
 
                 window.luminixPose.drawLuminixSkeleton(ctx, interpolatedLandmarks, w, h, {
-                    showAngles: showJointAngleLabels
+                    showAngles: showJointAngleLabels,
+                    viewport: vp,
+                    aspect: vp.aspect,
+                    mirrored: (isCameraMirrored && cameraFacingMode === 'user')
                 });
             }
             ctx.restore();
@@ -2279,12 +2375,23 @@ window.toggleCamera = async function() {
             animFrameId = requestAnimationFrame(renderHighSpeedFrame);
         }
 
-        // ── Hardware Synced ML Inference Loop ──────────────────────────
+        // ── Hardware Synced & Throttled ML Inference Loop ───────────────────
         async function runInferencePass() {
             if (!poseEngine || !isRunningInference) return;
-            if (video && video.readyState >= 2 && !isProcessingInference) {
+            const now = performance.now();
+            if (now - lastInferenceTimestamp < minInferenceDelta) return;
+
+            if (video && video.readyState >= 2 && !isProcessingInference && video.videoWidth > 0 && video.videoHeight > 0) {
                 isProcessingInference = true;
-                offscreenCtx.drawImage(video, 0, 0, 192, 144);
+                lastInferenceTimestamp = now;
+
+                const dims = window.luminixPose.getInferenceDimensions(video.videoWidth, video.videoHeight);
+                if (offscreenCanvas.width !== dims.width || offscreenCanvas.height !== dims.height) {
+                    offscreenCanvas.width = dims.width;
+                    offscreenCanvas.height = dims.height;
+                }
+
+                offscreenCtx.drawImage(video, 0, 0, dims.width, dims.height);
                 try {
                     await poseEngine.send({ image: offscreenCanvas });
                 } catch (_) {
@@ -2513,7 +2620,7 @@ function renderLuna(container) {
                         </div>
                         <h4 class="font-display font-semibold text-sm text-[var(--bone)]">Synchronized Vitals</h4>
                         <p class="text-[var(--bone-dim)] font-mono text-[11px] mt-1 leading-relaxed">
-                            Live telemetry from Apple Watch &amp; mobile sensors feeds directly into Luna's biomechanical diagnosis.
+                            Live telemetry from authentic connected wearable &amp; mobile sensors feeds directly into Luna's biomechanical diagnosis.
                         </p>
                     </div>
                     <button onclick="nav('connect')" class="btn-editorial-secondary w-full text-xs py-2 mt-4">

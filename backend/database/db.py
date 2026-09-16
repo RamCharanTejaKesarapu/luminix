@@ -82,14 +82,51 @@ class CreatorDonation(Base):
     channel = Column(String(64), nullable=True)
 
 
+class HealthSample(Base):
+    __tablename__ = "health_samples"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    user_id = Column(String(128), nullable=False, default="default", index=True)
+    metric = Column(String(64), nullable=False, index=True)
+    value = Column(Float, nullable=True)
+    unit = Column(String(32), nullable=True)
+    systolic = Column(Float, nullable=True)
+    diastolic = Column(Float, nullable=True)
+    timestamp = Column(DateTime(timezone=True), nullable=False, index=True)
+    start_time = Column(DateTime(timezone=True), nullable=True)
+    end_time = Column(DateTime(timezone=True), nullable=True)
+    source = Column(String(64), default="healthkit", index=True)  # healthkit, health_connect, direct_bp_device, ble_sensor
+    device_id = Column(String(128), nullable=True)
+    quality = Column(String(32), default="device_measured")
+    created_at = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc), index=True)
+
+
 _engine = None
 _SessionLocal: Optional[sessionmaker] = None
 
 
 def init_db(db_path: str | Path = "./data/health_intel.sqlite") -> None:
     global _engine, _SessionLocal
+    import os
+    import shutil
+
     path = Path(db_path)
-    path.parent.mkdir(parents=True, exist_ok=True)
+    # Support serverless / read-only environments (e.g. Vercel, AWS Lambda)
+    if os.environ.get("VERCEL") or os.environ.get("AWS_LAMBDA_FUNCTION_NAME"):
+        tmp_path = Path("/tmp") / path.name
+        if not tmp_path.exists() and path.exists():
+            try:
+                shutil.copy2(str(path), str(tmp_path))
+            except Exception:
+                pass
+        path = tmp_path
+
+    try:
+        path.parent.mkdir(parents=True, exist_ok=True)
+    except OSError:
+        path = Path("/tmp") / path.name
+        path.parent.mkdir(parents=True, exist_ok=True)
+
     _engine = create_engine(f"sqlite:///{path}", future=True, echo=False)
     Base.metadata.create_all(_engine, checkfirst=True)
 
@@ -535,3 +572,116 @@ def record_creator_donation(
             "note": d.note,
             "channel": d.channel,
         }
+
+
+def save_health_samples(samples: List[Dict[str, Any]], user_id: str = "default") -> int:
+    """Saves normalized health samples to SQLite with timestamp parsing and deduplication."""
+    if not samples:
+        return 0
+    saved_count = 0
+    with _get_session() as s:
+        for item in samples:
+            raw_ts = item.get("timestamp")
+            if isinstance(raw_ts, str):
+                try:
+                    ts = datetime.fromisoformat(raw_ts.replace("Z", "+00:00"))
+                except Exception:
+                    ts = datetime.now(timezone.utc)
+            elif isinstance(raw_ts, datetime):
+                ts = raw_ts
+            else:
+                ts = datetime.now(timezone.utc)
+
+            start_ts = None
+            if item.get("startTime"):
+                try:
+                    start_ts = datetime.fromisoformat(str(item["startTime"]).replace("Z", "+00:00"))
+                except Exception:
+                    pass
+
+            end_ts = None
+            if item.get("endTime"):
+                try:
+                    end_ts = datetime.fromisoformat(str(item["endTime"]).replace("Z", "+00:00"))
+                except Exception:
+                    pass
+
+            metric = str(item.get("metric", "")).lower().strip()
+            if not metric:
+                continue
+
+            sample = HealthSample(
+                user_id=str(item.get("userId") or user_id),
+                metric=metric,
+                value=float(item["value"]) if item.get("value") is not None else None,
+                unit=item.get("unit"),
+                systolic=float(item["systolic"]) if item.get("systolic") is not None else None,
+                diastolic=float(item["diastolic"]) if item.get("diastolic") is not None else None,
+                timestamp=ts,
+                start_time=start_ts,
+                end_time=end_ts,
+                source=str(item.get("source", "healthkit")),
+                device_id=item.get("device") or item.get("deviceId"),
+                quality=item.get("quality", "device_measured"),
+            )
+            s.add(sample)
+            saved_count += 1
+        s.commit()
+    return saved_count
+
+
+def get_latest_health_samples(user_id: str = "default") -> Dict[str, Any]:
+    """Returns the most recent sample for each tracked metric."""
+    with _get_session() as s:
+        # Query distinct metrics
+        samples = (
+            s.query(HealthSample)
+            .filter(HealthSample.user_id == user_id)
+            .order_by(desc(HealthSample.timestamp))
+            .all()
+        )
+        latest_map: Dict[str, Any] = {}
+        for row in samples:
+            if row.metric not in latest_map:
+                latest_map[row.metric] = {
+                    "metric": row.metric,
+                    "value": row.value,
+                    "unit": row.unit,
+                    "systolic": row.systolic,
+                    "diastolic": row.diastolic,
+                    "timestamp": row.timestamp.isoformat() if row.timestamp else None,
+                    "source": row.source,
+                    "device": row.device_id,
+                    "quality": row.quality,
+                }
+        return latest_map
+
+
+def get_health_sample_history(
+    user_id: str = "default", metric: str = "heart_rate", limit: int = 50
+) -> List[Dict[str, Any]]:
+    """Returns time-series history for a given metric."""
+    with _get_session() as s:
+        rows = (
+            s.query(HealthSample)
+            .filter(HealthSample.user_id == user_id, HealthSample.metric == metric.lower().strip())
+            .order_by(desc(HealthSample.timestamp))
+            .limit(limit)
+            .all()
+        )
+        return [
+            {
+                "id": r.id,
+                "metric": r.metric,
+                "value": r.value,
+                "unit": r.unit,
+                "systolic": r.systolic,
+                "diastolic": r.diastolic,
+                "timestamp": r.timestamp.isoformat() if r.timestamp else None,
+                "source": r.source,
+                "device": r.device_id,
+                "quality": r.quality,
+            }
+            for r in reversed(rows)
+        ]
+
