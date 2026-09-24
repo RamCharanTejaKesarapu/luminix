@@ -59,7 +59,20 @@ export default function App() {
 
     // 3. Setup WebSocket listener for live packet confirmation
     const unsubscribeWs = WebSocketManager.addListener((packet) => {
-      if (packet.type === 'risk_alert' && packet.data) {
+      if (packet.type === 'live_update') {
+        if (packet.telemetry && packet.telemetry.heartRate != null) {
+          setLiveHeartRate(Math.round(packet.telemetry.heartRate));
+        }
+        if (packet.risk) {
+          const r = packet.risk;
+          setHeartRisk({
+            level: r.heart_risk_level || r.risk_level || 'LOW',
+            score: r.cardiac_strain_score || r.risk_score || 0,
+            cardioStatus: r.cardio_risk_level || 'Normal',
+            alertActive: r.is_alert_active || false,
+          });
+        }
+      } else if (packet.type === 'risk_alert' && packet.data) {
         setHeartRisk({
           level: packet.data.heart_risk_level || packet.data.heat_risk_level || 'LOW',
           score: packet.data.cardiac_strain_score || packet.data.total_heat_score || 0,

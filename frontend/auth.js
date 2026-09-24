@@ -429,10 +429,6 @@ window.renderAuthView = async function() {
                             <span class="theme-icon-sun">☀️</span>
                             <span class="theme-icon-moon hidden">🌙</span>
                         </button>
-                        <div class="firewall-shield-badge" title="Luminix WAF, Rate Limiter & Threat Shield Active">
-                            <span class="firewall-pulse-dot"></span>
-                            <span>FIREWALL ACTIVE</span>
-                        </div>
                     </div>
                 </div>
 
@@ -1518,10 +1514,6 @@ window.openUserProfileModal = async function() {
             <div class="flex items-center justify-between pb-3.5 border-b border-[var(--border-subtle)]">
                 <div class="flex items-center gap-2">
                     <span class="hero-category-tag">BIOMETRIC SANCTUARY VAULT</span>
-                    <span class="firewall-shield-badge">
-                        <span class="firewall-pulse-dot"></span>
-                        FIREBASE ENCRYPTED
-                    </span>
                 </div>
                 <button type="button" onclick="closeUserProfileModal()" class="text-gray-400 hover:text-white font-mono text-lg font-bold">&times;</button>
             </div>

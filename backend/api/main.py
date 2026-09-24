@@ -275,6 +275,15 @@ def health() -> Dict[str, Any]:
     }
 
 
+@app.get("/v1/config/ai-key")
+def config_ai_key() -> Dict[str, Any]:
+    key = os.getenv("GEMINI_API_KEY", "")
+    return {
+        "configured": bool(key),
+        "key": key if key else "",
+    }
+
+
 # ── Nutrition ──────────────────────────────────────────────────────────────
 
 @app.post("/v1/nutrition/metrics-and-plan")
@@ -315,19 +324,40 @@ def generate_plan(req: GeneratePlanRequest) -> Dict[str, Any]:
 @app.post("/v1/cook/suggest")
 def cook_suggest(payload: Dict[str, Any]) -> Dict[str, Any]:
     ingredients = payload.get("ingredients", "")
+    cuisine = payload.get("cuisine", "Global")
+    spice_level = payload.get("spice_level", "Medium")
     diet = payload.get("diet_preference", "omnivore")
-    limit = int(payload.get("limit", 5) or 5)
-    catalog = suggest_recipes(ingredients, limit=limit)
+    limit = int(payload.get("limit", 6) or 6)
+    catalog = suggest_recipes(ingredients, cuisine=cuisine, spice_level=spice_level, limit=limit)
 
-    # Enhance with Gemini AI Recipe when available
-    if os.getenv("GEMINI_API_KEY"):
+    # Enhance with Gemini AI Global Recipes when available
+    custom_key = payload.get("api_key") or payload.get("apiKey")
+    effective_key = custom_key or os.getenv("GEMINI_API_KEY")
+    if effective_key:
         try:
-            from analysis_module.gemini_integration import generate_ai_recipe_gemini
-            ai_recipe = generate_ai_recipe_gemini(ingredients, diet)
-            if ai_recipe and "recipe_name" in ai_recipe:
-                catalog["ai_recipe"] = ai_recipe
-        except Exception:
-            pass
+            if custom_key:
+                os.environ["GEMINI_API_KEY"] = custom_key
+            from analysis_module.gemini_integration import generate_global_recipes_gemini, generate_ai_recipe_gemini
+            ai_data = generate_global_recipes_gemini(
+                ingredients=ingredients,
+                cuisine=cuisine,
+                spice_level=spice_level,
+                diet_preference=diet,
+            )
+            if ai_data and isinstance(ai_data, dict) and ai_data.get("recipes"):
+                catalog["ai_recipes"] = ai_data["recipes"]
+                catalog["ai_recipe"] = ai_data["recipes"][0]
+            elif ai_data and isinstance(ai_data, list):
+                catalog["ai_recipes"] = ai_data
+                catalog["ai_recipe"] = ai_data[0]
+            else:
+                # Fallback to single AI recipe
+                single = generate_ai_recipe_gemini(ingredients, diet)
+                if single and "recipe_name" in single:
+                    catalog["ai_recipes"] = [single]
+                    catalog["ai_recipe"] = single
+        except Exception as exc:
+            catalog["gemini_error"] = str(exc)
 
     return catalog
 

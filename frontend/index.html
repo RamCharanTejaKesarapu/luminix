@@ -186,7 +186,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@1,400;1,600;1,700&family=Fragment+Mono&family=Instrument+Serif:ital@1&family=Inter:wght@300;400;500;600;700&family=Space+Grotesk:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
-    <link rel="stylesheet" href="/static/styles.css?v=4.3">
+    <link rel="stylesheet" href="/static/styles.css?v=5.0">
     <link rel="manifest" href="/manifest.json">
 
     <!-- Tailwind for utility layout support -->
@@ -270,11 +270,12 @@
                 <div class="header-left">
                     <button type="button" class="brand-link" onclick="nav('dashboard')">
                         <span class="brand-name">LUMINIX</span>
+                        <span class="brand-ver font-mono">v4.3</span>
                     </button>
                 </div>
 
                 <div class="header-center">
-                    <span class="system-descriptor">AI FITNESS / WELLNESS SYSTEM</span>
+                    <span class="system-descriptor">AI FITNESS // WELLNESS OS</span>
                 </div>
 
                 <div class="header-right">
@@ -520,6 +521,25 @@
         </div>
     </div>
 
+    <!-- ── Interactive Recipe Detail & Preparation Steps Modal ───────────── -->
+    <div id="recipe-detail-modal" class="search-modal-overlay hidden" aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="recipe-modal-title">
+        <div class="search-modal-backdrop" onclick="window.closeRecipeDetailModal()"></div>
+        <div class="recipe-modal-box" onclick="event.stopPropagation()">
+            <div class="recipe-modal-header">
+                <div class="flex items-center gap-2 flex-wrap">
+                    <span id="recipe-modal-badge" class="badge badge-cyan text-xs font-bold uppercase tracking-wider">INDIAN</span>
+                    <span id="recipe-modal-spice" class="badge badge-yellow text-xs font-bold uppercase tracking-wider">SPICY</span>
+                    <span id="recipe-modal-diff" class="text-xs font-mono text-dim">EASY</span>
+                    <span id="recipe-modal-time" class="text-xs font-mono text-dim">⏱ 25 mins</span>
+                </div>
+                <button type="button" class="search-clear-btn text-2xl hover:text-white leading-none" onclick="window.closeRecipeDetailModal()" title="Close (ESC)" aria-label="Close recipe modal">&times;</button>
+            </div>
+            <div id="recipe-modal-body" class="recipe-modal-content">
+                <!-- Dynamically populated by window.openRecipeDetailModal -->
+            </div>
+        </div>
+    </div>
+
     <!-- ── Biometric Onboarding Modal (Personalization & Terms Covenant) ────────── -->
     <div id="biometric-onboarding-modal" class="search-modal-overlay hidden" aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="onboarding-modal-title">
         <div class="search-modal-backdrop" onclick="window.closeBiometricOnboardingModal(true)"></div>
@@ -528,10 +548,6 @@
             <div class="flex items-center justify-between mb-3">
                 <div class="flex items-center gap-2">
                     <span class="hero-category-tag">SYSTEM // BIOMETRIC REGISTRY</span>
-                    <span class="firewall-shield-badge">
-                        <span class="firewall-pulse-dot"></span>
-                        FIREBASE SYNC
-                    </span>
                 </div>
                 <button type="button" class="search-clear-btn" onclick="window.closeBiometricOnboardingModal(true)" title="Skip for now" aria-label="Close onboarding modal">&times;</button>
             </div>
@@ -781,18 +797,18 @@
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-storage-compat.js"></script>
-    <script src="/static/firebase_service.js?v=4.4"></script>
+    <script src="/static/firebase_service.js?v=5.0"></script>
     <!-- Chart.js for wearable analytics history charts -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
-    <script src="/static/wearable.js?v=6.6.0"></script>
+    <script src="/static/wearable.js?v=5.0"></script>
 
     <!-- Scripts -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    <script src="/static/kage_scene.js?v=4.6"></script>
-    <script src="/static/auth.js?v=4.6"></script>
-    <script src="/static/app.js?v=4.8"></script>
-    <script src="/static/yoga.js?v=4.7"></script>
-    <script src="/static/gym.js?v=4.7"></script>
-    <script src="/static/nutrition.js?v=4.6"></script>
+    <script src="/static/kage_scene.js?v=5.0"></script>
+    <script src="/static/auth.js?v=5.0"></script>
+    <script src="/static/app.js?v=5.1"></script>
+    <script src="/static/yoga.js?v=5.0"></script>
+    <script src="/static/gym.js?v=5.0"></script>
+    <script src="/static/nutrition.js?v=5.1"></script>
 </body>
 </html>

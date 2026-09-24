@@ -16,6 +16,12 @@
   to = "/.netlify/functions/donation"
   status = 200
 
+# Serverless function rewrite for smart fridge recipe suggestion
+[[redirects]]
+  from = "/v1/cook/suggest"
+  to = "/.netlify/functions/recipes"
+  status = 200
+
 [[headers]]
   for = "/*"
   [headers.values]

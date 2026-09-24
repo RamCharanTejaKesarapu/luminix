@@ -82,9 +82,12 @@ class HealthDataNormalizer {
     let val = 0;
     let unit = 'count';
 
-    if (metricType === 'heart_rate') {
+    if (metricType === 'heart_rate' || metricType === 'resting_heart_rate') {
       val = record.samples && record.samples.length > 0 ? record.samples[0].beatsPerMinute : record.beatsPerMinute || 0;
       unit = 'bpm';
+    } else if (metricType === 'hrv') {
+      val = record.heartRateVariabilityMillis || (record.samples && record.samples.length > 0 ? record.samples[0].heartRateVariabilityMillis : 0) || 0;
+      unit = 'ms';
     } else if (metricType === 'steps') {
       val = record.count || 0;
       unit = 'count';
@@ -94,6 +97,15 @@ class HealthDataNormalizer {
     } else if (metricType === 'body_temperature') {
       val = record.temperature?.inCelsius || record.temperature || 0;
       unit = '°C';
+    } else if (metricType === 'respiratory_rate') {
+      val = record.rate || 0;
+      unit = 'breaths/min';
+    } else if (metricType === 'distance') {
+      val = record.distance?.inMeters || record.distance || 0;
+      unit = 'm';
+    } else if (metricType === 'active_calories') {
+      val = record.energy?.inKilocalories || record.energy || 0;
+      unit = 'kcal';
     }
 
     return {

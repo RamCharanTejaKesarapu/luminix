@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
+import math
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
@@ -37,14 +38,21 @@ class VideoPoseReport:
     preview_frame_path: Optional[str] = None
 
 
+def _is_valid_num(val: Any) -> bool:
+    return isinstance(val, (int, float)) and val == val and not math.isinf(val)
+
+
 def _score_frame(angles: Dict[str, float], issues: List[str]) -> float:
     base = 100.0
     base -= 8 * len(issues)
-    asym = abs(angles.get("knee_right_deg", 0) - angles.get("knee_left_deg", 0))
-    if asym > 15:
-        base -= 10
-    spine = angles.get("spine_vertical_deviation_deg", 0) or 0
-    if spine > 15:
+    kr = angles.get("knee_right_deg")
+    kl = angles.get("knee_left_deg")
+    if _is_valid_num(kr) and _is_valid_num(kl):
+        asym = abs(kr - kl)
+        if asym > 15:
+            base -= 10
+    spine = angles.get("spine_vertical_deviation_deg")
+    if _is_valid_num(spine) and spine > 15:
         base -= 12
     return float(max(0.0, min(100.0, base)))
 
@@ -52,21 +60,25 @@ def _score_frame(angles: Dict[str, float], issues: List[str]) -> float:
 def _issues_from_angles(angles: Dict[str, float]) -> List[str]:
     issues: List[str] = []
     spine = angles.get("spine_vertical_deviation_deg")
-    if spine == spine and spine > 18:
+    if _is_valid_num(spine) and spine > 18:
         issues.append("Spine alignment deviates from neutral vertical.")
 
-    if angles.get("shoulder_tilt_deg", 0) > 12:
+    st = angles.get("shoulder_tilt_deg")
+    if _is_valid_num(st) and st > 12:
         issues.append("Shoulder line tilt suggests upper-body imbalance.")
 
-    if angles.get("hip_tilt_deg", 0) > 12:
+    ht = angles.get("hip_tilt_deg")
+    if _is_valid_num(ht) and ht > 12:
         issues.append("Hip line tilt — check weight distribution.")
 
-    kr, kl = angles.get("knee_right_deg", 0), angles.get("knee_left_deg", 0)
-    if abs(kr - kl) > 18:
+    kr = angles.get("knee_right_deg")
+    kl = angles.get("knee_left_deg")
+    if _is_valid_num(kr) and _is_valid_num(kl) and abs(kr - kl) > 18:
         issues.append("Knee angle asymmetry — possible lateral imbalance.")
 
-    er, el = angles.get("elbow_right_deg", 0), angles.get("elbow_left_deg", 0)
-    if abs(er - el) > 25:
+    er = angles.get("elbow_right_deg")
+    el = angles.get("elbow_left_deg")
+    if _is_valid_num(er) and _is_valid_num(el) and abs(er - el) > 25:
         issues.append("Elbow angle asymmetry — uneven arm loading.")
 
     return issues

@@ -438,6 +438,10 @@ def delete_user_account(user_id: int) -> bool:
         s.query(ProgressEvent).filter(
             (ProgressEvent.user_label == user_label) | (ProgressEvent.user_label == user_email)
         ).delete()
+        # Remove biometric and health telemetry samples (DPDP Act 2023 & GDPR Right to Erasure)
+        s.query(HealthSample).filter(
+            (HealthSample.user_id == user_label) | (HealthSample.user_id == user_email)
+        ).delete()
         # Delete user
         s.delete(user)
         s.commit()

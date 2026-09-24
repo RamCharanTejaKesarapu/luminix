@@ -112,30 +112,30 @@ function computeClientMetrics(p = healthProfile) {
     const h_m = p.height_cm / 100.0;
     const bmi = p.weight_kg / (h_m * h_m);
     
-    let category = 'Normal';
-    let catClass = 'badge-cyan';
-    let catColor = '#00E5FF';
+    let category = 'Normal Weight';
+    let catClass = 'badge-emerald';
+    let catColor = '#10B981';
     let catDesc = 'You are in a healthy weight range. Maintain balanced nutrition and progressive overload.';
     
     if (bmi < 18.5) {
         category = 'Underweight';
-        catClass = 'badge-yellow';
-        catColor = '#5FFFFF';
+        catClass = 'badge-slate';
+        catColor = '#94A3B8';
         catDesc = 'Focus on nutrient-dense caloric surplus, healthy fats, and strength training to build lean mass.';
     } else if (bmi < 25) {
         category = 'Normal Weight';
-        catClass = 'badge-cyan';
-        catColor = '#00E5FF';
+        catClass = 'badge-emerald';
+        catColor = '#10B981';
         catDesc = 'Optimal metabolic baseline. Focus on athletic performance, agility, and body recomposition.';
     } else if (bmi < 30) {
         category = 'Overweight';
-        catClass = 'badge-yellow';
-        catColor = '#FFC400';
+        catClass = 'badge-amber';
+        catColor = '#F59E0B';
         catDesc = 'Target a modest caloric deficit (300-500 kcal), prioritize high protein intake and daily activity.';
     } else {
         category = 'Obese';
-        catClass = 'badge-danger';
-        catColor = '#FF6A00';
+        catClass = 'badge-vermilion';
+        catColor = '#E0231C';
         catDesc = 'Structured caloric deficit, low-impact cardio, strength training, and whole foods are recommended.';
     }
 
@@ -413,34 +413,35 @@ window.renderBMIView = function(container) {
                         </div>
                         <div class="text-right">
                             <span class="text-xs text-dim block">Healthy Weight Target:</span>
-                            <span class="text-sm font-bold text-cyan" id="disp-healthy-range">
+                            <span class="text-sm font-bold text-[#10b981]" id="disp-healthy-range">
                                 ${!isImperial ? `${metrics.healthy_range_kg[0]} – ${metrics.healthy_range_kg[1]} kg` : `${Math.round(metrics.healthy_range_kg[0] * 2.20462)} – ${Math.round(metrics.healthy_range_kg[1] * 2.20462)} lbs`}
                             </span>
                         </div>
                     </div>
 
-                    <!-- BMI Gauge Bar Visual -->
+                    <!-- BMI Gauge Bar Visual (Theme Harmonized: Slate -> Emerald -> Amber -> Vermilion) -->
                     <div class="mt-4 mb-2">
-                        <div class="bmi-gauge-bar relative w-full h-4 rounded-full overflow-hidden flex" style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1);">
-                            <div class="h-full" style="width: 25%; background: linear-gradient(90deg, #5FFFFF, #00E5FF);" title="Underweight (< 18.5)"></div>
-                            <div class="h-full" style="width: 25%; background: linear-gradient(90deg, #00E5FF, #10B981);" title="Normal (18.5 - 24.9)"></div>
-                            <div class="h-full" style="width: 25%; background: linear-gradient(90deg, #10B981, #FFC400);" title="Overweight (25 - 29.9)"></div>
-                            <div class="h-full" style="width: 25%; background: linear-gradient(90deg, #FFC400, #FF6A00);" title="Obese (30+)"></div>
+                        <div class="bmi-gauge-bar relative w-full h-4 rounded-full overflow-hidden flex" style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.12); box-shadow: inset 0 1px 3px rgba(0,0,0,0.6);">
+                            <div class="h-full" style="width: 25%; background: linear-gradient(90deg, #475569, #94a3b8);" title="Underweight (< 18.5)"></div>
+                            <div class="h-full" style="width: 25%; background: linear-gradient(90deg, #059669, #10b981);" title="Normal (18.5 - 24.9)"></div>
+                            <div class="h-full" style="width: 25%; background: linear-gradient(90deg, #f59e0b, #ea580c);" title="Overweight (25 - 29.9)"></div>
+                            <div class="h-full" style="width: 25%; background: linear-gradient(90deg, #dc2626, #991b1b);" title="Obese (30+)"></div>
                         </div>
                         
                         <!-- Animated Pointer Needle -->
-                        <div class="relative w-full h-6">
+                        <div class="relative w-full h-7">
                             <div id="bmi-gauge-needle" class="absolute top-0 transform -translate-x-1/2 flex flex-col items-center transition-all duration-300" style="left: ${getBMIPointerPercent(metrics.bmi)}%;">
-                                <div class="w-0 h-0 border-l-[6px] border-l-transparent border-r-[6px] border-r-transparent border-b-[8px] border-b-white"></div>
-                                <span class="text-[10px] font-black text-white bg-black/80 px-1 rounded border border-white/20" id="gauge-pin-val">${metrics.bmi}</span>
+                                <div id="gauge-pin-arrow" class="w-0 h-0 border-l-[6px] border-l-transparent border-r-[6px] border-r-transparent border-b-[8px]" style="border-bottom-color: ${metrics.catColor};"></div>
+                                <span class="text-[11px] font-mono font-bold text-white bg-[#0b0f14] px-2 py-0.5 rounded border shadow-md" id="gauge-pin-val" style="border-color: ${metrics.catColor}; box-shadow: 0 0 10px ${metrics.catColor}40;">${metrics.bmi}</span>
                             </div>
                         </div>
 
-                        <div class="flex justify-between text-[10px] text-dim font-bold uppercase mt-1 px-1">
-                            <span>&lt; 18.5 Under</span>
-                            <span>18.5 - 24.9 Normal</span>
-                            <span>25 - 29.9 Over</span>
-                            <span>30+ Obese</span>
+                        <!-- 4 Perfectly Aligned Segment Labels -->
+                        <div class="flex text-[10px] font-mono font-bold uppercase mt-1 px-1">
+                            <span style="width: 25%; text-align: left; color: #94a3b8;">&lt; 18.5 Under</span>
+                            <span style="width: 25%; text-align: center; color: #10b981;">18.5 – 24.9 Normal</span>
+                            <span style="width: 25%; text-align: center; color: #f59e0b;">25 – 29.9 Over</span>
+                            <span style="width: 25%; text-align: right; color: #e0231c;">30+ Obese</span>
                         </div>
                     </div>
 
@@ -454,25 +455,25 @@ window.renderBMIView = function(container) {
                     <div class="glass-card p-4 rounded-xl text-center">
                         <span class="text-[10px] text-dim uppercase tracking-wider font-bold block">BMR (Mifflin)</span>
                         <div class="text-xl font-extrabold text-white mt-1" id="disp-bmr-msj">${metrics.bmr_msj}</div>
-                        <span class="text-[10px] text-cyan">kcal/day basal</span>
+                        <span class="text-[10px] text-dim font-mono">kcal/day basal</span>
                     </div>
 
                     <div class="glass-card p-4 rounded-xl text-center">
                         <span class="text-[10px] text-dim uppercase tracking-wider font-bold block">BMR (Harris-B)</span>
                         <div class="text-xl font-extrabold text-white mt-1" id="disp-bmr-hb">${metrics.bmr_hb}</div>
-                        <span class="text-[10px] text-secondary">kcal/day basal</span>
+                        <span class="text-[10px] text-secondary font-mono">kcal/day basal</span>
                     </div>
 
                     <div class="glass-card p-4 rounded-xl text-center">
                         <span class="text-[10px] text-dim uppercase tracking-wider font-bold block">TDEE Burn</span>
                         <div class="text-xl font-extrabold text-yellow mt-1" id="disp-tdee">${metrics.tdee}</div>
-                        <span class="text-[10px] text-yellow">daily energy</span>
+                        <span class="text-[10px] text-yellow font-mono">daily energy</span>
                     </div>
 
-                    <div class="glass-card p-4 rounded-xl text-center border border-cyan/30" style="box-shadow: 0 0 15px rgba(0,229,255,0.08);">
-                        <span class="text-[10px] text-cyan uppercase tracking-wider font-bold block">Target Calories</span>
-                        <div class="text-xl font-black text-cyan mt-1" id="disp-target-kcal">${metrics.target_kcal}</div>
-                        <span class="text-[10px] text-dim">goal adjusted</span>
+                    <div class="glass-card p-4 rounded-xl text-center border border-[rgba(224,35,28,0.3)]" style="box-shadow: 0 0 15px rgba(224,35,28,0.08);">
+                        <span class="text-[10px] text-[var(--vermilion)] uppercase tracking-wider font-bold block">Target Calories</span>
+                        <div class="text-xl font-black text-white mt-1" id="disp-target-kcal">${metrics.target_kcal}</div>
+                        <span class="text-[10px] text-dim font-mono">goal adjusted</span>
                     </div>
                 </div>
 
@@ -480,43 +481,43 @@ window.renderBMIView = function(container) {
                 <div class="glass-card p-6 rounded-xl">
                     <div class="flex items-center justify-between mb-4">
                         <h4 style="font-family:var(--font-display);font-size:1.05rem;font-weight:700;color:var(--white)">DAILY TARGET MACRO DISTRIBUTION</h4>
-                        <span class="badge badge-yellow text-xs font-bold">${healthProfile.fitness_goal.replace('_', ' ').toUpperCase()}</span>
+                        <span class="badge badge-amber text-xs font-bold">${healthProfile.fitness_goal.replace('_', ' ').toUpperCase()}</span>
                     </div>
 
                     <!-- Macro Split Segmented Bar -->
-                    <div class="w-full h-3 rounded-full overflow-hidden flex mb-4" style="background: rgba(255,255,255,0.05);">
-                        <div id="bar-macro-protein" class="h-full transition-all duration-300" style="width: ${metrics.macros.protein_pct}%; background: #00E5FF;" title="Protein"></div>
-                        <div id="bar-macro-carbs" class="h-full transition-all duration-300" style="width: ${metrics.macros.carbs_pct}%; background: #FFC400;" title="Carbohydrates"></div>
-                        <div id="bar-macro-fat" class="h-full transition-all duration-300" style="width: ${metrics.macros.fat_pct}%; background: #FF6A00;" title="Fats"></div>
+                    <div class="w-full h-3 rounded-full overflow-hidden flex mb-4" style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1);">
+                        <div id="bar-macro-protein" class="h-full transition-all duration-300" style="width: ${metrics.macros.protein_pct}%; background: #10b981;" title="Protein"></div>
+                        <div id="bar-macro-carbs" class="h-full transition-all duration-300" style="width: ${metrics.macros.carbs_pct}%; background: #f59e0b;" title="Carbohydrates"></div>
+                        <div id="bar-macro-fat" class="h-full transition-all duration-300" style="width: ${metrics.macros.fat_pct}%; background: #e0231c;" title="Fats"></div>
                     </div>
 
                     <!-- Macro Stat Cards -->
                     <div class="grid grid-cols-3 gap-3">
-                        <div class="bg-black/30 p-3 rounded-lg border border-cyan/20">
+                        <div class="bg-black/30 p-3 rounded-lg border border-[#10b981]/25">
                             <div class="flex items-center gap-1.5 mb-1">
-                                <span class="w-2 h-2 rounded-full bg-cyan inline-block"></span>
+                                <span class="w-2 h-2 rounded-full inline-block" style="background: #10b981;"></span>
                                 <span class="text-xs text-dim font-bold uppercase">Protein</span>
                             </div>
                             <div class="text-lg font-black text-white" id="disp-macro-protein">${metrics.macros.protein_g}g</div>
-                            <div class="text-[11px] text-cyan" id="disp-macro-protein-sub">${metrics.macros.protein_g * 4} kcal (${metrics.macros.protein_pct}%)</div>
+                            <div class="text-[11px] font-mono" style="color: #10b981;" id="disp-macro-protein-sub">${metrics.macros.protein_g * 4} kcal (${metrics.macros.protein_pct}%)</div>
                         </div>
 
-                        <div class="bg-black/30 p-3 rounded-lg border border-yellow/20">
+                        <div class="bg-black/30 p-3 rounded-lg border border-[#f59e0b]/25">
                             <div class="flex items-center gap-1.5 mb-1">
-                                <span class="w-2 h-2 rounded-full bg-yellow inline-block"></span>
+                                <span class="w-2 h-2 rounded-full inline-block" style="background: #f59e0b;"></span>
                                 <span class="text-xs text-dim font-bold uppercase">Carbs</span>
                             </div>
                             <div class="text-lg font-black text-white" id="disp-macro-carbs">${metrics.macros.carbs_g}g</div>
-                            <div class="text-[11px] text-yellow" id="disp-macro-carbs-sub">${metrics.macros.carbs_g * 4} kcal (${metrics.macros.carbs_pct}%)</div>
+                            <div class="text-[11px] font-mono" style="color: #f59e0b;" id="disp-macro-carbs-sub">${metrics.macros.carbs_g * 4} kcal (${metrics.macros.carbs_pct}%)</div>
                         </div>
 
-                        <div class="bg-black/30 p-3 rounded-lg border border-[#FF6A00]/20">
+                        <div class="bg-black/30 p-3 rounded-lg border border-[#e0231c]/25">
                             <div class="flex items-center gap-1.5 mb-1">
-                                <span class="w-2 h-2 rounded-full bg-[#FF6A00] inline-block"></span>
+                                <span class="w-2 h-2 rounded-full inline-block" style="background: #e0231c;"></span>
                                 <span class="text-xs text-dim font-bold uppercase">Fats</span>
                             </div>
                             <div class="text-lg font-black text-white" id="disp-macro-fat">${metrics.macros.fat_g}g</div>
-                            <div class="text-[11px] text-[#FF6A00]" id="disp-macro-fat-sub">${metrics.macros.fat_g * 9} kcal (${metrics.macros.fat_pct}%)</div>
+                            <div class="text-[11px] font-mono" style="color: #e0231c;" id="disp-macro-fat-sub">${metrics.macros.fat_g * 9} kcal (${metrics.macros.fat_pct}%)</div>
                         </div>
                     </div>
                 </div>
@@ -528,7 +529,7 @@ window.renderBMIView = function(container) {
                         <h4 class="text-xs font-bold text-dim uppercase tracking-wider">AI Nutritional Deficiency & Watchlist</h4>
                     </div>
                     <ul class="space-y-1.5 text-xs text-secondary" id="disp-deficiencies">
-                        ${metrics.deficiencies.map(d => `<li class="flex items-start gap-2"><span class="text-cyan">•</span> <span>${d}</span></li>`).join('')}
+                        ${metrics.deficiencies.map(d => `<li class="flex items-start gap-2"><span class="text-[var(--vermilion)] font-bold">•</span> <span>${d}</span></li>`).join('')}
                     </ul>
                 </div>
             </div>
@@ -553,9 +554,24 @@ window.renderBMIView = function(container) {
 };
 
 function getBMIPointerPercent(bmi) {
-    const min = 12, max = 40;
-    const clamped = Math.max(min, Math.min(bmi, max));
-    return ((clamped - min) / (max - min)) * 100;
+    const num = parseFloat(bmi) || 22;
+    if (num <= 12) return 3;
+    if (num >= 42) return 97;
+    
+    // Segment 1: Underweight (< 18.5) -> Maps from BMI 12..18.5 into 3%..25%
+    if (num < 18.5) {
+        return 3 + ((num - 12) / (18.5 - 12)) * 22;
+    }
+    // Segment 2: Normal Weight (18.5 .. 24.99) -> Maps from BMI 18.5..25.0 into 25%..50%
+    if (num < 25.0) {
+        return 25 + ((num - 18.5) / (25.0 - 18.5)) * 25;
+    }
+    // Segment 3: Overweight (25.0 .. 29.99) -> Maps from BMI 25.0..30.0 into 50%..75%
+    if (num < 30.0) {
+        return 50 + ((num - 25.0) / (30.0 - 25.0)) * 25;
+    }
+    // Segment 4: Obese (30.0+) -> Maps from BMI 30.0..42.0 into 75%..97%
+    return Math.min(97, 75 + ((num - 30.0) / (42.0 - 30.0)) * 22);
 }
 
 // Interactive handlers for BMI module
@@ -644,7 +660,13 @@ window.onBMIParamChange = function() {
     }
     if (dispDesc) dispDesc.textContent = m.catDesc;
     if (needle) needle.style.left = `${getBMIPointerPercent(m.bmi)}%`;
-    if (pinVal) pinVal.textContent = m.bmi;
+    const pinArrow = document.getElementById('gauge-pin-arrow');
+    if (pinArrow) pinArrow.style.borderBottomColor = m.catColor;
+    if (pinVal) {
+        pinVal.textContent = m.bmi;
+        pinVal.style.borderColor = m.catColor;
+        pinVal.style.boxShadow = `0 0 10px ${m.catColor}40`;
+    }
 
     const bmrMsj = document.getElementById('disp-bmr-msj');
     const bmrHb = document.getElementById('disp-bmr-hb');
@@ -1778,38 +1800,445 @@ window.logWholeDayToTracker = function(dayNum) {
 };
 
 // ── SUB-VIEW: FRIDGE & PANTRY RECIPE FINDER ───────────────────────
+const CUISINE_OPTIONS = [
+    { id: 'Indian', label: 'Indian 🇮🇳', hint: 'Curries & Biryanis' },
+    { id: 'Chinese', label: 'Chinese 🥢', hint: 'Wok Stir-Fries' },
+    { id: 'Italian', label: 'Italian 🍝', hint: 'Risottos & Skillets' },
+    { id: 'Mexican', label: 'Mexican 🌮', hint: 'Salsas & Fajitas' },
+    { id: 'Mediterranean', label: 'Mediterranean 🫒', hint: 'Herbs & Olive Oil' },
+    { id: 'Global', label: 'Global 🌍', hint: 'World Continental' }
+];
+
+const SPICE_OPTIONS = [
+    { id: 'Mild', label: 'Mild 🟢' },
+    { id: 'Medium', label: 'Medium 🟡' },
+    { id: 'Spicy', label: 'Spicy 🌶️' },
+    { id: 'Extra Hot', label: 'Extra Hot 🔥' }
+];
+
 const COMMON_PANTRY = ['Rice', 'Egg', 'Tomato', 'Onion', 'Garlic', 'Chicken', 'Carrot', 'Peas', 'Cheese', 'Cucumber', 'Lemon', 'Pepper', 'Soy', 'Oil'];
 let selectedIngredients = new Set(['Rice', 'Egg', 'Tomato', 'Onion']);
+let selectedCuisine = 'Indian';
+let selectedSpiceLevel = 'Spicy';
 let recipeResults = null;
+window._loadedRecipes = [];
+
+// ── GEMINI LIVE AI CULINARY ENGINE CONFIGURATION ──────────────────
+let autoAskAiOnIngredient = true;
+let isApiKeyMasked = true;
+let isApiKeyInputOpen = false;
+
+window.getGeminiApiKey = function() {
+    return localStorage.getItem('luminix_gemini_api_key') || window._luminix_ai_key || '';
+};
+
+window.setGeminiApiKey = function(key) {
+    if (key && key.trim()) {
+        localStorage.setItem('luminix_gemini_api_key', key.trim());
+        window._luminix_ai_key = key.trim();
+    } else {
+        localStorage.removeItem('luminix_gemini_api_key');
+        window._luminix_ai_key = '';
+    }
+};
+
+// Auto-sync configured key from server if available
+(async function syncServerKey() {
+    try {
+        const res = await fetch('/v1/config/ai-key');
+        if (res.ok) {
+            const data = await res.json();
+            if (data && data.key && !localStorage.getItem('luminix_gemini_api_key')) {
+                window._luminix_ai_key = data.key;
+                if (typeof updateGeminiKeyBadge === 'function') updateGeminiKeyBadge();
+            }
+        }
+    } catch (_) {}
+})();
+
+window.toggleApiKeyMask = function() {
+    isApiKeyMasked = !isApiKeyMasked;
+    const inp = document.getElementById('gemini-api-key-inp');
+    const toggleBtn = document.getElementById('api-key-mask-toggle');
+    if (inp) inp.type = isApiKeyMasked ? 'password' : 'text';
+    if (toggleBtn) toggleBtn.textContent = isApiKeyMasked ? '👁️ Show' : '🙈 Hide';
+};
+
+window.toggleApiKeyInputVisibility = function(forceOpen) {
+    isApiKeyInputOpen = typeof forceOpen === 'boolean' ? forceOpen : !isApiKeyInputOpen;
+    const row = document.getElementById('api-key-input-row');
+    const label = document.getElementById('api-key-toggle-label');
+    if (row) {
+        if (isApiKeyInputOpen) row.classList.remove('hidden');
+        else row.classList.add('hidden');
+    }
+    if (label) {
+        label.textContent = isApiKeyInputOpen ? '▲ Hide API Key Settings' : '⚙ View / Change API Key';
+    }
+};
+
+window.saveGeminiApiKeyFromInput = function() {
+    const inp = document.getElementById('gemini-api-key-inp');
+    const feedback = document.getElementById('api-key-feedback');
+    const val = inp?.value?.trim() || '';
+    if (!val) {
+        window.setGeminiApiKey('');
+        if (feedback) feedback.innerHTML = '<span class="text-cyan">✓ Key cleared. Using default AI access.</span>';
+        showToast('Reset to default Gemini access.');
+    } else {
+        window.setGeminiApiKey(val);
+        if (feedback) feedback.innerHTML = '<span class="text-emerald-400 font-bold">✓ Custom Gemini API Key saved to browser!</span>';
+        showToast('Custom Gemini API key saved!');
+    }
+    updateGeminiKeyBadge();
+};
+
+window.resetGeminiApiKey = function() {
+    localStorage.removeItem('luminix_gemini_api_key');
+    const inp = document.getElementById('gemini-api-key-inp');
+    if (inp) inp.value = window._luminix_ai_key || '';
+    const feedback = document.getElementById('api-key-feedback');
+    if (feedback) feedback.innerHTML = '<span class="text-cyan">Default project Gemini access restored.</span>';
+    updateGeminiKeyBadge();
+    showToast('Default Gemini key restored.');
+};
+
+window.testGeminiConnection = async function() {
+    const feedback = document.getElementById('api-key-feedback');
+    const key = window.getGeminiApiKey();
+    if (feedback) feedback.innerHTML = '<span class="text-cyan animate-pulse">Testing Gemini AI connection...</span>';
+    const start = Date.now();
+    try {
+        const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash:generateContent?key=${key}`;
+        const res = await fetch(url, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ contents: [{ parts: [{ text: 'Ping test. Reply with "PONG"' }] }] })
+        });
+        const elapsed = ((Date.now() - start) / 1000).toFixed(2);
+        if (res.ok) {
+            if (feedback) feedback.innerHTML = `<span class="text-emerald-400 font-bold">✓ Gemini AI Connected (${elapsed}s latency). Ready for dynamic recipes!</span>`;
+            showToast(`Connected to Gemini AI (${elapsed}s)!`);
+        } else {
+            const errData = await res.json().catch(() => ({}));
+            const msg = errData?.error?.message || `HTTP ${res.status}`;
+            if (feedback) feedback.innerHTML = `<span class="text-red-400">✗ Connection error: ${msg}</span>`;
+            showToast(`Gemini error: ${msg}`);
+        }
+    } catch (e) {
+        if (feedback) feedback.innerHTML = `<span class="text-red-400">✗ Network failure: ${e.message}</span>`;
+    }
+};
+
+function updateGeminiKeyBadge() {
+    const badge = document.getElementById('gemini-key-status-badge');
+    const isCustom = !!localStorage.getItem('luminix_gemini_api_key');
+    if (badge) {
+        badge.textContent = isCustom ? 'CUSTOM KEY ACTIVE' : 'LUMINIX AI READY';
+        badge.className = `badge ${isCustom ? 'badge-yellow' : 'badge-cyan'} text-[10px] font-mono font-bold`;
+    }
+}
+
+function extractJsonFromText(rawText) {
+    if (!rawText) return null;
+    let cleaned = rawText.trim();
+    if (cleaned.startsWith('```json')) {
+        cleaned = cleaned.replace(/^```json\s*/i, '').replace(/\s*```$/, '');
+    } else if (cleaned.startsWith('```')) {
+        cleaned = cleaned.replace(/^```\s*/, '').replace(/\s*```$/, '');
+    }
+    try {
+        return JSON.parse(cleaned);
+    } catch (_) {
+        const firstOpen = cleaned.indexOf('{');
+        const lastClose = cleaned.lastIndexOf('}');
+        if (firstOpen !== -1 && lastClose > firstOpen) {
+            try {
+                return JSON.parse(cleaned.substring(firstOpen, lastClose + 1));
+            } catch (_) {}
+        }
+    }
+    return null;
+}
+
+async function queryGeminiForRecipes(apiKey, ingredients, cuisine, spiceLevel, customPrompt) {
+    const models = ['gemini-3.5-flash', 'gemini-3.6-flash', 'gemini-3.5-flash-lite'];
+    const prompt = `You are Chef Luna, an elite culinary master chef and clinical sports nutritionist.
+The user has the following kitchen ingredients available:
+${ingredients}
+
+Culinary specifications:
+- Cuisine Style: ${cuisine}
+- Spice Intensity: ${spiceLevel}
+- Dietary Profile: High-nutrient, whole food, athletic optimization
+${customPrompt ? `- Custom User Culinary Request: "${customPrompt}"` : ''}
+
+Synthesize 2 to 3 distinct, creative, authentic, and delicious recipes matching the specified cuisine and spice level.
+Do NOT give canned or generic answers. Tailor the techniques to the exact ingredients provided.
+
+Return STRICTLY a JSON object matching this schema, with no wrapping commentary or markdown backticks:
+{
+  "recipes": [
+    {
+      "recipe_name": "Authentic Creative Recipe Title",
+      "cuisine": "${cuisine}",
+      "spice_level": "${spiceLevel}",
+      "prep_time_mins": 10,
+      "cook_time_mins": 15,
+      "total_time_mins": 25,
+      "difficulty": "Easy",
+      "servings": 2,
+      "calories_per_serving": 430,
+      "protein_per_serving_g": 24.0,
+      "carbs_per_serving_g": 48.0,
+      "fat_per_serving_g": 12.0,
+      "fiber_per_serving_g": 4.5,
+      "ingredients_needed": [
+        "1 cup Basmati Rice, washed",
+        "2 Farm Fresh Eggs, whisked",
+        "1 large Ripe Tomato, finely diced",
+        "3 cloves Fresh Garlic, minced"
+      ],
+      "cooking_steps": [
+        "Rinse and boil basmati rice in lightly salted water for 10 minutes until fluffy. Drain thoroughly.",
+        "Heat 1 tbsp cooking oil in a wide heavy skillet or wok over medium-high heat. Add minced garlic and sauté until fragrant.",
+        "Add diced tomatoes and cook down for 3 minutes until softened and juices reduce into a rich pan glaze.",
+        "Pour in the whisked eggs, lower heat slightly, and fold into soft curds.",
+        "Toss the cooked rice into the skillet, turn heat to high, season with salt and pepper, and stir-fry for 2 minutes."
+      ],
+      "chef_tips": "Pro chef culinary secret explaining why this flavor pairing works and how to achieve restaurant texture.",
+      "summary": "1-2 sentence appetizing description detailing flavor notes, regional authenticity, and nutritional bio-availability."
+    }
+  ]
+}`;
+
+    let lastErr = null;
+
+    for (const model of models) {
+        try {
+            const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
+            const res = await fetch(url, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    contents: [{ parts: [{ text: prompt }] }],
+                    generationConfig: {
+                        response_mime_type: 'application/json',
+                        temperature: 0.7,
+                        maxOutputTokens: 2500
+                    }
+                })
+            });
+
+            if (!res.ok) {
+                const errJson = await res.json().catch(() => ({}));
+                lastErr = new Error(errJson?.error?.message || `HTTP ${res.status} from ${model}`);
+                continue;
+            }
+
+            const data = await res.json();
+            const candidate = data?.candidates?.[0]?.content?.parts?.[0]?.text;
+            if (!candidate) continue;
+
+            const parsed = extractJsonFromText(candidate);
+            if (parsed && Array.isArray(parsed.recipes) && parsed.recipes.length > 0) {
+                return {
+                    status: 'success',
+                    cuisine: cuisine,
+                    spice_level: spiceLevel,
+                    source: 'gemini',
+                    model: model,
+                    prompt: customPrompt || '',
+                    recipes: parsed.recipes.map(r => ({ ...r, is_ai: true }))
+                };
+            }
+        } catch (e) {
+            lastErr = e;
+        }
+    }
+
+    if (lastErr) throw lastErr;
+    return null;
+}
 
 function renderRecipeFinderTab() {
+    const listArr = Array.from(selectedIngredients);
+    const activeKey = window.getGeminiApiKey();
+    const isCustom = !!localStorage.getItem('luminix_gemini_api_key');
+
     return `
         <div class="space-y-6">
-            <div class="glass-card p-6 rounded-xl">
-                <h3 style="font-family:var(--font-display);font-size:1.25rem;font-weight:700;color:var(--white)">SMART FRIDGE RECIPE FINDER</h3>
-                <p class="text-xs text-dim mb-4">Select or type the ingredients you have available. The cooking engine will suggest optimal recipes.</p>
+            <div class="glass-card p-6 rounded-xl border border-white/10 shadow-2xl">
+                <div class="flex flex-wrap items-center justify-between gap-2 mb-2">
+                    <h3 style="font-family:var(--font-display);font-size:1.3rem;font-weight:700;color:var(--white);letter-spacing:0.02em;">
+                        SMART FRIDGE RECIPE FINDER // GEMINI AI ENGINE
+                    </h3>
+                    <span class="badge badge-cyan text-xs font-mono font-bold tracking-wider">LIVE GEMINI 3.5 FLASH</span>
+                </div>
+                <p class="text-xs text-dim mb-4">
+                    Select your regional cuisine, calibrate spice level, and pick or type ingredients. The live Gemini AI engine analyzes your items and synthesizes custom, non-predefined recipes with complete macros and step-by-step instructions.
+                </p>
 
-                <!-- Ingredient Chips -->
-                <div class="flex flex-wrap gap-2 mb-4" id="pantry-chips">
-                    ${COMMON_PANTRY.map(ing => `
-                        <button onclick="togglePantryChip('${ing}')" 
-                            class="px-3 py-1.5 rounded-lg text-xs font-semibold border transition-all ${selectedIngredients.has(ing) ? 'bg-cyan/20 border-cyan text-cyan' : 'bg-black/30 border-white/10 text-secondary'}">
-                            ${selectedIngredients.has(ing) ? '✓ ' : '+ '}${ing}
+                <!-- 0. GEMINI API KEY ACCESS & LIVE STATUS BAR -->
+                <div class="mb-5 p-4 rounded-xl border border-cyan/30 bg-black/60 shadow-lg relative overflow-hidden">
+                    <div class="flex flex-wrap items-center justify-between gap-2 mb-2">
+                        <div class="flex items-center gap-2">
+                            <span class="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse shadow-[0_0_8px_#34d399]"></span>
+                            <span class="text-xs font-bold text-white uppercase tracking-wider">
+                                GEMINI AI ENGINE // API KEY ACCESS
+                            </span>
+                            <span id="gemini-key-status-badge" class="badge ${isCustom ? 'badge-yellow' : 'badge-cyan'} text-[10px] font-mono font-bold">
+                                ${isCustom ? 'CUSTOM KEY ACTIVE' : 'LUMINIX AI READY'}
+                            </span>
+                        </div>
+                        <button type="button" onclick="toggleApiKeyInputVisibility()" class="text-[11px] text-cyan hover:underline font-mono flex items-center gap-1">
+                            <span id="api-key-toggle-label">${isApiKeyInputOpen ? '▲ Hide Key Settings' : '⚙ View / Change API Key'}</span>
                         </button>
-                    `).join('')}
+                    </div>
+                    <p class="text-[11px] text-dim mb-2">
+                        Google Gemini AI performs live culinary reasoning for any ingredient combination. You can use the built-in key or paste your own Google AI Studio key below.
+                    </p>
+                    <div id="api-key-input-row" class="${isApiKeyInputOpen ? '' : 'hidden'} mt-3 pt-3 border-t border-white/10 flex flex-col sm:flex-row gap-2 items-center">
+                        <div class="relative flex-1 w-full">
+                            <input type="${isApiKeyMasked ? 'password' : 'text'}" id="gemini-api-key-inp" value="${activeKey}" placeholder="Paste Google Gemini API Key (AQ... or AIza...)" 
+                                class="auth-input w-full text-xs font-mono pr-20">
+                            <button type="button" onclick="toggleApiKeyMask()" class="absolute right-2 top-1/2 -translate-y-1/2 text-[10px] text-dim hover:text-white px-2 py-0.5 rounded bg-white/10">
+                                <span id="api-key-mask-toggle">${isApiKeyMasked ? '👁️ Show' : '🙈 Hide'}</span>
+                            </button>
+                        </div>
+                        <div class="flex gap-2 w-full sm:w-auto">
+                            <button type="button" onclick="saveGeminiApiKeyFromInput()" class="btn-primary text-xs px-3.5 py-2 font-bold whitespace-nowrap text-black">
+                                💾 Save Key
+                            </button>
+                            <button type="button" onclick="testGeminiConnection()" class="btn-secondary text-xs px-3 py-2 font-bold whitespace-nowrap text-cyan">
+                                ⚡ Test Ping
+                            </button>
+                            <button type="button" onclick="resetGeminiApiKey()" class="btn-ghost text-xs px-2 py-2 text-dim hover:text-white whitespace-nowrap" title="Reset to default key">
+                                ↺ Reset
+                            </button>
+                        </div>
+                    </div>
+                    <div id="api-key-feedback" class="text-[11px] mt-1 font-mono"></div>
                 </div>
 
-                <!-- Custom input & search button -->
-                <div class="flex gap-3">
-                    <input type="text" id="custom-ing-inp" placeholder="Add other ingredients (e.g. spinach, ginger, beef)..." class="auth-input flex-1 text-xs">
-                    <button onclick="addCustomIngredient()" class="btn-secondary px-4 text-xs font-bold">+ Add</button>
-                    <button onclick="fetchFridgeRecipes()" class="btn-primary px-6 text-xs font-bold text-black uppercase">
-                        🔍 Find Recipes
+                <!-- 1. Continental Cuisine Selector -->
+                <div class="mb-5">
+                    <div class="flex items-center justify-between mb-2">
+                        <span class="text-xs font-bold text-white uppercase tracking-wider flex items-center gap-1.5">
+                            <span class="text-cyan">01 //</span> Select Cuisine
+                        </span>
+                        <span class="text-[11px] text-cyan font-mono font-bold">${selectedCuisine} Cuisine Active</span>
+                    </div>
+                    <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-2">
+                        ${CUISINE_OPTIONS.map(c => `
+                            <button type="button" onclick="setRecipeCuisine('${c.id}')"
+                                class="px-3 py-2.5 rounded-xl text-xs font-bold border transition-all text-center flex flex-col items-center justify-center gap-0.5 ${selectedCuisine === c.id ? 'cuisine-btn-active bg-cyan/20 border-cyan text-white shadow-lg' : 'bg-black/40 border-white/10 text-secondary hover:border-white/30'}">
+                                <span class="text-sm">${c.label}</span>
+                                <span class="text-[9px] text-dim font-normal block">${c.hint}</span>
+                            </button>
+                        `).join('')}
+                    </div>
+                </div>
+
+                <!-- 2. Spice Intensity Level -->
+                <div class="mb-5">
+                    <div class="flex items-center justify-between mb-2">
+                        <span class="text-xs font-bold text-white uppercase tracking-wider flex items-center gap-1.5">
+                            <span class="text-yellow">02 //</span> Spice Preference
+                        </span>
+                        <span class="text-[11px] text-yellow font-mono font-bold">${selectedSpiceLevel} Intensity</span>
+                    </div>
+                    <div class="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                        ${SPICE_OPTIONS.map(s => `
+                            <button type="button" onclick="setRecipeSpiceLevel('${s.id}')"
+                                class="px-3 py-2 rounded-xl text-xs font-bold border transition-all text-center ${selectedSpiceLevel === s.id ? 'spice-btn-active bg-yellow/20 border-yellow text-white shadow-lg' : 'bg-black/40 border-white/10 text-secondary hover:border-white/30'}">
+                                ${s.label}
+                            </button>
+                        `).join('')}
+                    </div>
+                </div>
+
+                <!-- 3. Active Ingredients List (Removable Chips) -->
+                <div class="mb-4">
+                    <div class="flex items-center justify-between mb-2">
+                        <span class="text-xs font-bold text-white uppercase tracking-wider flex items-center gap-1.5">
+                            <span class="text-emerald-400">03 //</span> Available Ingredients (${selectedIngredients.size})
+                        </span>
+                        <div class="flex gap-3">
+                            <button type="button" onclick="resetPantryStaples()" class="text-[11px] text-cyan hover:underline font-mono">Reset Staples</button>
+                            <button type="button" onclick="clearAllIngredients()" class="text-[11px] text-dim hover:text-red-400 hover:underline font-mono">Clear All</button>
+                        </div>
+                    </div>
+                    <div class="flex flex-wrap gap-2 p-3.5 bg-black/50 rounded-xl border border-white/10 min-h-[50px] items-center">
+                        ${listArr.map(ing => `
+                            <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-cyan/15 border border-cyan/40 text-cyan shadow-sm">
+                                <span>${ing}</span>
+                                <button type="button" onclick="removeIngredient('${ing.replace(/'/g, "\\'")}')" class="hover:text-white text-dim text-sm font-bold leading-none ml-0.5" title="Remove ${ing}">&times;</button>
+                            </span>
+                        `).join('')}
+                        ${listArr.length === 0 ? `<span class="text-xs text-dim italic">No ingredients selected. Click quick staples below or add your own items!</span>` : ''}
+                    </div>
+                </div>
+
+                <!-- 4. Quick Pantry Staples -->
+                <div class="mb-5">
+                    <span class="text-[11px] text-dim block mb-2 font-mono uppercase tracking-wider">QUICK STAPLE CHIPS (+ / ✓):</span>
+                    <div class="flex flex-wrap gap-1.5">
+                        ${COMMON_PANTRY.map(ing => `
+                            <button type="button" onclick="togglePantryChip('${ing}')" 
+                                class="px-2.5 py-1 rounded-lg text-xs font-medium border transition-all ${selectedIngredients.has(ing) ? 'bg-cyan/20 border-cyan text-cyan font-bold shadow-sm' : 'bg-black/30 border-white/10 text-secondary hover:border-white/25'}">
+                                ${selectedIngredients.has(ing) ? '✓ ' : '+ '}${ing}
+                            </button>
+                        `).join('')}
+                    </div>
+                </div>
+
+                <!-- 5. Custom Ingredient Input & Add Item -->
+                <div class="mb-4">
+                    <span class="text-xs font-bold text-white uppercase tracking-wider block mb-2">
+                        <span class="text-cyan">04 //</span> Add Custom Ingredient
+                    </span>
+                    <div class="flex gap-2">
+                        <input type="text" id="custom-ing-inp" placeholder="Type custom ingredient (e.g. spinach, ginger, beef, tofu, avocado)..." 
+                            class="auth-input flex-1 text-xs" onkeydown="if(event.key==='Enter'){event.preventDefault();addCustomIngredient();}">
+                        <button type="button" onclick="addCustomIngredient()" class="btn-secondary px-4 text-xs font-bold whitespace-nowrap">
+                            + Add Item
+                        </button>
+                    </div>
+                </div>
+
+                <!-- 6. ASK AI CHEF WHAT TO COOK // CUSTOM QUERY -->
+                <div class="mb-5 p-3.5 rounded-xl border border-yellow/20 bg-yellow/5">
+                    <div class="flex items-center justify-between mb-2">
+                        <label for="ai-chef-prompt-inp" class="text-xs font-bold text-white uppercase tracking-wider flex items-center gap-1.5">
+                            <span class="text-yellow">💬</span> 05 // Ask Chef Luna What to Cook
+                        </label>
+                        <span class="text-[10px] text-dim font-mono">e.g. "15 min quick dinner", "High protein", "Crispy snack"</span>
+                    </div>
+                    <div class="flex flex-col sm:flex-row gap-2">
+                        <input type="text" id="ai-chef-prompt-inp" placeholder="Optional request: e.g. What can I cook for lunch that takes under 20 mins and is high in protein?"
+                            class="auth-input flex-1 text-xs" onkeydown="if(event.key==='Enter'){event.preventDefault();fetchFridgeRecipes();}">
+                        <button type="button" onclick="fetchFridgeRecipes()" class="btn-secondary px-4 py-2.5 text-xs font-bold whitespace-nowrap text-yellow hover:text-white border-yellow/30">
+                            ✨ Ask AI Chef
+                        </button>
+                    </div>
+                </div>
+
+                <!-- 7. Automation Toggle & Main CTA -->
+                <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 pt-3 border-t border-white/10">
+                    <label class="flex items-center gap-2 cursor-pointer select-none text-xs text-dim hover:text-white">
+                        <input type="checkbox" id="auto-ask-ai-checkbox" ${autoAskAiOnIngredient ? 'checked' : ''} 
+                            onchange="autoAskAiOnIngredient = this.checked;" class="rounded accent-cyan cursor-pointer">
+                        <span>Auto-ask Gemini AI whenever I add or toggle ingredients</span>
+                    </label>
+
+                    <button type="button" onclick="fetchFridgeRecipes()" class="btn-primary w-full sm:w-auto px-7 py-3 text-xs font-bold text-black uppercase tracking-wider flex items-center justify-center gap-2 shadow-xl shadow-cyan/25 hover:scale-[1.02] transition-transform">
+                        <span>🧠</span> Synthesize Custom AI Recipes (${selectedIngredients.size} Items)
                     </button>
                 </div>
             </div>
 
-            <!-- Recipe Results -->
+            <!-- Recipe Results Container -->
             <div id="recipe-results-container">
                 ${recipeResults ? renderRecipeList(recipeResults) : ''}
             </div>
@@ -1817,57 +2246,204 @@ function renderRecipeFinderTab() {
     `;
 }
 
+window.setRecipeCuisine = function(cuisineId) {
+    selectedCuisine = cuisineId;
+    const cont = document.getElementById('tracker-subview-content');
+    if (cont) cont.innerHTML = renderRecipeFinderTab();
+};
+
+window.setRecipeSpiceLevel = function(spiceId) {
+    selectedSpiceLevel = spiceId;
+    const cont = document.getElementById('tracker-subview-content');
+    if (cont) cont.innerHTML = renderRecipeFinderTab();
+};
+
 window.togglePantryChip = function(ing) {
     if (selectedIngredients.has(ing)) selectedIngredients.delete(ing);
     else selectedIngredients.add(ing);
     const cont = document.getElementById('tracker-subview-content');
     if (cont) cont.innerHTML = renderRecipeFinderTab();
+
+    if (autoAskAiOnIngredient && selectedIngredients.size > 0) {
+        setTimeout(() => {
+            fetchFridgeRecipes();
+        }, 150);
+    }
+};
+
+window.removeIngredient = function(ing) {
+    selectedIngredients.delete(ing);
+    const cont = document.getElementById('tracker-subview-content');
+    if (cont) cont.innerHTML = renderRecipeFinderTab();
+
+    if (autoAskAiOnIngredient && selectedIngredients.size > 0) {
+        setTimeout(() => {
+            fetchFridgeRecipes();
+        }, 150);
+    }
+};
+
+window.clearAllIngredients = function() {
+    selectedIngredients.clear();
+    recipeResults = null;
+    const cont = document.getElementById('tracker-subview-content');
+    if (cont) cont.innerHTML = renderRecipeFinderTab();
+};
+
+window.resetPantryStaples = function() {
+    selectedIngredients = new Set(['Rice', 'Egg', 'Tomato', 'Onion']);
+    const cont = document.getElementById('tracker-subview-content');
+    if (cont) cont.innerHTML = renderRecipeFinderTab();
+
+    if (autoAskAiOnIngredient) {
+        setTimeout(() => {
+            fetchFridgeRecipes();
+        }, 150);
+    }
 };
 
 window.addCustomIngredient = function() {
     const inp = document.getElementById('custom-ing-inp');
     const val = inp?.value?.trim();
     if (val) {
-        selectedIngredients.add(val.charAt(0).toUpperCase() + val.slice(1));
+        const formatted = val.charAt(0).toUpperCase() + val.slice(1);
+        selectedIngredients.add(formatted);
         if (inp) inp.value = '';
         const cont = document.getElementById('tracker-subview-content');
         if (cont) cont.innerHTML = renderRecipeFinderTab();
+        showToast(`Added "${formatted}" to ingredients!`);
+
+        if (autoAskAiOnIngredient) {
+            setTimeout(() => {
+                fetchFridgeRecipes();
+            }, 150);
+        }
     }
 };
 
-window.fetchFridgeRecipes = async function() {
+window.fetchFridgeRecipes = async function(customPrompt) {
     const list = Array.from(selectedIngredients).join(', ');
     const cont = document.getElementById('recipe-results-container');
+    const promptInp = document.getElementById('ai-chef-prompt-inp');
+    const userPrompt = customPrompt !== undefined ? customPrompt : (promptInp ? promptInp.value.trim() : '');
+    const apiKey = window.getGeminiApiKey();
+
+    if (!list) {
+        showToast('Please select or add at least one ingredient first!');
+        return;
+    }
+
+    let secondsElapsed = 0;
+    let timerInterval = null;
+
     if (cont) {
         cont.innerHTML = `
-            <div class="glass-card p-8 rounded-xl text-center">
-                <div class="loading-spinner mx-auto mb-3"></div>
-                <p class="text-xs text-dim">Analyzing pantry ingredients...</p>
+            <div class="glass-card p-10 rounded-xl text-center border border-cyan/40 bg-black/70 shadow-2xl relative overflow-hidden">
+                <div class="relative w-20 h-20 mx-auto mb-4 flex items-center justify-center">
+                    <div class="absolute inset-0 rounded-full bg-cyan/20 animate-ping"></div>
+                    <div class="w-16 h-16 rounded-full border-2 border-cyan border-t-transparent animate-spin"></div>
+                    <span class="absolute text-2xl">🧠</span>
+                </div>
+                <h4 class="text-sm font-bold text-white mb-1 uppercase tracking-wider">
+                    CONSULTING GEMINI AI CULINARY ENGINE...
+                </h4>
+                <div id="ai-elapsed-timer" class="text-xs text-cyan font-mono font-bold mb-3">
+                    Synthesizing custom recipes in real-time (⏱ 0.0s)
+                </div>
+                <p id="ai-progress-text" class="text-xs text-dim max-w-md mx-auto leading-relaxed">
+                    Analyzing ${selectedIngredients.size} ingredients for authentic ${selectedCuisine} flavors & ${selectedSpiceLevel} intensity...
+                </p>
+                <div class="mt-4 flex items-center justify-center gap-2">
+                    <span class="badge badge-cyan text-[10px] font-mono">MODEL: GEMINI 3.5 FLASH</span>
+                    <span class="badge badge-yellow text-[10px] font-mono">LIVE AI REASONING</span>
+                </div>
             </div>
         `;
+
+        timerInterval = setInterval(() => {
+            secondsElapsed += 0.2;
+            const timerEl = document.getElementById('ai-elapsed-timer');
+            const progressEl = document.getElementById('ai-progress-text');
+            if (timerEl) {
+                timerEl.textContent = `Synthesizing custom recipes in real-time (⏱ ${secondsElapsed.toFixed(1)}s)`;
+            }
+            if (progressEl) {
+                if (secondsElapsed > 1.2 && secondsElapsed < 2.4) {
+                    progressEl.textContent = `Balancing spices, cooking techniques, and bio-available macronutrients...`;
+                } else if (secondsElapsed >= 2.4 && secondsElapsed < 3.8) {
+                    progressEl.textContent = `Generating step-by-step master chef techniques and timing parameters...`;
+                } else if (secondsElapsed >= 3.8) {
+                    progressEl.textContent = `Formatting culinary profile and nutritional yield...`;
+                }
+            }
+        }, 200);
     }
 
     let results = null;
+    let lastError = null;
 
+    // 1. Direct Gemini AI generation with the user's API key
     try {
-        const res = await fetch('/v1/cook/suggest', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ ingredients: list })
-        });
-        if (res.ok) {
-            const data = await res.json().catch(() => null);
-            if (data && (data.recipes || data.ai_recipe)) results = data;
-        }
-    } catch (_) {}
-
-    // Autonomous client-side pantry recipe matcher fallback
-    if (!results || !results.recipes || results.recipes.length === 0) {
-        results = searchClientRecipes(list);
+        results = await queryGeminiForRecipes(apiKey, list, selectedCuisine, selectedSpiceLevel, userPrompt);
+    } catch (err) {
+        lastError = err;
+        console.warn('Direct Gemini call encountered issue, trying serverless backup:', err);
     }
 
-    recipeResults = results;
-    if (cont) cont.innerHTML = renderRecipeList(recipeResults);
+    // 2. Serverless Netlify backup endpoint if direct call needs assistance
+    if (!results || !results.recipes || !results.recipes.length) {
+        try {
+            const res = await fetch('/v1/cook/suggest', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    ingredients: list,
+                    cuisine: selectedCuisine,
+                    spice_level: selectedSpiceLevel,
+                    diet_preference: 'omnivore',
+                    apiKey: apiKey,
+                    prompt: userPrompt
+                })
+            });
+            if (res.ok) {
+                const data = await res.json().catch(() => null);
+                if (data && (data.recipes || data.ai_recipes || data.ai_recipe)) {
+                    results = data;
+                }
+            }
+        } catch (_) {}
+    }
+
+    if (timerInterval) clearInterval(timerInterval);
+
+    if (results && ((results.recipes && results.recipes.length) || results.ai_recipes)) {
+        recipeResults = results;
+        if (cont) cont.innerHTML = renderRecipeList(recipeResults);
+        showToast(`✨ Generated ${((results.recipes || []).length || (results.ai_recipes || []).length)} custom recipes with Gemini AI!`);
+    } else {
+        // If Gemini failed (e.g. invalid key or network block), show exact interactive recovery UI
+        if (cont) {
+            cont.innerHTML = `
+                <div class="glass-card p-6 rounded-xl text-center border border-red-500/30 bg-red-950/20 shadow-xl">
+                    <span class="text-3xl block mb-2">⚠️</span>
+                    <h4 class="text-sm font-bold text-white uppercase mb-1">Could Not Reach Gemini AI</h4>
+                    <p class="text-xs text-dim max-w-md mx-auto mb-4">
+                        ${lastError ? lastError.message : 'Please verify your Gemini API key and internet connectivity. Every recipe is generated live with zero predefined answers.'}
+                    </p>
+                    <div class="flex flex-wrap justify-center gap-3">
+                        <button type="button" onclick="toggleApiKeyInputVisibility(true); document.getElementById('gemini-api-key-inp')?.focus();" 
+                            class="btn-primary text-xs px-4 py-2 font-bold text-black">
+                            🔑 Update / Paste API Key
+                        </button>
+                        <button type="button" onclick="fetchFridgeRecipes()" 
+                            class="btn-secondary text-xs px-4 py-2 font-bold text-white">
+                            🔄 Retry AI Generation
+                        </button>
+                    </div>
+                </div>
+            `;
+        }
+    }
 };
 
 /* ── CLIENT-SIDE NUTRITION FOOD ANALYSIS ENGINE ───────────────────────────── */
@@ -1944,217 +2520,710 @@ function computeClientFoodAnalysis(rawQuery) {
     };
 }
 
-/* ── CLIENT-SIDE PANTRY RECIPE SEARCH ENGINE ──────────────────────────────── */
-function searchClientRecipes(ingredientsText) {
+/* ── CLIENT-SIDE PANTRY RECIPE SEARCH ENGINE (CONTINENTAL CATALOG) ────── */
+function searchClientRecipes(ingredientsText, cuisine = 'Indian', spiceLevel = 'Spicy') {
     const rawItems = (ingredientsText || '').toLowerCase().replace(/\n/g, ',').split(',');
     const userIngredients = rawItems.map(s => s.trim()).filter(Boolean);
 
-    const recipeCatalog = [
+    const fullCatalog = [
+        // INDIAN CONTINENTAL
         {
-            name: "Tomato Egg Rice Bowl",
-            keys: ["rice", "egg", "tomato", "onion", "garlic"],
-            ingredients_used: ["Rice", "Egg", "Tomato"],
-            steps: [
-                "Reheat or boil 1 cup of whole grain or white rice.",
-                "Heat 1 tsp olive oil; sauté minced garlic and chopped onion until fragrant.",
-                "Add diced fresh tomatoes, season with pink Himalayan salt and cracked pepper.",
-                "Scramble 2 farm eggs directly into the simmered tomato reduction until softly set.",
-                "Serve warm over the rice bed and garnish with chopped scallions."
-            ]
+            recipe_name: "Spiced Indian Egg Curry with Steamed Basmati",
+            name: "Spiced Indian Egg Curry with Steamed Basmati",
+            cuisine: "Indian",
+            spice_level: "Spicy",
+            prep_time_mins: 10,
+            cook_time_mins: 15,
+            total_time_mins: 25,
+            difficulty: "Easy",
+            servings: 2,
+            calories_per_serving: 440,
+            protein_per_serving_g: 21.0,
+            carbs_per_serving_g: 52.0,
+            fat_per_serving_g: 14.5,
+            fiber_per_serving_g: 4.0,
+            keys: ["rice", "egg", "onion", "tomato", "garlic"],
+            ingredients_needed: [
+                "1 cup Fragrant Basmati Rice (cooked)",
+                "3 Hard-boiled Eggs (halved)",
+                "1 large Onion (finely diced)",
+                "2 ripe Tomatoes (puréed or minced)",
+                "3 cloves Garlic (minced)",
+                "1 tbsp Cooking Oil",
+                "1/2 tsp Turmeric, 1 tsp Cumin, 1 tsp Garam Masala"
+            ],
+            cooking_steps: [
+                "Boil 1 cup basmati rice in salted water for 10 minutes until fluffy. Drain and reserve.",
+                "Hard-boil 3 eggs, peel, and lightly fry in 1/2 tsp oil for 3 minutes until blistered golden.",
+                "In a skillet, heat 1 tbsp oil over medium heat. Sauté minced garlic and diced onions until golden brown (4 mins).",
+                "Add tomato purée, turmeric, cumin, garam masala, and salt. Simmer until the sauce thickens and aromatic oil beads form (5 mins).",
+                "Gently fold the boiled eggs into the spiced gravy and simmer on low for 3 mins.",
+                "Serve hot over steaming basmati rice with a fresh squeeze of lemon."
+            ],
+            chef_tips: "Lightly pan-searing the boiled eggs in oil and a pinch of turmeric creates micro-fissures in the egg whites that trap the savory tomato gravy.",
+            summary: "A comforting North Indian classic featuring whole spices and rich onion-tomato masala reduction with complete bio-available proteins."
         },
         {
-            name: "Quick Vegetable Fried Rice",
-            keys: ["rice", "carrot", "peas", "onion", "egg", "soy", "garlic"],
-            ingredients_used: ["Rice", "Veggies", "Egg"],
-            steps: [
-                "Use chilled cooked rice for optimal grain separation.",
-                "Sauté chopped garlic and diced vegetables in sesame or olive oil over high heat for 3 minutes.",
-                "Push veggies aside, crack 1 egg into pan and soft-scramble.",
-                "Incorporate rice with a dash of tamari or low-sodium soy sauce.",
-                "Toss vigorously for 2 minutes and serve steaming hot."
-            ]
+            recipe_name: "Aromatic Tomato Onion Chicken Pulao",
+            name: "Aromatic Tomato Onion Chicken Pulao",
+            cuisine: "Indian",
+            spice_level: "Medium",
+            prep_time_mins: 12,
+            cook_time_mins: 18,
+            total_time_mins: 30,
+            difficulty: "Moderate",
+            servings: 2,
+            calories_per_serving: 510,
+            protein_per_serving_g: 38.0,
+            carbs_per_serving_g: 58.0,
+            fat_per_serving_g: 12.0,
+            fiber_per_serving_g: 3.5,
+            keys: ["chicken", "rice", "onion", "tomato", "garlic"],
+            ingredients_needed: [
+                "200g Chicken breast (bite-sized cubes)",
+                "1 cup Basmati Rice",
+                "1 medium Onion (thinly sliced)",
+                "2 medium Tomatoes (chopped)",
+                "3 cloves Garlic (minced)",
+                "1 tbsp Ghee or Cooking Oil",
+                "Cumin seeds, cracked pepper, and salt"
+            ],
+            cooking_steps: [
+                "Rinse basmati rice and soak in water for 10 minutes.",
+                "Heat oil in a deep pot over medium-high heat. Caramelize sliced onions and garlic until golden (5 mins).",
+                "Add chicken cubes with salt and pepper; sear on high heat until lightly browned (4 mins).",
+                "Stir in chopped tomatoes and cook down until soft and fragrant (3 mins).",
+                "Add drained rice with 1.8 cups water, cover with lid, and cook on low heat for 12 minutes until water is absorbed.",
+                "Rest covered off heat for 5 minutes, then gently fluff with a fork."
+            ],
+            chef_tips: "Resting the rice covered off the heat allows the starch molecules to settle, preventing the long grains from breaking.",
+            summary: "One-pot North Indian pulao loaded with tender lean chicken, caramelized onions, and fragrant cumin aromatics."
         },
         {
-            name: "Mediterranean Quinoa Power Bowl",
-            keys: ["quinoa", "chickpea", "cucumber", "tomato", "olive", "spinach"],
-            ingredients_used: ["Quinoa", "Cucumber", "Tomato"],
-            steps: [
-                "Cook 1/2 cup quinoa in boiling water with a pinch of sea salt.",
-                "Dice cucumber, cherry tomatoes, and kalamata olives.",
-                "Toss with rinsed chickpeas, fresh baby spinach, and 1 tbsp cold-pressed olive oil.",
-                "Season with oregano, lemon juice, and black pepper for cellular vitality."
-            ]
+            recipe_name: "Dhaba-Style Spiced Egg Bhurji",
+            name: "Dhaba-Style Spiced Egg Bhurji",
+            cuisine: "Indian",
+            spice_level: "Spicy",
+            prep_time_mins: 8,
+            cook_time_mins: 8,
+            total_time_mins: 16,
+            difficulty: "Easy",
+            servings: 2,
+            calories_per_serving: 320,
+            protein_per_serving_g: 24.0,
+            carbs_per_serving_g: 8.0,
+            fat_per_serving_g: 20.0,
+            fiber_per_serving_g: 2.0,
+            keys: ["egg", "onion", "tomato", "garlic", "pepper"],
+            ingredients_needed: [
+                "3 large Farm Eggs",
+                "1 medium Red Onion (finely chopped)",
+                "1 large Tomato (diced)",
+                "2 cloves Garlic & ginger (grated)",
+                "1 tbsp Butter or Olive Oil",
+                "1/2 tsp Cumin, crushed black pepper, and salt"
+            ],
+            cooking_steps: [
+                "Whisk 3 eggs with salt and freshly ground black pepper.",
+                "Melt butter in a skillet on medium heat. Sauté garlic and onions until soft and translucent (3 mins).",
+                "Add diced tomatoes and sauté on medium-high until jammy (2 mins).",
+                "Pour in beaten eggs. Stir continuously with a spatula over medium-low heat to form soft, pillowy curds (2-3 mins).",
+                "Remove from heat while still moist and finish with fresh lemon juice."
+            ],
+            chef_tips: "Take the skillet off heat slightly before eggs look done; residual heat finishes the scramble without turning rubbery.",
+            summary: "Rustic Indian street-style scrambled eggs infused with sizzling onions, garlic, and tangy tomatoes."
+        },
+
+        // CHINESE CONTINENTAL
+        {
+            recipe_name: "Wok-Tossed Garlic Egg & Chicken Fried Rice",
+            name: "Wok-Tossed Garlic Egg & Chicken Fried Rice",
+            cuisine: "Chinese",
+            spice_level: "Medium",
+            prep_time_mins: 8,
+            cook_time_mins: 10,
+            total_time_mins: 18,
+            difficulty: "Easy",
+            servings: 2,
+            calories_per_serving: 530,
+            protein_per_serving_g: 36.0,
+            carbs_per_serving_g: 62.0,
+            fat_per_serving_g: 14.0,
+            fiber_per_serving_g: 3.0,
+            keys: ["rice", "egg", "chicken", "garlic", "soy", "onion"],
+            ingredients_needed: [
+                "2 cups Chilled Cooked Rice",
+                "2 large Eggs (whisked)",
+                "120g Chicken (diced small)",
+                "3 cloves Garlic (minced)",
+                "1.5 tbsp Soy Sauce",
+                "1 tbsp Sesame or Vegetable Oil"
+            ],
+            cooking_steps: [
+                "Heat 1 tsp oil in a wok on high heat. Add whisked eggs and soft-scramble for 45 seconds. Set aside.",
+                "Add remaining oil to smoking wok. Sauté minced garlic, onion, and chicken until cooked through (3 mins).",
+                "Add cold rice and toss vigorously on maximum heat for 3 minutes.",
+                "Drizzle soy sauce around the outer perimeter of the wok so it caramelizes immediately.",
+                "Fold in scrambled eggs, toss 1 minute, and serve sizzling hot."
+            ],
+            chef_tips: "Drizzling soy sauce around the hot wok rim creates instantaneous caramelization and smoky wok hei flavor.",
+            summary: "High-heat Cantonese diner fried rice with crispy garlic, tender chicken bites, and golden ribboned eggs."
         },
         {
-            name: "Onion Tomato High-Protein Omelette",
-            keys: ["egg", "onion", "tomato", "cheese", "pepper"],
-            ingredients_used: ["Eggs", "Onion", "Tomato"],
-            steps: [
-                "Whisk 3 large eggs with sea salt and cracked black pepper.",
-                "Sauté finely diced onions and tomatoes in a non-stick skillet for 2 minutes.",
-                "Pour egg mixture evenly over the pan; cook on medium-low heat until edges firm.",
-                "Fold in half, plate, and serve immediately with high bio-availability."
-            ]
+            recipe_name: "Xi Hong Shi Chao Ji Dan (Sweet Tomato & Egg Stir-Fry)",
+            name: "Xi Hong Shi Chao Ji Dan (Sweet Tomato & Egg Stir-Fry)",
+            cuisine: "Chinese",
+            spice_level: "Mild",
+            prep_time_mins: 5,
+            cook_time_mins: 7,
+            total_time_mins: 12,
+            difficulty: "Easy",
+            servings: 2,
+            calories_per_serving: 290,
+            protein_per_serving_g: 16.0,
+            carbs_per_serving_g: 14.0,
+            fat_per_serving_g: 18.0,
+            fiber_per_serving_g: 2.5,
+            keys: ["egg", "tomato", "garlic", "soy"],
+            ingredients_needed: [
+                "3 large Eggs",
+                "2 large Ripe Tomatoes (wedged)",
+                "2 cloves Garlic (sliced)",
+                "1 tbsp Cooking Oil",
+                "1 tsp Soy sauce & pinch of sea salt"
+            ],
+            cooking_steps: [
+                "Whisk eggs with a pinch of salt. Soft-scramble in a hot skillet for 60 seconds; remove.",
+                "In the same skillet, cook sliced garlic and tomato wedges on medium heat for 3 minutes until juicy.",
+                "Season tomato reduction with soy sauce and pinch of salt.",
+                "Return eggs to the pan. Gently fold for 30 seconds so eggs absorb the sweet tomato glaze.",
+                "Serve warm over steamed rice or as a high-protein side."
+            ],
+            chef_tips: "Ripe vine tomatoes provide natural pectin that forms a rich, glossy glaze without needing cornstarch.",
+            summary: "The definitive Chinese home-style comfort dish featuring juicy ripe tomatoes and velvety scrambled eggs."
+        },
+
+        // ITALIAN CONTINENTAL
+        {
+            recipe_name: "Rustic Tuscan Tomato Garlic Chicken Skillet",
+            name: "Rustic Tuscan Tomato Garlic Chicken Skillet",
+            cuisine: "Italian",
+            spice_level: "Mild",
+            prep_time_mins: 10,
+            cook_time_mins: 16,
+            total_time_mins: 26,
+            difficulty: "Easy",
+            servings: 2,
+            calories_per_serving: 460,
+            protein_per_serving_g: 44.0,
+            carbs_per_serving_g: 18.0,
+            fat_per_serving_g: 22.0,
+            fiber_per_serving_g: 3.5,
+            keys: ["chicken", "tomato", "garlic", "onion", "cheese"],
+            ingredients_needed: [
+                "220g Chicken breast (seasoned with salt & pepper)",
+                "2 large Ripe Tomatoes (diced)",
+                "4 cloves Fresh Garlic (sliced)",
+                "1 tbsp Extra Virgin Olive Oil",
+                "1/2 Onion (diced)",
+                "20g Parmesan cheese & dried oregano"
+            ],
+            cooking_steps: [
+                "Heat olive oil in a heavy skillet over medium-high heat.",
+                "Sear seasoned chicken for 5 minutes per side until golden. Remove to a plate.",
+                "Add sliced garlic and onions to pan drippings; sauté 2 minutes until sweet and golden.",
+                "Add diced tomatoes and oregano; simmer for 4 minutes until a rustic marinara forms.",
+                "Return chicken to skillet, spoon tomato sauce over top, and sprinkle cheese.",
+                "Cover for 2 minutes until cheese is melted and chicken is juicy."
+            ],
+            chef_tips: "Building the tomato sauce directly in the browned chicken pan drippings (fond) yields authentic trattoria depth.",
+            summary: "Heart-healthy Italian skillet featuring tender seared chicken simmered in sweet garlic-infused tomato sauce."
         },
         {
-            name: "Spiced Lentil Dal & Basmati",
-            keys: ["dal", "lentil", "rice", "onion", "tomato", "turmeric"],
-            ingredients_used: ["Lentils", "Rice", "Turmeric"],
-            steps: [
-                "Pressure cook or simmer red or yellow lentils with turmeric and water until tender.",
-                "Temper cumin seeds, chopped garlic, and diced onions in ghee or olive oil.",
-                "Stir the aromatic tempering into the simmered dal.",
-                "Serve alongside warm basmati rice for a complete complementary protein profile."
-            ]
+            recipe_name: "One-Pan Cheesy Garlic Rice Risotto",
+            name: "One-Pan Cheesy Garlic Rice Risotto",
+            cuisine: "Italian",
+            spice_level: "Mild",
+            prep_time_mins: 6,
+            cook_time_mins: 18,
+            total_time_mins: 24,
+            difficulty: "Moderate",
+            servings: 2,
+            calories_per_serving: 410,
+            protein_per_serving_g: 14.0,
+            carbs_per_serving_g: 64.0,
+            fat_per_serving_g: 11.0,
+            fiber_per_serving_g: 2.0,
+            keys: ["rice", "cheese", "garlic", "onion"],
+            ingredients_needed: [
+                "1 cup Rice",
+                "3 cloves Garlic (minced)",
+                "1/2 Onion (chopped)",
+                "1 tbsp Olive Oil or Butter",
+                "30g Grated Cheese (Parmesan/Cheddar)",
+                "2.2 cups Warm Broth or Water"
+            ],
+            cooking_steps: [
+                "Sauté chopped onion and garlic in olive oil until translucent (3 mins).",
+                "Add dry rice to pan and toast for 2 minutes until translucent on edges.",
+                "Gradually pour in warm broth in batches, stirring frequently until absorbed and creamy (15 mins).",
+                "Fold in grated cheese, cracked black pepper, and a dash of lemon.",
+                "Serve warm with glossy velvet texture."
+            ],
+            chef_tips: "Toasting the dry rice grains in oil before adding liquid seals starch structure for silky creaminess.",
+            summary: "Creamy Italian stovetop risotto perfumed with sweet sautéed garlic, parmesan richness, and black pepper."
+        },
+
+        // MEXICAN CONTINENTAL
+        {
+            recipe_name: "Sizzling Mexican Chicken & Salsa Rice Bowl",
+            name: "Sizzling Mexican Chicken & Salsa Rice Bowl",
+            cuisine: "Mexican",
+            spice_level: "Spicy",
+            prep_time_mins: 10,
+            cook_time_mins: 14,
+            total_time_mins: 24,
+            difficulty: "Easy",
+            servings: 2,
+            calories_per_serving: 520,
+            protein_per_serving_g: 42.0,
+            carbs_per_serving_g: 54.0,
+            fat_per_serving_g: 14.0,
+            fiber_per_serving_g: 4.5,
+            keys: ["chicken", "rice", "tomato", "onion", "garlic", "pepper"],
+            ingredients_needed: [
+                "200g Chicken breast (cut into strips)",
+                "1 cup Cooked Rice",
+                "2 ripe Tomatoes (diced)",
+                "1/2 Red Onion (chopped)",
+                "1 tbsp Olive Oil",
+                "Chili powder, cumin, lime juice, and cheese"
+            ],
+            cooking_steps: [
+                "Toss chicken strips with olive oil, cumin, chili powder, and salt.",
+                "Sear chicken in a hot skillet for 5 minutes until caramelized. Set aside.",
+                "Toss onions, garlic, and diced tomatoes in hot pan for 2 minutes to char.",
+                "Stir in cooked rice to absorb pan juices and salsa reduction.",
+                "Assemble rice in bowls, arrange chicken on top, and dress with lime juice."
+            ],
+            chef_tips: "High skillet heat is essential for getting that authentic Mexican street comal charred flavor.",
+            summary: "Zesty Mexican burrito bowl packed with grilled chicken fajita strips, charred salsa, and seasoned rice."
+        },
+
+        // MEDITERRANEAN CONTINENTAL
+        {
+            recipe_name: "Mediterranean Lemon Garlic Chicken & Rice",
+            name: "Mediterranean Lemon Garlic Chicken & Rice",
+            cuisine: "Mediterranean",
+            spice_level: "Mild",
+            prep_time_mins: 10,
+            cook_time_mins: 15,
+            total_time_mins: 25,
+            difficulty: "Easy",
+            servings: 2,
+            calories_per_serving: 480,
+            protein_per_serving_g: 42.0,
+            carbs_per_serving_g: 50.0,
+            fat_per_serving_g: 12.0,
+            fiber_per_serving_g: 3.0,
+            keys: ["chicken", "rice", "lemon", "garlic", "onion"],
+            ingredients_needed: [
+                "200g Chicken breast fillets",
+                "1 cup Cooked Rice",
+                "Juice and zest of 1 fresh Lemon",
+                "3 cloves Garlic (minced)",
+                "1 tbsp Extra Virgin Olive Oil",
+                "Dried oregano, salt, and black pepper"
+            ],
+            cooking_steps: [
+                "Marinate chicken with lemon juice, minced garlic, olive oil, and oregano for 5 minutes.",
+                "Sear chicken in a skillet over medium-high heat for 5 minutes per side. Rest.",
+                "Toss cooked rice in the skillet with remaining lemon juice and pan drippings (2 mins).",
+                "Slice chicken and serve over the warm citrus-herb rice bed."
+            ],
+            chef_tips: "Using both lemon juice and freshly grated lemon zest adds bright acidity plus essential citrus oils.",
+            summary: "Clean, vibrant Mediterranean dish powered by high-polyphenol olive oil, zesty lemon, and lean grilled chicken."
+        },
+        {
+            recipe_name: "Sun-Drenched Tomato Shakshuka",
+            name: "Sun-Drenched Tomato Shakshuka",
+            cuisine: "Mediterranean",
+            spice_level: "Medium",
+            prep_time_mins: 8,
+            cook_time_mins: 12,
+            total_time_mins: 20,
+            difficulty: "Easy",
+            servings: 2,
+            calories_per_serving: 310,
+            protein_per_serving_g: 19.0,
+            carbs_per_serving_g: 16.0,
+            fat_per_serving_g: 18.0,
+            fiber_per_serving_g: 3.5,
+            keys: ["egg", "tomato", "onion", "garlic", "pepper"],
+            ingredients_needed: [
+                "3 large Eggs",
+                "3 Ripe Tomatoes (diced)",
+                "1/2 Onion (sliced)",
+                "2 cloves Garlic (minced)",
+                "1 tbsp Cold-Pressed Olive Oil",
+                "Smoked paprika, cumin, and sea salt"
+            ],
+            cooking_steps: [
+                "Heat olive oil in skillet. Sauté onions and garlic for 3 minutes.",
+                "Add tomatoes, cumin, paprika, and salt. Simmer 6 minutes until thick.",
+                "Make 3 small wells in the sauce. Gently crack an egg into each well.",
+                "Cover skillet and cook on low for 4 minutes until egg whites are set and yolks are runny.",
+                "Garnish with black pepper and serve hot."
+            ],
+            chef_tips: "Keep heat low after cracking eggs into the wells so the bottom of the tomato sauce does not scorch.",
+            summary: "Levantine skillet classic of farm eggs gently poached in a simmering cumin-scented tomato reduction."
         }
     ];
 
-    // Score recipes based on ingredient overlap
-    const scored = recipeCatalog.map(r => {
-        let hits = 0;
+    // Filter and score by selected cuisine and user ingredients
+    const filtered = fullCatalog.map(r => {
+        let score = 0;
+        // Cuisine match bonus
+        if (cuisine && cuisine.toLowerCase() !== 'global') {
+            if (r.cuisine.toLowerCase() === cuisine.toLowerCase()) score += 15;
+        }
+        // Spice level bonus
+        if (spiceLevel && r.spice_level.toLowerCase() === spiceLevel.toLowerCase()) score += 3;
+
+        // Ingredient hits
         userIngredients.forEach(u => {
-            if (r.keys.some(k => u.includes(k) || k.includes(u))) hits++;
+            if (r.keys.some(k => u.includes(k) || k.includes(u))) score += 4;
         });
-        return { recipe: r, hits };
+
+        return { recipe: r, score };
     });
 
-    scored.sort((a, b) => b.hits - a.hits);
-    const matchedRecipes = scored.map(s => s.recipe);
-
-    // AI Chef Special
-    const primaryIngredient = userIngredients[0] || 'Seasonal Protein';
-    const aiSpecial = {
-        recipe_name: `Luna Clinical Special: Pan-Seared ${primaryIngredient.toUpperCase()} Infusion`,
-        prep_time_mins: 8,
-        cook_time_mins: 12,
-        calories_per_serving: 420,
-        protein_per_serving_g: 34,
-        carbs_per_serving_g: 40,
-        fat_per_serving_g: 14,
-        ingredients_needed: [primaryIngredient, "Garlic & Herbs", "Cold-Pressed Olive Oil", "Fresh Greens"],
-        cooking_steps: [
-            `Prep the ${primaryIngredient} with cracked sea salt, cracked peppercorns, and fresh herbs.`,
-            "Preheat skillet over medium-high heat with 1 tsp extra virgin olive oil.",
-            "Sear until golden brown on both sides to preserve cellular moisture and micronutrient integrity.",
-            "Pair with steamed greens or grains for an optimal post-workout anti-inflammatory meal."
-        ]
-    };
+    filtered.sort((a, b) => b.score - a.score);
+    const matched = filtered.map(f => f.recipe);
 
     return {
-        recipes: matchedRecipes,
-        ai_recipe: aiSpecial,
-        note: `Matched ${matchedRecipes.length} recipes from your pantry items.`
+        cuisine: cuisine,
+        spice_level: spiceLevel,
+        recipes: matched.slice(0, 6),
+        note: `Matched ${matched.length} regional recipes for ${cuisine} cuisine.`
     };
 }
 
 function renderRecipeList(data) {
-    if (!data.recipes || !data.recipes.length) {
+    // Flatten all AI recipes and catalog recipes into a single unified list
+    const allRecipes = [];
+
+    if (data.ai_recipes && Array.isArray(data.ai_recipes)) {
+        data.ai_recipes.forEach(r => {
+            allRecipes.push({ ...r, is_ai: true });
+        });
+    } else if (data.ai_recipe) {
+        allRecipes.push({ ...data.ai_recipe, is_ai: true });
+    }
+
+    if (data.recipes && Array.isArray(data.recipes)) {
+        data.recipes.forEach(r => {
+            // Avoid duplicate by name
+            if (!allRecipes.some(existing => (existing.recipe_name || existing.name) === (r.recipe_name || r.name))) {
+                allRecipes.push({ ...r, is_ai: false });
+            }
+        });
+    }
+
+    // Cache to window for modal lookup
+    window._loadedRecipes = allRecipes;
+
+    if (!allRecipes.length) {
         return `
-            <div class="glass-card p-8 text-center rounded-xl">
-                <p class="text-xs text-dim">${data.note || 'No matching recipes found with these ingredients.'}</p>
+            <div class="glass-card p-10 text-center rounded-xl border border-white/10">
+                <p class="text-sm font-semibold text-white mb-1">No matching recipes found.</p>
+                <p class="text-xs text-dim">Try adding staple items like Rice, Egg, Tomatoes, or Onions to broaden recipe generation.</p>
             </div>
         `;
     }
 
-    const aiCard = data.ai_recipe ? `
-        <div class="glass-card p-6 rounded-xl border border-cyan/40 mb-6 bg-gradient-to-r from-black/80 to-blue-950/30">
-            <div class="flex flex-wrap justify-between items-start gap-2 mb-3">
-                <div class="flex items-center gap-2">
-                    <span class="badge badge-cyan text-xs font-bold uppercase">✨ LUNA AI CHEF SPECIAL</span>
-                    <span class="text-xs text-dim">⏱ ${data.ai_recipe.prep_time_mins || 10}m prep • ${data.ai_recipe.cook_time_mins || 15}m cook</span>
-                </div>
-                <div class="text-right">
-                    <span class="text-lg font-black text-yellow">${data.ai_recipe.calories_per_serving || 420} kcal</span>
-                    <span class="text-[10px] text-dim block">P:${data.ai_recipe.protein_per_serving_g}g C:${data.ai_recipe.carbs_per_serving_g}g F:${data.ai_recipe.fat_per_serving_g}g</span>
-                </div>
-            </div>
-
-            <h3 class="text-xl font-bold text-white mb-2">${data.ai_recipe.recipe_name}</h3>
-            
-            <div class="mb-4 text-xs text-dim">
-                <b class="text-white">Ingredients:</b> ${(data.ai_recipe.ingredients_needed || []).join(' • ')}
-            </div>
-
-            <div class="bg-black/50 p-4 rounded-lg border border-white/5 text-xs text-secondary space-y-2 mb-4">
-                <b class="text-white block">Step-by-Step Cooking:</b>
-                <ol class="list-decimal list-inside space-y-1.5 leading-relaxed">
-                    ${(data.ai_recipe.cooking_steps || []).map(s => `<li>${s}</li>`).join('')}
-                </ol>
-                ${data.ai_recipe.chef_tips ? `<p class="mt-2 text-cyan italic">💡 Chef Tip: ${data.ai_recipe.chef_tips}</p>` : ''}
-            </div>
-
-            <button onclick="logAiRecipeDirectly('${data.ai_recipe.recipe_name.replace(/'/g, "\\'")}', ${data.ai_recipe.calories_per_serving || 400}, ${data.ai_recipe.protein_per_serving_g || 20}, ${data.ai_recipe.carbs_per_serving_g || 40}, ${data.ai_recipe.fat_per_serving_g || 10})" 
-                class="btn-primary w-full py-2.5 text-xs font-bold uppercase text-black">
-                + Log This AI Recipe to Today's Meals
-            </button>
-        </div>
-    ` : '';
-
     return `
-        ${aiCard}
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-            ${data.recipes.map((r, idx) => `
-                <div class="glass-card p-6 rounded-xl flex flex-col justify-between">
-                    <div>
-                        <div class="flex justify-between items-start mb-3">
-                            <span class="badge ${idx === 0 ? 'badge-cyan' : 'badge-yellow'} text-xs font-bold uppercase">
-                                ${idx === 0 ? '★ Best Match' : 'Recipe Match'}
-                            </span>
-                        </div>
-                        <h4 class="text-lg font-bold text-white mb-2">${r.name}</h4>
-                        <div class="text-xs text-dim mb-4">
-                            <b>Ingredients used:</b> <span class="text-cyan">${r.ingredients_used.join(', ')}</span>
+        <!-- Filter Summary Bar -->
+        <div class="flex flex-wrap items-center justify-between gap-3 p-4 glass-card rounded-xl border border-cyan/30 mb-6">
+            <div class="flex items-center gap-2 flex-wrap">
+                <span class="text-xs text-dim uppercase font-mono tracking-wider">ACTIVE RESULTS:</span>
+                <span class="badge badge-cyan text-xs font-bold uppercase">${data.cuisine || selectedCuisine} CUISINE</span>
+                <span class="badge badge-yellow text-xs font-bold uppercase">${data.spice_level || selectedSpiceLevel} SPICE</span>
+                ${data.source === 'gemini' || allRecipes.some(r => r.is_ai) ? `<span class="badge badge-cyan text-xs font-mono font-bold">✨ LIVE GEMINI AI (${data.model || 'gemini-3.5-flash'})</span>` : ''}
+                <span class="text-xs text-dim font-mono">• ${allRecipes.length} Custom Recipes Available</span>
+            </div>
+            ${data.prompt ? `<div class="w-full text-xs text-yellow font-mono mt-1">Chef Luna Focus: "${data.prompt}"</div>` : ''}
+            <span class="text-xs text-cyan font-semibold flex items-center gap-1.5 cursor-pointer" onclick="window.scrollTo({top:0, behavior:'smooth'})">
+                <span>💡</span> Click any card to inspect full cooking guide
+            </span>
+        </div>
+
+        <!-- Recipe Grid -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            ${allRecipes.map((r, idx) => {
+                const title = r.recipe_name || r.name;
+                const totalMins = r.total_time_mins || ((r.prep_time_mins || 10) + (r.cook_time_mins || 15));
+                const kcal = r.calories_per_serving || r.calories || 420;
+                const protein = r.protein_per_serving_g || r.protein_g || 22;
+                const carbs = r.carbs_per_serving_g || r.carbs_g || 48;
+                const fat = r.fat_per_serving_g || r.fat_g || 14;
+                const stepsCount = (r.cooking_steps || r.steps || []).length;
+                const isAi = !!r.is_ai;
+
+                return `
+                    <div onclick="openRecipeDetailModal(${idx})" 
+                        class="glass-card p-5 rounded-xl flex flex-col justify-between recipe-clickable-card border ${isAi ? 'border-cyan/40 bg-gradient-to-b from-cyan/5 to-black/60 shadow-lg shadow-cyan/5' : 'border-white/10 hover:border-cyan/30'}">
+                        <div>
+                            <!-- Top Tags -->
+                            <div class="flex items-center justify-between gap-2 mb-3">
+                                <div class="flex items-center gap-1.5 flex-wrap">
+                                    ${isAi ? `<span class="badge badge-cyan text-[10px] font-bold uppercase tracking-wider">✨ LIVE GEMINI AI</span>` : ''}
+                                    <span class="badge ${r.cuisine === 'Indian' ? 'badge-yellow' : 'badge-cyan'} text-[10px] font-bold uppercase">
+                                        ${r.cuisine || 'Continental'}
+                                    </span>
+                                    <span class="text-[10px] text-yellow font-mono font-bold">
+                                        ${r.spice_level || 'Medium'}
+                                    </span>
+                                </div>
+                                <span class="text-[11px] font-mono text-dim whitespace-nowrap">
+                                    ⏱ ${totalMins}m
+                                </span>
+                            </div>
+
+                            <!-- Dish Name -->
+                            <h4 class="text-base font-bold text-white mb-2 leading-snug hover:text-cyan transition-colors">
+                                ${title}
+                            </h4>
+
+                            <!-- Summary -->
+                            <p class="text-[11px] text-dim mb-3 line-clamp-2 leading-relaxed">
+                                ${r.summary || 'Authentic regional preparation balancing rich flavor profiles and complete bio-availability.'}
+                            </p>
+
+                            <!-- Nutritional Pill -->
+                            <div class="bg-black/50 p-2.5 rounded-lg border border-white/5 mb-4 flex items-center justify-between text-xs">
+                                <span class="font-bold text-yellow">${kcal} kcal</span>
+                                <span class="text-[11px] text-dim font-mono">P:${protein}g • C:${carbs}g • F:${fat}g</span>
+                            </div>
+
+                            <!-- Ingredients Preview -->
+                            <div class="text-[11px] text-dim mb-4 line-clamp-2">
+                                <span class="text-white font-semibold">Key items:</span> ${(r.ingredients_needed || r.ingredients_used || []).slice(0, 4).join(', ')}
+                            </div>
                         </div>
 
-                        <!-- Steps -->
-                        <div class="bg-black/40 p-3 rounded-lg border border-white/5 text-xs text-secondary space-y-2 mb-4">
-                            <b class="text-white block">Instructions:</b>
-                            <ol class="list-decimal list-inside space-y-1">
-                                ${r.steps.map(s => `<li>${s}</li>`).join('')}
-                            </ol>
+                        <!-- Actions -->
+                        <div class="pt-3 border-t border-white/5 flex flex-col gap-2">
+                            <button type="button" onclick="event.stopPropagation(); openRecipeDetailModal(${idx})" 
+                                class="btn-primary w-full py-2 text-xs font-bold uppercase text-black flex items-center justify-center gap-1.5 shadow-md shadow-cyan/15">
+                                <span>👨‍🍳</span> View Cooking Steps (${stepsCount})
+                            </button>
+                            <button type="button" onclick="event.stopPropagation(); logRecipeDirectly('${title.replace(/'/g, "\\'")}', ${kcal}, ${protein}, ${carbs}, ${fat})" 
+                                class="btn-secondary w-full py-1.5 text-[11px] font-bold uppercase text-yellow hover:text-white">
+                                + Log To Today's Tracker
+                            </button>
                         </div>
                     </div>
-
-                    <button onclick="logRecipeDirectly('${r.name.replace(/'/g, "\\'")}')" class="btn-secondary w-full py-2 text-xs font-bold uppercase text-yellow">
-                        + Log This Meal to Today
-                    </button>
-                </div>
-            `).join('')}
+                `;
+            }).join('')}
         </div>
     `;
 }
 
-window.logAiRecipeDirectly = function(name, kcal, p, c, f) {
-    const logData = getFoodLogs(activeTrackerDate);
-    if (!logData.dinner) logData.dinner = [];
-    logData.dinner.push({
-        name: name,
-        portion: '1 serving',
-        kcal: kcal,
-        p: p,
-        c: c,
-        f: f
-    });
-    saveFoodLogs(activeTrackerDate, logData);
-    showToast(`Logged "${name}" to dinner!`);
-    setTrackerSubTab('daily-log');
+// ── INTERACTIVE RECIPE DETAIL MODAL ENGINE ─────────────────────────
+window.openRecipeDetailModal = function(idx) {
+    const r = window._loadedRecipes && window._loadedRecipes[idx];
+    if (!r) return;
+
+    const modal = document.getElementById('recipe-detail-modal');
+    const badgeEl = document.getElementById('recipe-modal-badge');
+    const spiceEl = document.getElementById('recipe-modal-spice');
+    const diffEl = document.getElementById('recipe-modal-diff');
+    const timeEl = document.getElementById('recipe-modal-time');
+    const bodyEl = document.getElementById('recipe-modal-body');
+
+    if (!modal || !bodyEl) return;
+
+    const title = r.recipe_name || r.name;
+    const cuisine = r.cuisine || selectedCuisine || 'Continental';
+    const spice = r.spice_level || selectedSpiceLevel || 'Medium';
+    const diff = r.difficulty || 'Easy';
+    const prepMins = r.prep_time_mins || 10;
+    const cookMins = r.cook_time_mins || 15;
+    const totalMins = r.total_time_mins || (prepMins + cookMins);
+    const servings = r.servings || 2;
+    const kcal = r.calories_per_serving || r.calories || 420;
+    const protein = r.protein_per_serving_g || r.protein_g || 22;
+    const carbs = r.carbs_per_serving_g || r.carbs_g || 48;
+    const fat = r.fat_per_serving_g || r.fat_g || 14;
+    const fiber = r.fiber_per_serving_g || r.fiber_g || 4;
+
+    const steps = r.cooking_steps || r.steps || [];
+    const ingredients = r.ingredients_needed || (r.ingredients_used || []).map(i => `Fresh ${i}`);
+
+    if (badgeEl) badgeEl.textContent = `${cuisine} CUISINE`;
+    if (spiceEl) spiceEl.textContent = `${spice.toUpperCase()} SPICE`;
+    if (diffEl) diffEl.textContent = `DIFFICULTY: ${diff.toUpperCase()}`;
+    if (timeEl) timeEl.textContent = `⏱ ${totalMins} MINS TOTAL`;
+
+    bodyEl.innerHTML = `
+        <!-- Title & Overview -->
+        <div>
+            <h2 id="recipe-modal-title" class="text-2xl font-display font-bold text-white mb-2 leading-tight">
+                ${title}
+            </h2>
+            <p class="text-xs text-dim leading-relaxed mb-5">
+                ${r.summary || 'A master-crafted continental recipe calibrated for authentic regional flavor, optimal cellular bioavailability, and macronutrient balance.'}
+            </p>
+        </div>
+
+        <!-- 4-Column Timing Banner -->
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+            <div class="p-3.5 bg-black/50 rounded-xl border border-white/10 text-center">
+                <span class="text-[10px] text-dim font-mono block uppercase">Prep Time</span>
+                <span class="text-base font-bold text-cyan">⏱ ${prepMins}m</span>
+            </div>
+            <div class="p-3.5 bg-black/50 rounded-xl border border-white/10 text-center">
+                <span class="text-[10px] text-dim font-mono block uppercase">Cook Time</span>
+                <span class="text-base font-bold text-yellow">🔥 ${cookMins}m</span>
+            </div>
+            <div class="p-3.5 bg-black/50 rounded-xl border border-white/10 text-center">
+                <span class="text-[10px] text-dim font-mono block uppercase">Total Time</span>
+                <span class="text-base font-bold text-white">⌛ ${totalMins}m</span>
+            </div>
+            <div class="p-3.5 bg-black/50 rounded-xl border border-white/10 text-center">
+                <span class="text-[10px] text-dim font-mono block uppercase">Yield / Portions</span>
+                <span class="text-base font-bold text-emerald-400">🍽️ ${servings} Servings</span>
+            </div>
+        </div>
+
+        <!-- Nutritional Breakdown Grid -->
+        <div>
+            <h4 class="text-xs font-bold text-white uppercase tracking-wider mb-2.5 flex items-center gap-2">
+                <span class="text-cyan">01 //</span> Nutritional Profile (Per Serving)
+            </h4>
+            <div class="grid grid-cols-2 sm:grid-cols-5 gap-2.5">
+                <div class="p-3 bg-gradient-to-b from-yellow/10 to-black/40 rounded-xl border border-yellow/30 text-center">
+                    <span class="text-[10px] text-yellow font-bold uppercase block">Calories</span>
+                    <span class="text-lg font-black text-white">${kcal} <span class="text-[10px] text-dim font-normal">kcal</span></span>
+                </div>
+                <div class="p-3 bg-gradient-to-b from-cyan/10 to-black/40 rounded-xl border border-cyan/30 text-center">
+                    <span class="text-[10px] text-cyan font-bold uppercase block">Protein</span>
+                    <span class="text-lg font-black text-white">${protein}g</span>
+                </div>
+                <div class="p-3 bg-black/40 rounded-xl border border-white/10 text-center">
+                    <span class="text-[10px] text-dim font-bold uppercase block">Carbs</span>
+                    <span class="text-lg font-black text-white">${carbs}g</span>
+                </div>
+                <div class="p-3 bg-black/40 rounded-xl border border-white/10 text-center">
+                    <span class="text-[10px] text-dim font-bold uppercase block">Fats</span>
+                    <span class="text-lg font-black text-white">${fat}g</span>
+                </div>
+                <div class="p-3 bg-black/40 rounded-xl border border-white/10 text-center">
+                    <span class="text-[10px] text-dim font-bold uppercase block">Fiber</span>
+                    <span class="text-lg font-black text-white">${fiber}g</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Interactive Ingredients Checklist -->
+        <div>
+            <div class="flex items-center justify-between mb-2.5">
+                <h4 class="text-xs font-bold text-white uppercase tracking-wider flex items-center gap-2">
+                    <span class="text-emerald-400">02 //</span> Ingredients Required (${ingredients.length})
+                </h4>
+                <span class="text-[10px] text-dim font-mono">Check off items as you prep</span>
+            </div>
+            <div class="space-y-2 max-h-48 overflow-y-auto pr-1">
+                ${ingredients.map(ing => `
+                    <label class="flex items-center gap-3 p-2.5 rounded-lg bg-black/40 border border-white/5 hover:border-white/20 cursor-pointer transition-all">
+                        <input type="checkbox" class="w-4 h-4 accent-cyan cursor-pointer rounded" 
+                            onchange="this.nextElementSibling.classList.toggle('line-through'); this.nextElementSibling.classList.toggle('opacity-50');">
+                        <span class="text-xs text-secondary leading-normal select-none transition-all">${ing}</span>
+                    </label>
+                `).join('')}
+            </div>
+        </div>
+
+        <!-- Step-by-Step Cooking Guide -->
+        <div>
+            <h4 class="text-xs font-bold text-white uppercase tracking-wider mb-2.5 flex items-center gap-2">
+                <span class="text-yellow">03 //</span> Step-by-Step Cooking Instructions (${steps.length} Steps)
+            </h4>
+            <div class="space-y-3">
+                ${steps.map((step, sIdx) => `
+                    <div class="p-3.5 bg-black/50 rounded-xl border border-white/10 flex gap-3.5 items-start">
+                        <span class="px-2.5 py-1 rounded-md bg-cyan/20 border border-cyan/40 text-cyan text-[11px] font-mono font-bold whitespace-nowrap">
+                            STEP ${(sIdx + 1).toString().padStart(2, '0')}
+                        </span>
+                        <p class="text-xs text-secondary leading-relaxed pt-0.5">
+                            ${step}
+                        </p>
+                    </div>
+                `).join('')}
+            </div>
+        </div>
+
+        <!-- Chef's Pro Secret Technique -->
+        ${r.chef_tips ? `
+            <div class="p-4 bg-gradient-to-r from-cyan/10 to-yellow/10 rounded-xl border border-cyan/30 flex gap-3 items-start">
+                <span class="text-xl">💡</span>
+                <div>
+                    <span class="text-xs font-bold text-cyan uppercase tracking-wider block mb-1">Chef's Secret Technique</span>
+                    <p class="text-xs text-secondary italic leading-relaxed">
+                        ${r.chef_tips}
+                    </p>
+                </div>
+            </div>
+        ` : ''}
+
+        <!-- Action Footer -->
+        <div class="pt-4 border-t border-white/10 flex flex-col sm:flex-row gap-3">
+            <button type="button" onclick="logRecipeDirectly('${title.replace(/'/g, "\\'")}', ${kcal}, ${protein}, ${carbs}, ${fat}); closeRecipeDetailModal();" 
+                class="btn-primary flex-1 py-3 text-xs font-bold uppercase text-black tracking-wider flex items-center justify-center gap-2 shadow-lg shadow-cyan/20">
+                <span>⚡</span> + Log This Dish to Today's Meals
+            </button>
+            <button type="button" onclick="closeRecipeDetailModal()" 
+                class="btn-secondary px-6 py-3 text-xs font-bold uppercase text-secondary hover:text-white">
+                Close Guide
+            </button>
+        </div>
+    `;
+
+    modal.classList.remove('hidden');
+    modal.setAttribute('aria-hidden', 'false');
 };
 
-window.logRecipeDirectly = function(recipeName) {
+window.closeRecipeDetailModal = function() {
+    const modal = document.getElementById('recipe-detail-modal');
+    if (modal) {
+        modal.classList.add('hidden');
+        modal.setAttribute('aria-hidden', 'true');
+    }
+};
+
+window.logRecipeDirectly = function(recipeName, kcal = 450, p = 22, c = 55, f = 14) {
     const logData = getFoodLogs(activeTrackerDate);
     if (!logData.dinner) logData.dinner = [];
     logData.dinner.push({
         name: recipeName,
-        portion: '1 plate',
-        kcal: 450,
-        p: 22,
-        c: 55,
-        f: 14
+        portion: '1 serving',
+        kcal: Number(kcal) || 450,
+        p: Number(p) || 22,
+        c: Number(c) || 55,
+        f: Number(f) || 14
     });
     saveFoodLogs(activeTrackerDate, logData);
-    showToast(`Logged "${recipeName}" to dinner.`);
+    showToast(`Logged "${recipeName}" (${kcal} kcal) to dinner.`);
     setTrackerSubTab('daily-log');
 };
+
+// Global escape key listener for recipe modal
+window.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') {
+        window.closeRecipeDetailModal();
+    }
+});
 
 // ── Toast Utility ────────────────────────────────────────────────
 function showToast(msg) {

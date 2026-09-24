@@ -136,13 +136,13 @@ class HeartRiskEngine:
             if act_upper in ("REST", "RESTING", "LOW"):
                 if hr_val >= cfg.resting_severe_tachycardia_bpm:
                     cardiac_score += 35
-                    triggers.append(f"Severe resting tachycardia ({int(hr_val)} BPM, +{int(hr_delta)} over baseline)")
+                    triggers.append(f"Severe resting tachycardia ({int(hr_val)} BPM, {int(hr_delta):+d} over baseline)")
                 elif hr_val >= cfg.resting_tachycardia_bpm:
                     cardiac_score += 25
-                    triggers.append(f"Resting tachycardia ({int(hr_val)} BPM, +{int(hr_delta)} over baseline)")
+                    triggers.append(f"Resting tachycardia ({int(hr_val)} BPM, {int(hr_delta):+d} over baseline)")
                 elif hr_delta >= cfg.hr_elevation_moderate_bpm:
                     cardiac_score += 15
-                    triggers.append(f"Elevated resting heart rate (+{int(hr_delta)} BPM over baseline)")
+                    triggers.append(f"Elevated resting heart rate ({int(hr_delta):+d} BPM over baseline)")
                 elif hr_val < cfg.resting_bradycardia_bpm:
                     cardiac_score += 20
                     triggers.append(f"Marked sinus bradycardia ({int(hr_val)} BPM)")
@@ -155,7 +155,7 @@ class HeartRiskEngine:
                     triggers.append(f"High-intensity cardiac zone ({int(hr_val)} BPM)")
                 elif hr_delta > 60:
                     cardiac_score += 15
-                    triggers.append(f"Rapid heart rate acceleration (+{int(hr_delta)} BPM delta)")
+                    triggers.append(f"Rapid heart rate acceleration ({int(hr_delta):+d} BPM delta)")
 
         # ── 2. Heart Rate Variability (HRV Autonomic Tone) (0 - 20 points) ──
         if hrv is not None and hrv > 0:
@@ -258,7 +258,6 @@ class HeartRiskEngine:
 
         total_heart_score = min(100, int(round(cardiac_score)))
 
-        # ── 7. Aggregate Heart Risk Classification ───────────────────────────
         recommendations: List[str] = []
 
         if not has_any_signal:
@@ -271,23 +270,23 @@ class HeartRiskEngine:
         elif total_heart_score >= 65:
             heart_risk_level = "CRITICAL"
             is_alert_active = True
-            alert_title = f"⚠ HEART RISK: {heart_risk_level}"
-            alert_msg = "Elevated cardiovascular strain detected across multi-signal vitals. Reduce intensity and initiate recovery."
-            recommendations.append("Halt strenuous physical exercise and heavy cardio loading immediately.")
+            alert_title = "⚠ CRITICAL CARDIAC WARNING"
+            alert_msg = "Severe cardiovascular strain detected across multi-signal vitals. Cease strenuous exertion immediately."
+            recommendations.append("Immediately stop strenuous physical exercise and disengage heavy cardiovascular loads.")
             recommendations.append("Sit or recline in a supported upright posture (head elevated 30–45°).")
-            recommendations.append("Practice slow 4-7-8 diaphragmatic breathing to stimulate parasympathetic recovery.")
-            recommendations.append("Hydrate with cool water and balanced electrolyte minerals.")
-            recommendations.append("Seek medical attention or cardiology consultation if chest tightness, radiating arm pain, or shortness of breath occurs.")
+            recommendations.append("Practice slow 4-7-8 diaphragmatic breathing to stimulate vagal nerve and parasympathetic tone.")
+            recommendations.append("Sip cool water and replenish essential electrolyte minerals.")
+            recommendations.append("Seek emergency medical evaluation or immediate cardiology consultation if chest pressure, radiating arm/jaw discomfort, or acute dyspnea occurs.")
         elif total_heart_score >= 42:
             heart_risk_level = "HIGH"
             is_alert_active = True
-            alert_title = f"⚠ HEART RISK: {heart_risk_level}"
-            alert_msg = "Elevated cardiovascular strain detected across multi-signal vitals. Reduce intensity and initiate recovery."
-            recommendations.append("Halt strenuous physical exercise and heavy cardio loading immediately.")
-            recommendations.append("Sit or recline in a supported upright posture (head elevated 30–45°).")
-            recommendations.append("Practice slow 4-7-8 diaphragmatic breathing to stimulate parasympathetic recovery.")
-            recommendations.append("Hydrate with cool water and balanced electrolyte minerals.")
-            recommendations.append("Seek medical attention or cardiology consultation if chest tightness, radiating arm pain, or shortness of breath occurs.")
+            alert_title = "⚠ ELEVATED CARDIAC LOAD"
+            alert_msg = "Elevated cardiovascular exertion and autonomic suppression detected. Transition to recovery pacing."
+            recommendations.append("Step down workout intensity into active recovery zone; suspend high-intensity intervals.")
+            recommendations.append("Take extended 2-3 minute resting intervals between exercise sets.")
+            recommendations.append("Monitor heart rate recovery deceleration curve back toward resting baseline.")
+            recommendations.append("Ensure consistent fluid and electrolyte hydration in warm or humid training conditions.")
+            recommendations.append("Consult health provider if elevated resting pulse persists after extended cooldown.")
         elif total_heart_score >= 22:
             heart_risk_level = "MODERATE"
             is_alert_active = False

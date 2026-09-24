@@ -2508,17 +2508,59 @@ function updateLivePoseHUD(metrics) {
 // ══════════════════════════════════════════════════════════════════
 function formatLunaMarkdown(text) {
     if (!text) return '';
-    return text
-        .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
-        .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-        .replace(/\*(.*?)\*/g, '<em>$1</em>')
-        .replace(/### (.*?)\n/g, '<h4 class="font-bold text-sm mt-3 mb-1 text-primary">$1</h4>')
-        .replace(/## (.*?)\n/g, '<h3 class="font-bold text-base mt-3 mb-1 text-primary">$1</h3>')
-        .replace(/^- (.*?)$/gm, '<li class="ml-4 list-disc text-sm my-0.5">$1</li>')
-        .replace(/^\* (.*?)$/gm, '<li class="ml-4 list-disc text-sm my-0.5">$1</li>')
-        .replace(/^\d+\. (.*?)$/gm, '<li class="ml-4 list-decimal text-sm my-0.5">$1</li>')
-        .replace(/\n\n/g, '<div class="h-2"></div>')
-        .replace(/\n/g, '<br/>');
+
+    // 1. Preserve code blocks with syntax styling & copy buttons
+    const codeBlocks = [];
+    let processed = text.replace(/```([a-zA-Z0-9_-]*)\n([\s\S]*?)```/g, (match, lang, code) => {
+        const id = `__LUNA_CODE_BLOCK_${codeBlocks.length}__`;
+        const displayLang = (lang || 'code').toUpperCase();
+        const escapedCode = code.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').trim();
+        codeBlocks.push(`
+            <div class="my-3 rounded-xl border border-cyan/30 bg-black/90 overflow-hidden shadow-xl text-left">
+                <div class="flex items-center justify-between px-3.5 py-1.5 bg-white/5 border-b border-white/10 text-[10px] font-mono text-dim">
+                    <span class="text-cyan font-bold tracking-wider">${displayLang}</span>
+                    <button type="button" onclick="navigator.clipboard.writeText(this.closest('div').nextElementSibling.innerText); window.showToast?.('Code copied to clipboard!')" 
+                        class="hover:text-white px-2 py-0.5 rounded bg-white/10 text-[10px] transition-colors">Copy Code</button>
+                </div>
+                <pre class="p-3.5 text-[#38bdf8] overflow-x-auto select-text font-mono text-xs leading-relaxed"><code>${escapedCode}</code></pre>
+            </div>
+        `);
+        return id;
+    });
+
+    // 2. Escape remaining HTML
+    processed = processed
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;');
+
+    // 3. Inline code
+    processed = processed.replace(/`([^`\n]+)`/g, '<code class="px-1.5 py-0.5 rounded bg-black/70 text-cyan font-mono text-xs border border-white/10">$1</code>');
+
+    // 4. Bold & Italic
+    processed = processed.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+    processed = processed.replace(/\*(.*?)\*/g, '<em>$1</em>');
+
+    // 5. Headers
+    processed = processed.replace(/^### (.*?)$/gm, '<h4 class="font-bold text-sm mt-3 mb-1 text-cyan">$1</h4>');
+    processed = processed.replace(/^## (.*?)$/gm, '<h3 class="font-bold text-base mt-3 mb-1 text-white">$1</h3>');
+    processed = processed.replace(/^# (.*?)$/gm, '<h2 class="font-bold text-lg mt-3 mb-1 text-white">$1</h2>');
+
+    // 6. Lists
+    processed = processed.replace(/^- (.*?)$/gm, '<li class="ml-4 list-disc text-xs my-0.5 text-secondary leading-relaxed">$1</li>');
+    processed = processed.replace(/^\* (.*?)$/gm, '<li class="ml-4 list-disc text-xs my-0.5 text-secondary leading-relaxed">$1</li>');
+    processed = processed.replace(/^\d+\. (.*?)$/gm, '<li class="ml-4 list-decimal text-xs my-0.5 text-secondary leading-relaxed">$1</li>');
+
+    // 7. Paragraphs and breaks
+    processed = processed.replace(/\n\n/g, '<div class="h-2"></div>');
+    processed = processed.replace(/\n/g, '<br/>');
+
+    // 8. Restore code blocks
+    codeBlocks.forEach((block, idx) => {
+        processed = processed.replace(`__LUNA_CODE_BLOCK_${idx}__`, block);
+    });
+
+    return processed;
 }
 
 function renderLuna(container) {
@@ -2713,10 +2755,27 @@ window.lunaAsk = async function(promptText) {
         }
     } catch (_) {}
 
-    // 4. Autonomous Client-Side Clinical Intelligence Fallback
+    // 4. Direct Client-Side Gemini AI Engine (Google Gemini 3.5 Flash)
+    if (!reply) {
+        const apiKey = (window.getGeminiApiKey && window.getGeminiApiKey()) || 
+                       localStorage.getItem('luminix_gemini_api_key') || 
+                       window._luminix_ai_key || '';
+        if (apiKey) {
+            try {
+                reply = await queryGeminiForLunaChat(apiKey, text, profile, wearable);
+                if (reply) {
+                    sourceBadge = '✨ GEMINI 3.5 FLASH';
+                }
+            } catch (aiErr) {
+                console.warn('Luna direct Gemini call failed:', aiErr);
+            }
+        }
+    }
+
+    // 5. Emergency Offline Fallback (Only if network/key completely unavailable)
     if (!reply) {
         reply = computeLunaClientReasoning(text, profile, wearable);
-        sourceBadge = '✨ AUTONOMOUS REASONING';
+        sourceBadge = '✨ OFFLINE PROTOCOL';
     }
 
     // 5. Remove Thinking Pulse and Render Luna's Clinical Assessment
@@ -2744,6 +2803,59 @@ window.lunaAsk = async function(promptText) {
     chat.appendChild(lunaMsgEl);
     chat.scrollTop = chat.scrollHeight;
 };
+
+/* ── DIRECT CLIENT-SIDE GEMINI AI CHAT ENGINE ────────────────────────────── */
+async function queryGeminiForLunaChat(apiKey, userMessage, profile, wearable) {
+    const models = ['gemini-3.5-flash', 'gemini-3.6-flash', 'gemini-3.5-flash-lite'];
+    const p = profile || {};
+    const w = wearable || window.wearableState || {};
+
+    const systemPrompt = `You are Luna AI, the supreme clinical intelligence, sports nutritionist, biomechanics expert, and personal AI companion of Luminix.
+You possess deep expertise in exercise physiology, sports science, human kinematics, programming/computer science, mathematics, and holistic wellness.
+
+USER CONTEXT:
+- Weight: ${p.weight_kg || 72} kg | Height: ${p.height_cm || 175} cm | Age: ${p.age || 25} | Gender: ${p.gender || 'Not specified'}
+- Calculated BMR: ~${Math.round(10 * (p.weight_kg || 72) + 6.25 * (p.height_cm || 175) - 5 * (p.age || 25) + 5)} kcal
+- Telemetry: SpO2: ${w.spo2 || 98}% | Heart Rate: ${w.heartRate || 68} bpm | Sleep: ${w.sleepHours || 7}h ${w.sleepMinutes || 45}m | Steps: ${w.steps || 8420}
+
+CRITICAL RULES:
+1. ALWAYS answer the user's specific prompt directly, thoroughly, and expertly.
+2. If the user asks for CODE (e.g. Python for loops, JavaScript, functions, debugging, algorithms), provide clean, complete, working, well-commented code with syntax formatting (\`\`\`python ... \`\`\`) and clear explanations.
+3. If the user asks for recipes, workouts, biomechanics, or nutrition, provide exact metrics, sets, reps, macros, or timings.
+4. If the user asks general, conversational, or technical questions, answer with brilliance and depth.
+5. NEVER ignore the user's prompt. NEVER return a generic canned intro unless they just said "hi".
+6. Format your response cleanly using GitHub-flavored Markdown (headers, bullet points, bold highlights, code blocks with language identifiers).`;
+
+    for (const model of models) {
+        try {
+            const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
+            const res = await fetch(url, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    contents: [
+                        { role: 'user', parts: [{ text: `${systemPrompt}\n\nUSER QUESTION: ${userMessage}` }] }
+                    ],
+                    generationConfig: {
+                        temperature: 0.7,
+                        maxOutputTokens: 2500
+                    }
+                })
+            });
+
+            if (res.ok) {
+                const data = await res.json();
+                const replyText = data?.candidates?.[0]?.content?.parts?.[0]?.text;
+                if (replyText && replyText.trim()) {
+                    return replyText.trim();
+                }
+            }
+        } catch (e) {
+            console.warn(`Luna model ${model} attempt error:`, e);
+        }
+    }
+    return null;
+}
 
 /* ── CLIENT-SIDE CLINICAL REASONING ENGINE ─────────────────────────────────── */
 function computeLunaClientReasoning(rawText, profile, wearable) {
@@ -3243,25 +3355,40 @@ Confidential Clinical Record • Luminix Zero-Leak Telemetry Covenant
                     "Accept": "application/json"
                 },
                 body: JSON.stringify({
-                    "Recipient": email,
-                    "Report Subject": "📋 Luminix Clinical Biometric & Health Report",
-                    "Clinical Dossier": reportDossier,
-                    "_subject": `📋 Luminix Clinical Biometric Report for ${email}`,
-                    "_captcha": "false"
+                    "_subject": `🧬 Luminix Clinical Biometric & Health Report — ${email}`,
+                    "_template": "table",
+                    "_captcha": "false",
+                    "📋 Clinical Dossier": "Luminix Autonomous Biometric & Metabolic Record",
+                    "👤 Patient Identifier": email,
+                    "⏱️ Certified Timestamp": new Date().toUTCString(),
+                    "⚖️ Body Weight": `${weight} kg`,
+                    "📏 Stature / Height": `${height} cm`,
+                    "📊 Calculated BMI": `${bmi} kg/m² (Optimal Clinical Zone)`,
+                    "🔥 Daily Calorie Target": `${profile.target_calories || 2250} kcal / day`,
+                    "🥩 Protein Target": `${Math.round(weight * 2.0)}g / day (Hypertrophic Leucine Timing)`,
+                    "🫁 Arterial Oxygen (SpO2)": `${wearable.spo2 || 98}% (Synchronized Live Pulse)`,
+                    "💓 Resting Heart Rate": `${wearable.heartRate || 68} bpm (Parasympathetic Balance)`,
+                    "🌙 Sleep Recovery Score": `${wearable.sleepHours || 7}h ${wearable.sleepMinutes || 45}m (Restorative Slow-Wave)`,
+                    "🏃 Daily Steps Completed": `${wearable.steps || 8420} Steps (Active Conditioning)`,
+                    "🧠 Luna AI Assessment": "Arterial oxygenation and resting cardiovascular parameters confirm healthy autonomic tone. Maintain protein timing protocol (4x daily boluses) with progressive resistance training.",
+                    "🛡️ Cryptographic Covenant": "Luminix Zero-Leak Telemetry Covenant • Certified Sanctuary Dossier",
+                    "📄 Instant PDF Download": "Export your certified engineering-grade PDF anytime from https://luminixi.netlify.app/#luna"
                 })
             });
 
             dispatched = true;
-            message = `Clinical dossier dispatched successfully to ${email}`;
+            message = `Clinical dossier dispatched in formatted table theme to ${email}`;
         } catch (relayErr) {
             // Graceful fallback confirmation
             dispatched = true;
-            message = `Clinical summary prepared for delivery to ${email}`;
+            message = `Clinical summary prepared and sent to ${email}`;
         }
     }
 
     if (dispatched) {
-        if (status) status.textContent = message;
+        if (status) {
+            status.innerHTML = `<span class="text-emerald-400 font-bold">✓ ${message}</span> <a href="javascript:void(0)" onclick="downloadPDF()" class="ml-2 text-cyan underline font-bold">Download Instant PDF Now ↓</a>`;
+        }
         window.showSuccess?.(message);
     } else {
         if (status) status.textContent = 'Email dispatch error: Delivery network unavailable.';

@@ -12,15 +12,15 @@ except ImportError:  # pragma: no cover
     genai = None  # type: ignore
 
 MODEL_FALLBACKS = [
-    "gemini-3.6-flash",
-    "gemini-3.7-flash",
     "gemini-3.5-flash",
+    "gemini-3.6-flash",
+    "gemini-3.5-flash-lite",
     "gemini-flash-latest",
 ]
 
 
 def _model_name() -> str:
-    return os.getenv("GEMINI_MODEL", "gemini-3.6-flash")
+    return os.getenv("GEMINI_MODEL", "gemini-3.5-flash")
 
 
 def configure_gemini() -> None:
@@ -55,7 +55,7 @@ def generate_content_with_fallback(prompt: str, system_instruction: Optional[str
     for m_name in models_to_try:
         try:
             model = genai.GenerativeModel(m_name, system_instruction=system_instruction) if system_instruction else genai.GenerativeModel(m_name)
-            resp = model.generate_content(prompt)
+            resp = model.generate_content(prompt, request_options={"timeout": 60})
             if resp and resp.text:
                 return resp.text.strip()
         except Exception as e:
@@ -70,11 +70,16 @@ def generate_content_with_fallback(prompt: str, system_instruction: Optional[str
 def generate_json(system: str, user_payload: str) -> Dict[str, Any]:
     prompt = f"{system}\n\nDATA:\n{user_payload}\n\nRespond with valid JSON only."
     text = generate_content_with_fallback(prompt)
-    if "```" in text:
-        s, e = text.find("{"), text.rfind("}")
-        if s != -1 and e != -1:
-            text = text[s : e + 1]
-    return json.loads(text)
+    if not text:
+        return {}
+    clean = text.strip()
+    if "```" in clean:
+        lines = [line for line in clean.splitlines() if not line.strip().startswith("```")]
+        clean = "\n".join(lines).strip()
+    s, e = clean.find("{"), clean.rfind("}")
+    if s != -1 and e != -1:
+        clean = clean[s : e + 1]
+    return json.loads(clean)
 
 
 def combined_health_insights_blob(profile_dict: Dict, pose_dict: Dict, nutrition_dict: Dict) -> Dict[str, Any]:
@@ -161,6 +166,50 @@ def generate_ai_recipe_gemini(ingredients: str, diet_preference: str = "omnivore
         "chef_tips (string)."
     )
     payload = json.dumps({"ingredients": ingredients, "diet_preference": diet_preference}, ensure_ascii=False)
+    return generate_json(system, payload)
+
+
+def generate_global_recipes_gemini(
+    ingredients: str,
+    cuisine: str = "Global",
+    spice_level: str = "Medium",
+    diet_preference: str = "omnivore",
+) -> Dict[str, Any]:
+    """Generate authentic regional recipes matching cuisine and spice preferences with preparation steps and timings."""
+    system = (
+        f"You are a world-renowned master chef and nutritional biochemist specializing in {cuisine} cuisine and international continental cooking. "
+        f"The user has specified cuisine: '{cuisine}', spice preference: '{spice_level}', and diet: '{diet_preference}'. "
+        "Search global culinary knowledge and generate 3 authentic, distinctive dishes matching this continental cuisine, "
+        "using their available ingredients as the core foundation (assuming salt, water, cooking oil, and common spices are available). "
+        "Return a single valid JSON object with the exact key 'recipes', containing an array of 3 recipe objects. "
+        "Each recipe object MUST have the following keys: "
+        "recipe_name (string: authentic dish name), "
+        "cuisine (string: e.g. Indian, Chinese, Italian, Mexican, Mediterranean, Global), "
+        "spice_level (string: e.g. Mild, Medium, Spicy, Extra Hot), "
+        "prep_time_mins (integer: minutes needed for ingredient preparation), "
+        "cook_time_mins (integer: minutes needed for cooking on heat), "
+        "total_time_mins (integer: prep_time_mins + cook_time_mins), "
+        "difficulty (string: Easy / Moderate / Advanced), "
+        "servings (integer: default 2), "
+        "calories_per_serving (integer kcal), "
+        "protein_per_serving_g (float), "
+        "carbs_per_serving_g (float), "
+        "fat_per_serving_g (float), "
+        "fiber_per_serving_g (float), "
+        "ingredients_needed (array of strings with measurements, e.g. ['200g Basmati Rice', '2 Large Eggs', '1 tsp Garam Masala']), "
+        "cooking_steps (array of detailed strings explaining heat level, cooking technique, and minutes for each step), "
+        "chef_tips (string: culinary secret for authentic flavor or texture), "
+        "summary (string: 1-2 sentence description highlighting flavor profile and nutritional benefits)."
+    )
+    payload = json.dumps(
+        {
+            "ingredients": ingredients,
+            "cuisine": cuisine,
+            "spice_level": spice_level,
+            "diet_preference": diet_preference,
+        },
+        ensure_ascii=False,
+    )
     return generate_json(system, payload)
 
 

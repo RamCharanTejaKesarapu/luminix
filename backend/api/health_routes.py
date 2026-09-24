@@ -28,14 +28,22 @@ from fastapi import APIRouter, Depends, HTTPException, Query, WebSocket, WebSock
 from pydantic import BaseModel, Field
 
 try:
-    from analysis_module.heart_risk_engine import HeartRiskEngine, HeatRiskEngine
+    from analysis_module.heart_risk_engine import (
+        HeartRiskEngine,
+        HeatRiskEngine,
+        compute_measurement_age_string,
+    )
     from database.db import (
         get_health_sample_history,
         get_latest_health_samples,
         save_health_samples,
     )
 except ImportError:
-    from backend.analysis_module.heart_risk_engine import HeartRiskEngine, HeatRiskEngine
+    from backend.analysis_module.heart_risk_engine import (
+        HeartRiskEngine,
+        HeatRiskEngine,
+        compute_measurement_age_string,
+    )
     from backend.database.db import (
         get_health_sample_history,
         get_latest_health_samples,
@@ -363,7 +371,6 @@ def get_latest_health_metrics(
     )
 
     # Enrich every metric with provenance age string and time string
-    from analysis_module.heart_risk_engine import compute_measurement_age_string
     for m_key, m_val in latest.items():
         if isinstance(m_val, dict) and m_val.get("timestamp"):
             ts = m_val["timestamp"]
@@ -650,16 +657,44 @@ async def health_live_websocket(websocket: WebSocket):
 
                 # Extract latest vitals for instant real-time risk check
                 hr = msg.get("heartRate")
+                hrv = msg.get("hrv")
                 temp = msg.get("temperature")
                 spo2 = msg.get("spo2")
                 resp = msg.get("respiratoryRate")
                 bp = msg.get("bloodPressure")
+
+                # Extract from nested samples payload if top-level fields not present
+                if samples:
+                    for s in samples:
+                        if not isinstance(s, dict):
+                            continue
+                        m = str(s.get("metric", "")).lower().strip()
+                        v = s.get("value")
+                        if (m == "heart_rate" or m == "resting_heart_rate") and hr is None and v is not None:
+                            hr = float(v)
+                        elif m == "hrv" and hrv is None and v is not None:
+                            hrv = float(v)
+                        elif m in ("body_temperature", "temperature") and temp is None and v is not None:
+                            temp = float(v)
+                        elif m == "spo2" and spo2 is None and v is not None:
+                            spo2 = float(v)
+                        elif m == "respiratory_rate" and resp is None and v is not None:
+                            resp = float(v)
+                        elif m == "blood_pressure" and bp is None:
+                            bp = {
+                                "systolic": s.get("systolic"),
+                                "diastolic": s.get("diastolic"),
+                                "timestamp": s.get("timestamp"),
+                                "source": s.get("source", "health_bridge"),
+                            }
+
                 sys_val = bp.get("systolic") if isinstance(bp, dict) else None
                 dia_val = bp.get("diastolic") if isinstance(bp, dict) else None
                 bp_ts = bp.get("timestamp") if isinstance(bp, dict) else None
 
                 risk = HeatRiskEngine.evaluate(
                     heart_rate=hr,
+                    hrv=hrv,
                     temperature_c=temp,
                     activity_level=msg.get("activityLevel", "MODERATE"),
                     spo2=spo2,
