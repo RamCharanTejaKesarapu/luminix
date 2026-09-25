@@ -652,7 +652,7 @@ class SecurityFirewallMiddleware(BaseHTTPMiddleware):
             "img-src 'self' data: https: blob:; "
             "media-src 'self' data: blob:; "
             "worker-src 'self' blob:; "
-            "connect-src 'self' https://cdn.jsdelivr.net https://*.firebaseio.com https://identitytoolkit.googleapis.com https://securetoken.googleapis.com https://fonts.googleapis.com https://fonts.gstatic.com; "
+            "connect-src 'self' https://cdn.jsdelivr.net https://*.firebaseio.com https://identitytoolkit.googleapis.com https://securetoken.googleapis.com https://fonts.googleapis.com https://fonts.gstatic.com https://generativelanguage.googleapis.com; "
             "frame-ancestors 'self';"
         )
 

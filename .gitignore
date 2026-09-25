@@ -63,3 +63,6 @@ data/*.db*
 .mypy_cache/
 .coverage
 htmlcov/
+
+# Local Netlify folder
+.netlify

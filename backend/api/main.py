@@ -701,21 +701,24 @@ def nutrition_ai_food_analysis(req: FoodAnalysisRequest) -> Dict[str, Any]:
 
 class LunaChatRequest(BaseModel):
     message: str
+    apiKey: Optional[str] = None
     user_context: Optional[Dict[str, Any]] = None
 
 @app.post("/v1/luna/chat")
 def luna_chat(req: LunaChatRequest) -> Dict[str, Any]:
-    """Luna AI chat endpoint — uses Gemini 3.6 Flash when available, falls back to rule-based."""
+    """Luna AI chat endpoint — uses Gemini when available, falls back to rule-based."""
     msg = req.message.strip()
+    key = (req.apiKey and req.apiKey.strip()) or os.getenv("GEMINI_API_KEY")
 
     # Try Gemini first with specialized health and nutrition intelligence
-    if os.getenv("GEMINI_API_KEY"):
+    if key:
         try:
             from analysis_module.gemini_integration import luna_chat_gemini
+            os.environ["GEMINI_API_KEY"] = key
             reply = luna_chat_gemini(msg, req.user_context)
             if reply:
                 return {"reply": reply, "source": "gemini", "model": os.getenv("GEMINI_MODEL", "gemini-3.6-flash")}
-        except Exception as e:
+        except Exception:
             pass
 
     # Rule-based fallback

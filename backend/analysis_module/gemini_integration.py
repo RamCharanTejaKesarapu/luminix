@@ -12,15 +12,15 @@ except ImportError:  # pragma: no cover
     genai = None  # type: ignore
 
 MODEL_FALLBACKS = [
-    "gemini-3.5-flash",
-    "gemini-3.6-flash",
+    "gemini-flash-lite-latest",
     "gemini-3.5-flash-lite",
+    "gemini-3.6-flash",
     "gemini-flash-latest",
 ]
 
 
 def _model_name() -> str:
-    return os.getenv("GEMINI_MODEL", "gemini-3.5-flash")
+    return os.getenv("GEMINI_MODEL", "gemini-flash-lite-latest")
 
 
 def configure_gemini() -> None:
