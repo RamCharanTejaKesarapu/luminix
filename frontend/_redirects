@@ -1,5 +1,7 @@
 /v1/creator/donation  /.netlify/functions/donation  200
 /v1/cook/suggest     /.netlify/functions/recipes   200
+/v1/luna/chat        /.netlify/functions/chat      200
+/v1/chat/luna        /.netlify/functions/chat      200
 /static/*          /:splat                 200
 /auth              /auth.html              200
 /privacy           /privacy.html           200

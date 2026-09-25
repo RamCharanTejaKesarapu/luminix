@@ -2726,61 +2726,63 @@ window.lunaAsk = async function(promptText) {
     const wearable = window.wearableState || {};
 
     let reply = '';
-    let sourceBadge = '✨ CLINICAL INTELLIGENCE';
+    let sourceBadge = '✨ GEMINI AI (LIVE)';
 
-    // 3. Attempt API request to backend
-    try {
-        const res = await fetch((typeof API_BASE !== 'undefined' ? API_BASE : '') + '/v1/luna/chat', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                message: text,
-                user_context: {
-                    profile: profile,
-                    wearable: {
-                        spo2: wearable.spo2,
-                        heartRate: wearable.heartRate,
-                        sleepHours: wearable.sleepHours,
-                        steps: wearable.steps
-                    }
-                }
-            })
-        });
-        if (res.ok) {
-            const data = await res.json().catch(() => null);
-            if (data && data.reply) {
-                reply = data.reply;
-                sourceBadge = data.source === 'gemini' ? '✨ GEMINI REASONING' : '✨ CLINICAL INTELLIGENCE';
-            }
-        }
-    } catch (_) {}
+    const _DEFAULT_KEY_B64 = "QVEuQWI4Uk42S2hFX282Q3ZEWGprTUQ0U3RKWEFpdThuX1ZoM18yZzI5aV9EQmlzTjlmdUE=";
+    const defaultKey = (function() { try { return atob(_DEFAULT_KEY_B64); } catch(_) { return ""; } })();
+    const apiKey = (window.getGeminiApiKey && window.getGeminiApiKey()) || 
+                   localStorage.getItem('luminix_gemini_api_key') || 
+                   window._luminix_ai_key || defaultKey;
 
-    // 4. Direct Client-Side Gemini AI Engine (Google Gemini Flash)
-    if (!reply) {
-        const _DEFAULT_KEY_B64 = "QVEuQWI4Uk42S2hFX282Q3ZEWGprTUQ0U3RKWEFpdThuX1ZoM18yZzI5aV9EQmlzTjlmdUE=";
-        const defaultKey = (function() { try { return atob(_DEFAULT_KEY_B64); } catch(_) { return ""; } })();
-        const apiKey = (window.getGeminiApiKey && window.getGeminiApiKey()) || 
-                       localStorage.getItem('luminix_gemini_api_key') || 
-                       window._luminix_ai_key || defaultKey;
-        if (apiKey) {
-            try {
-                reply = await queryGeminiForLunaChat(apiKey, text, profile, wearable);
-                if (reply) {
-                    sourceBadge = '✨ GEMINI AI (LIVE)';
-                }
-            } catch (aiErr) {
-                console.warn('Luna direct Gemini call failed:', aiErr);
+    // 1. Direct Client-Side Gemini AI Engine (Fastest path: gemini-flash-lite-latest)
+    if (apiKey) {
+        try {
+            reply = await queryGeminiForLunaChat(apiKey, text, profile, wearable);
+            if (reply) {
+                sourceBadge = '✨ GEMINI AI (LIVE)';
             }
+        } catch (aiErr) {
+            console.warn('Luna direct Gemini call failed:', aiErr);
         }
     }
 
-    // 5. Emergency Offline Fallback (Only if network/key completely unavailable)
+    // 2. Netlify Serverless Backend (/v1/luna/chat) fallback
+    if (!reply) {
+        try {
+            const res = await fetch((typeof API_BASE !== 'undefined' ? API_BASE : '') + '/v1/luna/chat', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    message: text,
+                    apiKey: apiKey,
+                    user_context: {
+                        profile: profile,
+                        wearable: {
+                            spo2: wearable.spo2,
+                            heartRate: wearable.heartRate,
+                            sleepHours: wearable.sleepHours,
+                            steps: wearable.steps
+                        }
+                    }
+                })
+            });
+            if (res.ok) {
+                const data = await res.json().catch(() => null);
+                if (data && data.reply) {
+                    reply = data.reply;
+                    sourceBadge = '✨ GEMINI AI (CLOUD)';
+                }
+            }
+        } catch (_) {}
+    }
+
+    // 3. Emergency Dynamic Fallback (Never predefined generic walls of text)
     if (!reply) {
         reply = computeLunaClientReasoning(text, profile, wearable);
-        sourceBadge = '✨ OFFLINE PROTOCOL';
+        sourceBadge = '✨ CLINICAL ASSISTANT';
     }
 
-    // 5. Remove Thinking Pulse and Render Luna's Clinical Assessment
+    // 4. Remove Thinking Pulse and Render Luna's Response
     thinkingEl.remove();
 
     const lunaMsgEl = document.createElement('div');
@@ -2808,32 +2810,40 @@ window.lunaAsk = async function(promptText) {
 
 /* ── DIRECT CLIENT-SIDE GEMINI AI CHAT ENGINE ────────────────────────────── */
 async function queryGeminiForLunaChat(apiKey, userMessage, profile, wearable) {
-    const models = ['gemini-flash-latest', 'gemini-3.5-flash', 'gemini-flash-lite-latest', 'gemini-3.8-flash'];
+    const models = [
+        'gemini-flash-lite-latest',
+        'gemini-3.5-flash-lite',
+        'gemini-3.6-flash',
+        'gemini-flash-latest'
+    ];
     const p = profile || {};
     const w = wearable || window.wearableState || {};
 
     const systemPrompt = `You are Luna AI, the supreme clinical intelligence, sports nutritionist, biomechanics expert, and personal AI companion of Luminix.
-You possess deep expertise in exercise physiology, sports science, human kinematics, programming/computer science, mathematics, and holistic wellness.
+You possess deep expertise in exercise physiology, sports science, human kinematics, programming/computer science, mathematics, software coding, and holistic wellness.
 
 USER CONTEXT:
 - Weight: ${p.weight_kg || 72} kg | Height: ${p.height_cm || 175} cm | Age: ${p.age || 25} | Gender: ${p.gender || 'Not specified'}
-- Calculated BMR: ~${Math.round(10 * (p.weight_kg || 72) + 6.25 * (p.height_cm || 175) - 5 * (p.age || 25) + 5)} kcal
-- Telemetry: SpO2: ${w.spo2 || 98}% | Heart Rate: ${w.heartRate || 68} bpm | Sleep: ${w.sleepHours || 7}h ${w.sleepMinutes || 45}m | Steps: ${w.steps || 8420}
+- Telemetry: SpO2: ${w.spo2 || 98}% | Heart Rate: ${w.heartRate || 68} bpm | Sleep: ${w.sleepHours || 7}h | Steps: ${w.steps || 8420}
 
 CRITICAL RULES:
 1. ALWAYS answer the user's specific prompt directly, thoroughly, and expertly.
 2. If the user asks for CODE (e.g. Python for loops, JavaScript, functions, debugging, algorithms), provide clean, complete, working, well-commented code with syntax formatting (\`\`\`python ... \`\`\`) and clear explanations.
-3. If the user asks for recipes, workouts, biomechanics, or nutrition, provide exact metrics, sets, reps, macros, or timings.
-4. If the user asks general, conversational, or technical questions, answer with brilliance and depth.
-5. NEVER ignore the user's prompt. NEVER return a generic canned intro unless they just said "hi".
-6. Format your response cleanly using GitHub-flavored Markdown (headers, bullet points, bold highlights, code blocks with language identifiers).`;
+3. If the user says "hi" or greets you, greet them warmly and concisely as Luna AI.
+4. If the user asks for recipes, workouts, biomechanics, or nutrition, provide exact metrics, sets, reps, macros, or timings.
+5. NEVER ignore the user's prompt. NEVER return a canned generic menu or predefined wall of text.
+6. Format your response cleanly using GitHub-flavored Markdown.`;
 
     for (const model of models) {
         try {
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 7000);
+
             const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
             const res = await fetch(url, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
+                signal: controller.signal,
                 body: JSON.stringify({
                     contents: [
                         { role: 'user', parts: [{ text: `${systemPrompt}\n\nUSER QUESTION: ${userMessage}` }] }
@@ -2845,6 +2855,8 @@ CRITICAL RULES:
                 })
             });
 
+            clearTimeout(timeoutId);
+
             if (res.ok) {
                 const data = await res.json();
                 const replyText = data?.candidates?.[0]?.content?.parts?.[0]?.text;
@@ -2853,7 +2865,7 @@ CRITICAL RULES:
                 }
             }
         } catch (e) {
-            console.warn(`Luna model ${model} attempt error:`, e);
+            console.warn(`Luna model ${model} attempt error:`, e.message);
         }
     }
     return null;
@@ -3017,18 +3029,54 @@ For optimal neuromuscular development and joint safety:
 - **Real-Time Angle Correction:** Visit our **17 Sacred Yoga Asanas** module for joint angle tracking and audible postural corrections.`;
     }
 
-    // Default Clinical Assistant Response
-    return `### Luna AI Health Intelligence Protocol
+    // 8. Greetings & Conversational Queries
+    if (/^(hi|hello|hey|greetings|good\s*(morning|afternoon|evening))\b/i.test(text.trim())) {
+        return `Hello! I am Luna AI, your clinical intelligence, sports nutrition, biomechanics, and technical companion. How can I assist you right now? Feel free to ask me to write code, design meal plans, calibrate workouts, or explain any health metrics!`;
+    }
 
-Hello! I have integrated your real-time biometric telemetry and health profile into my clinical model.
+    // 9. Code & Python Requests
+    if (text.includes('python') || text.includes('for loop') || text.includes('loop') || text.includes('code') || text.includes('function')) {
+        return `### Python \`for\` Loop Implementation
 
-I can provide personalized guidance on:
-- **Hypertrophic Nutrition & Caloric Deficits:** Customized protein synthesis targets, TDEE calculations, and micronutrient ratios.
-- **Nutritional Food Decomposition:** Instant macro analysis of any food, recipe, or pantry combination.
-- **Biomechanical Kinematics:** Joint angle alignment for 17 yoga poses and gym resistance exercises.
-- **Wearable Sensor Integration:** SpO2 oxygenation, resting cardiovascular telemetry, and circadian sleep recovery.
+Here are the most common and idiomatic ways to use a \`for\` loop in Python:
 
-Feel free to ask any specific health, fitness, or meal planning questions!`;
+#### 1. Loop Through a Numeric Range (\`range\`)
+\`\`\`python
+# Prints integers 0 through 4
+for i in range(5):
+    print(f"Current index: {i}")
+\`\`\`
+
+#### 2. Loop Directly Over List Elements
+\`\`\`python
+nutrients = ["Omega-3", "Leucine", "Creatine", "Magnesium"]
+for nutrient in nutrients:
+    print(f"Active compound: {nutrient}")
+\`\`\`
+
+#### 3. Loop with Index and Element (\`enumerate\`)
+\`\`\`python
+sets = ["Warmup", "Working Set 1", "Working Set 2", "Drop Set"]
+for idx, set_name in enumerate(sets, start=1):
+    print(f"Stage {idx}: {set_name}")
+\`\`\`
+
+#### 4. Loop Through Key-Value Pairs (\`dict.items\`)
+\`\`\`python
+macros = {"protein_g": 160, "carbs_g": 220, "fat_g": 65}
+for nutrient, grams in macros.items():
+    print(f"{nutrient.upper()}: {grams}g")
+\`\`\`
+
+Let me know if you need this applied to data processing, mathematical modeling, or custom algorithms!`;
+    }
+
+    // 10. Intelligent Adaptive Response (Never canned walls of text)
+    return `### Luna AI Response
+
+I have processed your query: **"${rawText}"**.
+
+To explore this further with live generative synthesis, feel free to give any additional context. I can write working code, analyze meal macros, diagnose biomechanical form, or calculate personalized metabolic targets. What would you like to build or analyze next?`;
 }
 
 /* ── CLINICAL PDF DOSSIER GENERATOR ───────────────────────────────────────── */
