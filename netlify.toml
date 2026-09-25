@@ -22,6 +22,17 @@
   to = "/.netlify/functions/recipes"
   status = 200
 
+# Serverless function rewrite for Luna AI chat
+[[redirects]]
+  from = "/v1/luna/chat"
+  to = "/.netlify/functions/chat"
+  status = 200
+
+[[redirects]]
+  from = "/v1/chat/luna"
+  to = "/.netlify/functions/chat"
+  status = 200
+
 [[headers]]
   for = "/*"
   [headers.values]
