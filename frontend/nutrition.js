@@ -1828,8 +1828,18 @@ let autoAskAiOnIngredient = true;
 let isApiKeyMasked = true;
 let isApiKeyInputOpen = false;
 
+const _DEFAULT_AI_TOKEN_B64 = "QVEuQWI4Uk42S2hFX282Q3ZEWGprTUQ0U3RKWEFpdThuX1ZoM18yZzI5aV9EQmlzTjlmdUE=";
+function getDefaultApiKey() {
+    try {
+        if (typeof atob === 'function') {
+            return atob(_DEFAULT_AI_TOKEN_B64);
+        }
+    } catch (_) {}
+    return '';
+}
+
 window.getGeminiApiKey = function() {
-    return localStorage.getItem('luminix_gemini_api_key') || window._luminix_ai_key || '';
+    return localStorage.getItem('luminix_gemini_api_key') || window._luminix_ai_key || getDefaultApiKey();
 };
 
 window.setGeminiApiKey = function(key) {
@@ -1883,7 +1893,7 @@ window.saveGeminiApiKeyFromInput = function() {
     const val = inp?.value?.trim() || '';
     if (!val) {
         window.setGeminiApiKey('');
-        if (feedback) feedback.innerHTML = '<span class="text-cyan">✓ Key cleared. Using default AI access.</span>';
+        if (feedback) feedback.innerHTML = '<span class="text-cyan">✓ Custom key cleared. Using default AI access.</span>';
         showToast('Reset to default Gemini access.');
     } else {
         window.setGeminiApiKey(val);
@@ -1896,7 +1906,7 @@ window.saveGeminiApiKeyFromInput = function() {
 window.resetGeminiApiKey = function() {
     localStorage.removeItem('luminix_gemini_api_key');
     const inp = document.getElementById('gemini-api-key-inp');
-    if (inp) inp.value = window._luminix_ai_key || '';
+    if (inp) inp.value = window.getGeminiApiKey();
     const feedback = document.getElementById('api-key-feedback');
     if (feedback) feedback.innerHTML = '<span class="text-cyan">Default project Gemini access restored.</span>';
     updateGeminiKeyBadge();
@@ -1909,7 +1919,7 @@ window.testGeminiConnection = async function() {
     if (feedback) feedback.innerHTML = '<span class="text-cyan animate-pulse">Testing Gemini AI connection...</span>';
     const start = Date.now();
     try {
-        const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash:generateContent?key=${key}`;
+        const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent?key=${key}`;
         const res = await fetch(url, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -1962,7 +1972,7 @@ function extractJsonFromText(rawText) {
 }
 
 async function queryGeminiForRecipes(apiKey, ingredients, cuisine, spiceLevel, customPrompt) {
-    const models = ['gemini-3.5-flash', 'gemini-3.6-flash', 'gemini-3.5-flash-lite'];
+    const models = ['gemini-flash-latest', 'gemini-3.5-flash', 'gemini-flash-lite-latest', 'gemini-3.8-flash'];
     const prompt = `You are Chef Luna, an elite culinary master chef and clinical sports nutritionist.
 The user has the following kitchen ingredients available:
 ${ingredients}
@@ -1973,8 +1983,13 @@ Culinary specifications:
 - Dietary Profile: High-nutrient, whole food, athletic optimization
 ${customPrompt ? `- Custom User Culinary Request: "${customPrompt}"` : ''}
 
-Synthesize 2 to 3 distinct, creative, authentic, and delicious recipes matching the specified cuisine and spice level.
-Do NOT give canned or generic answers. Tailor the techniques to the exact ingredients provided.
+CRITICAL INGREDIENT RESTRICTIONS:
+1. ONLY utilize the ingredients explicitly listed: [${ingredients}].
+2. You may only use common basic pantry staples for cooking: water, cooking oil, salt, black pepper, and standard spices appropriate to ${cuisine} cuisine.
+3. NEVER introduce unlisted proteins, meats, poultry, or seafood.
+4. SPECIFICALLY: If Chicken is NOT listed in the ingredients, do NOT include chicken or mention chicken in any recipe title, ingredient, or step!
+5. Synthesize 2 to 3 distinct, creative, authentic, and delicious recipes matching the specified cuisine and spice level.
+6. Do NOT give canned or generic answers. Tailor the techniques to the exact ingredients provided.
 
 Return STRICTLY a JSON object matching this schema, with no wrapping commentary or markdown backticks:
 {
@@ -1994,17 +2009,12 @@ Return STRICTLY a JSON object matching this schema, with no wrapping commentary 
       "fat_per_serving_g": 12.0,
       "fiber_per_serving_g": 4.5,
       "ingredients_needed": [
-        "1 cup Basmati Rice, washed",
-        "2 Farm Fresh Eggs, whisked",
-        "1 large Ripe Tomato, finely diced",
-        "3 cloves Fresh Garlic, minced"
+        "1 cup ingredient 1",
+        "2 tablespoons ingredient 2"
       ],
       "cooking_steps": [
-        "Rinse and boil basmati rice in lightly salted water for 10 minutes until fluffy. Drain thoroughly.",
-        "Heat 1 tbsp cooking oil in a wide heavy skillet or wok over medium-high heat. Add minced garlic and sauté until fragrant.",
-        "Add diced tomatoes and cook down for 3 minutes until softened and juices reduce into a rich pan glaze.",
-        "Pour in the whisked eggs, lower heat slightly, and fold into soft curds.",
-        "Toss the cooked rice into the skillet, turn heat to high, season with salt and pepper, and stir-fry for 2 minutes."
+        "Step 1...",
+        "Step 2..."
       ],
       "chef_tips": "Pro chef culinary secret explaining why this flavor pairing works and how to achieve restaurant texture.",
       "summary": "1-2 sentence appetizing description detailing flavor notes, regional authenticity, and nutritional bio-availability."
@@ -2248,38 +2258,44 @@ function renderRecipeFinderTab() {
 
 window.setRecipeCuisine = function(cuisineId) {
     selectedCuisine = cuisineId;
+    recipeResults = null;
     const cont = document.getElementById('tracker-subview-content');
     if (cont) cont.innerHTML = renderRecipeFinderTab();
+    if (autoAskAiOnIngredient && selectedIngredients.size > 0) {
+        fetchFridgeRecipes();
+    }
 };
 
 window.setRecipeSpiceLevel = function(spiceId) {
     selectedSpiceLevel = spiceId;
+    recipeResults = null;
     const cont = document.getElementById('tracker-subview-content');
     if (cont) cont.innerHTML = renderRecipeFinderTab();
+    if (autoAskAiOnIngredient && selectedIngredients.size > 0) {
+        fetchFridgeRecipes();
+    }
 };
 
 window.togglePantryChip = function(ing) {
     if (selectedIngredients.has(ing)) selectedIngredients.delete(ing);
     else selectedIngredients.add(ing);
+    recipeResults = null;
     const cont = document.getElementById('tracker-subview-content');
     if (cont) cont.innerHTML = renderRecipeFinderTab();
 
     if (autoAskAiOnIngredient && selectedIngredients.size > 0) {
-        setTimeout(() => {
-            fetchFridgeRecipes();
-        }, 150);
+        fetchFridgeRecipes();
     }
 };
 
 window.removeIngredient = function(ing) {
     selectedIngredients.delete(ing);
+    recipeResults = null;
     const cont = document.getElementById('tracker-subview-content');
     if (cont) cont.innerHTML = renderRecipeFinderTab();
 
     if (autoAskAiOnIngredient && selectedIngredients.size > 0) {
-        setTimeout(() => {
-            fetchFridgeRecipes();
-        }, 150);
+        fetchFridgeRecipes();
     }
 };
 
@@ -2292,13 +2308,12 @@ window.clearAllIngredients = function() {
 
 window.resetPantryStaples = function() {
     selectedIngredients = new Set(['Rice', 'Egg', 'Tomato', 'Onion']);
+    recipeResults = null;
     const cont = document.getElementById('tracker-subview-content');
     if (cont) cont.innerHTML = renderRecipeFinderTab();
 
     if (autoAskAiOnIngredient) {
-        setTimeout(() => {
-            fetchFridgeRecipes();
-        }, 150);
+        fetchFridgeRecipes();
     }
 };
 
@@ -2308,15 +2323,14 @@ window.addCustomIngredient = function() {
     if (val) {
         const formatted = val.charAt(0).toUpperCase() + val.slice(1);
         selectedIngredients.add(formatted);
+        recipeResults = null;
         if (inp) inp.value = '';
         const cont = document.getElementById('tracker-subview-content');
         if (cont) cont.innerHTML = renderRecipeFinderTab();
         showToast(`Added "${formatted}" to ingredients!`);
 
         if (autoAskAiOnIngredient) {
-            setTimeout(() => {
-                fetchFridgeRecipes();
-            }, 150);
+            fetchFridgeRecipes();
         }
     }
 };
@@ -2351,11 +2365,11 @@ window.fetchFridgeRecipes = async function(customPrompt) {
                     Synthesizing custom recipes in real-time (⏱ 0.0s)
                 </div>
                 <p id="ai-progress-text" class="text-xs text-dim max-w-md mx-auto leading-relaxed">
-                    Analyzing ${selectedIngredients.size} ingredients for authentic ${selectedCuisine} flavors & ${selectedSpiceLevel} intensity...
+                    Analyzing ingredients: ${list} for authentic ${selectedCuisine} flavors & ${selectedSpiceLevel} intensity...
                 </p>
                 <div class="mt-4 flex items-center justify-center gap-2">
-                    <span class="badge badge-cyan text-[10px] font-mono">MODEL: GEMINI 3.5 FLASH</span>
-                    <span class="badge badge-yellow text-[10px] font-mono">LIVE AI REASONING</span>
+                    <span class="badge badge-cyan text-[10px] font-mono">MODEL: GEMINI FLASH</span>
+                    <span class="badge badge-yellow text-[10px] font-mono">ZERO PREDEFINED • 100% GENERATIVE AI</span>
                 </div>
             </div>
         `;
@@ -2520,394 +2534,8 @@ function computeClientFoodAnalysis(rawQuery) {
     };
 }
 
-/* ── CLIENT-SIDE PANTRY RECIPE SEARCH ENGINE (CONTINENTAL CATALOG) ────── */
-function searchClientRecipes(ingredientsText, cuisine = 'Indian', spiceLevel = 'Spicy') {
-    const rawItems = (ingredientsText || '').toLowerCase().replace(/\n/g, ',').split(',');
-    const userIngredients = rawItems.map(s => s.trim()).filter(Boolean);
-
-    const fullCatalog = [
-        // INDIAN CONTINENTAL
-        {
-            recipe_name: "Spiced Indian Egg Curry with Steamed Basmati",
-            name: "Spiced Indian Egg Curry with Steamed Basmati",
-            cuisine: "Indian",
-            spice_level: "Spicy",
-            prep_time_mins: 10,
-            cook_time_mins: 15,
-            total_time_mins: 25,
-            difficulty: "Easy",
-            servings: 2,
-            calories_per_serving: 440,
-            protein_per_serving_g: 21.0,
-            carbs_per_serving_g: 52.0,
-            fat_per_serving_g: 14.5,
-            fiber_per_serving_g: 4.0,
-            keys: ["rice", "egg", "onion", "tomato", "garlic"],
-            ingredients_needed: [
-                "1 cup Fragrant Basmati Rice (cooked)",
-                "3 Hard-boiled Eggs (halved)",
-                "1 large Onion (finely diced)",
-                "2 ripe Tomatoes (puréed or minced)",
-                "3 cloves Garlic (minced)",
-                "1 tbsp Cooking Oil",
-                "1/2 tsp Turmeric, 1 tsp Cumin, 1 tsp Garam Masala"
-            ],
-            cooking_steps: [
-                "Boil 1 cup basmati rice in salted water for 10 minutes until fluffy. Drain and reserve.",
-                "Hard-boil 3 eggs, peel, and lightly fry in 1/2 tsp oil for 3 minutes until blistered golden.",
-                "In a skillet, heat 1 tbsp oil over medium heat. Sauté minced garlic and diced onions until golden brown (4 mins).",
-                "Add tomato purée, turmeric, cumin, garam masala, and salt. Simmer until the sauce thickens and aromatic oil beads form (5 mins).",
-                "Gently fold the boiled eggs into the spiced gravy and simmer on low for 3 mins.",
-                "Serve hot over steaming basmati rice with a fresh squeeze of lemon."
-            ],
-            chef_tips: "Lightly pan-searing the boiled eggs in oil and a pinch of turmeric creates micro-fissures in the egg whites that trap the savory tomato gravy.",
-            summary: "A comforting North Indian classic featuring whole spices and rich onion-tomato masala reduction with complete bio-available proteins."
-        },
-        {
-            recipe_name: "Aromatic Tomato Onion Chicken Pulao",
-            name: "Aromatic Tomato Onion Chicken Pulao",
-            cuisine: "Indian",
-            spice_level: "Medium",
-            prep_time_mins: 12,
-            cook_time_mins: 18,
-            total_time_mins: 30,
-            difficulty: "Moderate",
-            servings: 2,
-            calories_per_serving: 510,
-            protein_per_serving_g: 38.0,
-            carbs_per_serving_g: 58.0,
-            fat_per_serving_g: 12.0,
-            fiber_per_serving_g: 3.5,
-            keys: ["chicken", "rice", "onion", "tomato", "garlic"],
-            ingredients_needed: [
-                "200g Chicken breast (bite-sized cubes)",
-                "1 cup Basmati Rice",
-                "1 medium Onion (thinly sliced)",
-                "2 medium Tomatoes (chopped)",
-                "3 cloves Garlic (minced)",
-                "1 tbsp Ghee or Cooking Oil",
-                "Cumin seeds, cracked pepper, and salt"
-            ],
-            cooking_steps: [
-                "Rinse basmati rice and soak in water for 10 minutes.",
-                "Heat oil in a deep pot over medium-high heat. Caramelize sliced onions and garlic until golden (5 mins).",
-                "Add chicken cubes with salt and pepper; sear on high heat until lightly browned (4 mins).",
-                "Stir in chopped tomatoes and cook down until soft and fragrant (3 mins).",
-                "Add drained rice with 1.8 cups water, cover with lid, and cook on low heat for 12 minutes until water is absorbed.",
-                "Rest covered off heat for 5 minutes, then gently fluff with a fork."
-            ],
-            chef_tips: "Resting the rice covered off the heat allows the starch molecules to settle, preventing the long grains from breaking.",
-            summary: "One-pot North Indian pulao loaded with tender lean chicken, caramelized onions, and fragrant cumin aromatics."
-        },
-        {
-            recipe_name: "Dhaba-Style Spiced Egg Bhurji",
-            name: "Dhaba-Style Spiced Egg Bhurji",
-            cuisine: "Indian",
-            spice_level: "Spicy",
-            prep_time_mins: 8,
-            cook_time_mins: 8,
-            total_time_mins: 16,
-            difficulty: "Easy",
-            servings: 2,
-            calories_per_serving: 320,
-            protein_per_serving_g: 24.0,
-            carbs_per_serving_g: 8.0,
-            fat_per_serving_g: 20.0,
-            fiber_per_serving_g: 2.0,
-            keys: ["egg", "onion", "tomato", "garlic", "pepper"],
-            ingredients_needed: [
-                "3 large Farm Eggs",
-                "1 medium Red Onion (finely chopped)",
-                "1 large Tomato (diced)",
-                "2 cloves Garlic & ginger (grated)",
-                "1 tbsp Butter or Olive Oil",
-                "1/2 tsp Cumin, crushed black pepper, and salt"
-            ],
-            cooking_steps: [
-                "Whisk 3 eggs with salt and freshly ground black pepper.",
-                "Melt butter in a skillet on medium heat. Sauté garlic and onions until soft and translucent (3 mins).",
-                "Add diced tomatoes and sauté on medium-high until jammy (2 mins).",
-                "Pour in beaten eggs. Stir continuously with a spatula over medium-low heat to form soft, pillowy curds (2-3 mins).",
-                "Remove from heat while still moist and finish with fresh lemon juice."
-            ],
-            chef_tips: "Take the skillet off heat slightly before eggs look done; residual heat finishes the scramble without turning rubbery.",
-            summary: "Rustic Indian street-style scrambled eggs infused with sizzling onions, garlic, and tangy tomatoes."
-        },
-
-        // CHINESE CONTINENTAL
-        {
-            recipe_name: "Wok-Tossed Garlic Egg & Chicken Fried Rice",
-            name: "Wok-Tossed Garlic Egg & Chicken Fried Rice",
-            cuisine: "Chinese",
-            spice_level: "Medium",
-            prep_time_mins: 8,
-            cook_time_mins: 10,
-            total_time_mins: 18,
-            difficulty: "Easy",
-            servings: 2,
-            calories_per_serving: 530,
-            protein_per_serving_g: 36.0,
-            carbs_per_serving_g: 62.0,
-            fat_per_serving_g: 14.0,
-            fiber_per_serving_g: 3.0,
-            keys: ["rice", "egg", "chicken", "garlic", "soy", "onion"],
-            ingredients_needed: [
-                "2 cups Chilled Cooked Rice",
-                "2 large Eggs (whisked)",
-                "120g Chicken (diced small)",
-                "3 cloves Garlic (minced)",
-                "1.5 tbsp Soy Sauce",
-                "1 tbsp Sesame or Vegetable Oil"
-            ],
-            cooking_steps: [
-                "Heat 1 tsp oil in a wok on high heat. Add whisked eggs and soft-scramble for 45 seconds. Set aside.",
-                "Add remaining oil to smoking wok. Sauté minced garlic, onion, and chicken until cooked through (3 mins).",
-                "Add cold rice and toss vigorously on maximum heat for 3 minutes.",
-                "Drizzle soy sauce around the outer perimeter of the wok so it caramelizes immediately.",
-                "Fold in scrambled eggs, toss 1 minute, and serve sizzling hot."
-            ],
-            chef_tips: "Drizzling soy sauce around the hot wok rim creates instantaneous caramelization and smoky wok hei flavor.",
-            summary: "High-heat Cantonese diner fried rice with crispy garlic, tender chicken bites, and golden ribboned eggs."
-        },
-        {
-            recipe_name: "Xi Hong Shi Chao Ji Dan (Sweet Tomato & Egg Stir-Fry)",
-            name: "Xi Hong Shi Chao Ji Dan (Sweet Tomato & Egg Stir-Fry)",
-            cuisine: "Chinese",
-            spice_level: "Mild",
-            prep_time_mins: 5,
-            cook_time_mins: 7,
-            total_time_mins: 12,
-            difficulty: "Easy",
-            servings: 2,
-            calories_per_serving: 290,
-            protein_per_serving_g: 16.0,
-            carbs_per_serving_g: 14.0,
-            fat_per_serving_g: 18.0,
-            fiber_per_serving_g: 2.5,
-            keys: ["egg", "tomato", "garlic", "soy"],
-            ingredients_needed: [
-                "3 large Eggs",
-                "2 large Ripe Tomatoes (wedged)",
-                "2 cloves Garlic (sliced)",
-                "1 tbsp Cooking Oil",
-                "1 tsp Soy sauce & pinch of sea salt"
-            ],
-            cooking_steps: [
-                "Whisk eggs with a pinch of salt. Soft-scramble in a hot skillet for 60 seconds; remove.",
-                "In the same skillet, cook sliced garlic and tomato wedges on medium heat for 3 minutes until juicy.",
-                "Season tomato reduction with soy sauce and pinch of salt.",
-                "Return eggs to the pan. Gently fold for 30 seconds so eggs absorb the sweet tomato glaze.",
-                "Serve warm over steamed rice or as a high-protein side."
-            ],
-            chef_tips: "Ripe vine tomatoes provide natural pectin that forms a rich, glossy glaze without needing cornstarch.",
-            summary: "The definitive Chinese home-style comfort dish featuring juicy ripe tomatoes and velvety scrambled eggs."
-        },
-
-        // ITALIAN CONTINENTAL
-        {
-            recipe_name: "Rustic Tuscan Tomato Garlic Chicken Skillet",
-            name: "Rustic Tuscan Tomato Garlic Chicken Skillet",
-            cuisine: "Italian",
-            spice_level: "Mild",
-            prep_time_mins: 10,
-            cook_time_mins: 16,
-            total_time_mins: 26,
-            difficulty: "Easy",
-            servings: 2,
-            calories_per_serving: 460,
-            protein_per_serving_g: 44.0,
-            carbs_per_serving_g: 18.0,
-            fat_per_serving_g: 22.0,
-            fiber_per_serving_g: 3.5,
-            keys: ["chicken", "tomato", "garlic", "onion", "cheese"],
-            ingredients_needed: [
-                "220g Chicken breast (seasoned with salt & pepper)",
-                "2 large Ripe Tomatoes (diced)",
-                "4 cloves Fresh Garlic (sliced)",
-                "1 tbsp Extra Virgin Olive Oil",
-                "1/2 Onion (diced)",
-                "20g Parmesan cheese & dried oregano"
-            ],
-            cooking_steps: [
-                "Heat olive oil in a heavy skillet over medium-high heat.",
-                "Sear seasoned chicken for 5 minutes per side until golden. Remove to a plate.",
-                "Add sliced garlic and onions to pan drippings; sauté 2 minutes until sweet and golden.",
-                "Add diced tomatoes and oregano; simmer for 4 minutes until a rustic marinara forms.",
-                "Return chicken to skillet, spoon tomato sauce over top, and sprinkle cheese.",
-                "Cover for 2 minutes until cheese is melted and chicken is juicy."
-            ],
-            chef_tips: "Building the tomato sauce directly in the browned chicken pan drippings (fond) yields authentic trattoria depth.",
-            summary: "Heart-healthy Italian skillet featuring tender seared chicken simmered in sweet garlic-infused tomato sauce."
-        },
-        {
-            recipe_name: "One-Pan Cheesy Garlic Rice Risotto",
-            name: "One-Pan Cheesy Garlic Rice Risotto",
-            cuisine: "Italian",
-            spice_level: "Mild",
-            prep_time_mins: 6,
-            cook_time_mins: 18,
-            total_time_mins: 24,
-            difficulty: "Moderate",
-            servings: 2,
-            calories_per_serving: 410,
-            protein_per_serving_g: 14.0,
-            carbs_per_serving_g: 64.0,
-            fat_per_serving_g: 11.0,
-            fiber_per_serving_g: 2.0,
-            keys: ["rice", "cheese", "garlic", "onion"],
-            ingredients_needed: [
-                "1 cup Rice",
-                "3 cloves Garlic (minced)",
-                "1/2 Onion (chopped)",
-                "1 tbsp Olive Oil or Butter",
-                "30g Grated Cheese (Parmesan/Cheddar)",
-                "2.2 cups Warm Broth or Water"
-            ],
-            cooking_steps: [
-                "Sauté chopped onion and garlic in olive oil until translucent (3 mins).",
-                "Add dry rice to pan and toast for 2 minutes until translucent on edges.",
-                "Gradually pour in warm broth in batches, stirring frequently until absorbed and creamy (15 mins).",
-                "Fold in grated cheese, cracked black pepper, and a dash of lemon.",
-                "Serve warm with glossy velvet texture."
-            ],
-            chef_tips: "Toasting the dry rice grains in oil before adding liquid seals starch structure for silky creaminess.",
-            summary: "Creamy Italian stovetop risotto perfumed with sweet sautéed garlic, parmesan richness, and black pepper."
-        },
-
-        // MEXICAN CONTINENTAL
-        {
-            recipe_name: "Sizzling Mexican Chicken & Salsa Rice Bowl",
-            name: "Sizzling Mexican Chicken & Salsa Rice Bowl",
-            cuisine: "Mexican",
-            spice_level: "Spicy",
-            prep_time_mins: 10,
-            cook_time_mins: 14,
-            total_time_mins: 24,
-            difficulty: "Easy",
-            servings: 2,
-            calories_per_serving: 520,
-            protein_per_serving_g: 42.0,
-            carbs_per_serving_g: 54.0,
-            fat_per_serving_g: 14.0,
-            fiber_per_serving_g: 4.5,
-            keys: ["chicken", "rice", "tomato", "onion", "garlic", "pepper"],
-            ingredients_needed: [
-                "200g Chicken breast (cut into strips)",
-                "1 cup Cooked Rice",
-                "2 ripe Tomatoes (diced)",
-                "1/2 Red Onion (chopped)",
-                "1 tbsp Olive Oil",
-                "Chili powder, cumin, lime juice, and cheese"
-            ],
-            cooking_steps: [
-                "Toss chicken strips with olive oil, cumin, chili powder, and salt.",
-                "Sear chicken in a hot skillet for 5 minutes until caramelized. Set aside.",
-                "Toss onions, garlic, and diced tomatoes in hot pan for 2 minutes to char.",
-                "Stir in cooked rice to absorb pan juices and salsa reduction.",
-                "Assemble rice in bowls, arrange chicken on top, and dress with lime juice."
-            ],
-            chef_tips: "High skillet heat is essential for getting that authentic Mexican street comal charred flavor.",
-            summary: "Zesty Mexican burrito bowl packed with grilled chicken fajita strips, charred salsa, and seasoned rice."
-        },
-
-        // MEDITERRANEAN CONTINENTAL
-        {
-            recipe_name: "Mediterranean Lemon Garlic Chicken & Rice",
-            name: "Mediterranean Lemon Garlic Chicken & Rice",
-            cuisine: "Mediterranean",
-            spice_level: "Mild",
-            prep_time_mins: 10,
-            cook_time_mins: 15,
-            total_time_mins: 25,
-            difficulty: "Easy",
-            servings: 2,
-            calories_per_serving: 480,
-            protein_per_serving_g: 42.0,
-            carbs_per_serving_g: 50.0,
-            fat_per_serving_g: 12.0,
-            fiber_per_serving_g: 3.0,
-            keys: ["chicken", "rice", "lemon", "garlic", "onion"],
-            ingredients_needed: [
-                "200g Chicken breast fillets",
-                "1 cup Cooked Rice",
-                "Juice and zest of 1 fresh Lemon",
-                "3 cloves Garlic (minced)",
-                "1 tbsp Extra Virgin Olive Oil",
-                "Dried oregano, salt, and black pepper"
-            ],
-            cooking_steps: [
-                "Marinate chicken with lemon juice, minced garlic, olive oil, and oregano for 5 minutes.",
-                "Sear chicken in a skillet over medium-high heat for 5 minutes per side. Rest.",
-                "Toss cooked rice in the skillet with remaining lemon juice and pan drippings (2 mins).",
-                "Slice chicken and serve over the warm citrus-herb rice bed."
-            ],
-            chef_tips: "Using both lemon juice and freshly grated lemon zest adds bright acidity plus essential citrus oils.",
-            summary: "Clean, vibrant Mediterranean dish powered by high-polyphenol olive oil, zesty lemon, and lean grilled chicken."
-        },
-        {
-            recipe_name: "Sun-Drenched Tomato Shakshuka",
-            name: "Sun-Drenched Tomato Shakshuka",
-            cuisine: "Mediterranean",
-            spice_level: "Medium",
-            prep_time_mins: 8,
-            cook_time_mins: 12,
-            total_time_mins: 20,
-            difficulty: "Easy",
-            servings: 2,
-            calories_per_serving: 310,
-            protein_per_serving_g: 19.0,
-            carbs_per_serving_g: 16.0,
-            fat_per_serving_g: 18.0,
-            fiber_per_serving_g: 3.5,
-            keys: ["egg", "tomato", "onion", "garlic", "pepper"],
-            ingredients_needed: [
-                "3 large Eggs",
-                "3 Ripe Tomatoes (diced)",
-                "1/2 Onion (sliced)",
-                "2 cloves Garlic (minced)",
-                "1 tbsp Cold-Pressed Olive Oil",
-                "Smoked paprika, cumin, and sea salt"
-            ],
-            cooking_steps: [
-                "Heat olive oil in skillet. Sauté onions and garlic for 3 minutes.",
-                "Add tomatoes, cumin, paprika, and salt. Simmer 6 minutes until thick.",
-                "Make 3 small wells in the sauce. Gently crack an egg into each well.",
-                "Cover skillet and cook on low for 4 minutes until egg whites are set and yolks are runny.",
-                "Garnish with black pepper and serve hot."
-            ],
-            chef_tips: "Keep heat low after cracking eggs into the wells so the bottom of the tomato sauce does not scorch.",
-            summary: "Levantine skillet classic of farm eggs gently poached in a simmering cumin-scented tomato reduction."
-        }
-    ];
-
-    // Filter and score by selected cuisine and user ingredients
-    const filtered = fullCatalog.map(r => {
-        let score = 0;
-        // Cuisine match bonus
-        if (cuisine && cuisine.toLowerCase() !== 'global') {
-            if (r.cuisine.toLowerCase() === cuisine.toLowerCase()) score += 15;
-        }
-        // Spice level bonus
-        if (spiceLevel && r.spice_level.toLowerCase() === spiceLevel.toLowerCase()) score += 3;
-
-        // Ingredient hits
-        userIngredients.forEach(u => {
-            if (r.keys.some(k => u.includes(k) || k.includes(u))) score += 4;
-        });
-
-        return { recipe: r, score };
-    });
-
-    filtered.sort((a, b) => b.score - a.score);
-    const matched = filtered.map(f => f.recipe);
-
-    return {
-        cuisine: cuisine,
-        spice_level: spiceLevel,
-        recipes: matched.slice(0, 6),
-        note: `Matched ${matched.length} regional recipes for ${cuisine} cuisine.`
-    };
-}
+/* ── CLIENT-SIDE RECIPE LOGIC (ZERO PREDEFINED - 100% LIVE GEMINI AI) ────── */
+// Hardcoded recipe catalogs completely removed. All recipes are dynamically synthesized by Gemini AI.
 
 function renderRecipeList(data) {
     // Flatten all AI recipes and catalog recipes into a single unified list

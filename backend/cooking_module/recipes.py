@@ -476,12 +476,18 @@ def suggest_recipes(
     scored.sort(key=lambda x: -x[0])
     picks = [r for _, r in scored[:limit]]
 
-    # If no strict matches with must_have, fall back to cuisine matches
+    # If no strict matches with must_have, fall back to cuisine matches without unselected meats
     if not picks:
+        # Strictly forbid suggesting chicken or meats if they are not in the user's available ingredients
+        forbidden_proteins = {"chicken", "salmon", "beef", "tuna", "pork", "meat"} - available
+        allowed_catalog = [
+            r for r in _RECIPES
+            if not r.must_have.intersection(forbidden_proteins)
+        ]
         if target_cuisine:
-            picks = [r for r in _RECIPES if r.cuisine.lower() == target_cuisine.lower()][:limit]
+            picks = [r for r in allowed_catalog if r.cuisine.lower() == target_cuisine.lower()][:limit]
         else:
-            picks = _RECIPES[:limit]
+            picks = allowed_catalog[:limit]
 
     formatted_recipes = [r.to_dict(available) for r in picks]
     best_recipe = formatted_recipes[0] if formatted_recipes else None

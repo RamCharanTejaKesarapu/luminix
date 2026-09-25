@@ -346,16 +346,22 @@ def cook_suggest(payload: Dict[str, Any]) -> Dict[str, Any]:
             )
             if ai_data and isinstance(ai_data, dict) and ai_data.get("recipes"):
                 catalog["ai_recipes"] = ai_data["recipes"]
+                catalog["recipes"] = ai_data["recipes"]
                 catalog["ai_recipe"] = ai_data["recipes"][0]
-            elif ai_data and isinstance(ai_data, list):
+                catalog["source"] = "gemini"
+            elif ai_data and isinstance(ai_data, list) and len(ai_data) > 0:
                 catalog["ai_recipes"] = ai_data
+                catalog["recipes"] = ai_data
                 catalog["ai_recipe"] = ai_data[0]
+                catalog["source"] = "gemini"
             else:
                 # Fallback to single AI recipe
                 single = generate_ai_recipe_gemini(ingredients, diet)
                 if single and "recipe_name" in single:
                     catalog["ai_recipes"] = [single]
+                    catalog["recipes"] = [single]
                     catalog["ai_recipe"] = single
+                    catalog["source"] = "gemini"
         except Exception as exc:
             catalog["gemini_error"] = str(exc)
 
