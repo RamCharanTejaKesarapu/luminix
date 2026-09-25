@@ -1972,7 +1972,7 @@ function extractJsonFromText(rawText) {
 }
 
 async function queryGeminiForRecipes(apiKey, ingredients, cuisine, spiceLevel, customPrompt) {
-    const models = ['gemini-flash-lite-latest', 'gemini-3.5-flash-lite', 'gemini-3.6-flash', 'gemini-flash-latest'];
+    const models = ['gemini-flash-lite-latest', 'gemini-3.5-flash-lite', 'gemini-3.6-flash'];
     const prompt = `You are Chef Luna, an elite culinary master chef and clinical sports nutritionist.
 The user has the following kitchen ingredients available:
 ${ingredients}
@@ -2027,7 +2027,7 @@ Return STRICTLY a JSON object matching this schema, with no wrapping commentary 
     for (const model of models) {
         try {
             const controller = new AbortController();
-            const timeoutId = setTimeout(() => controller.abort(), 7000);
+            const timeoutId = setTimeout(() => controller.abort(), 9000);
 
             const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
             const res = await fetch(url, {

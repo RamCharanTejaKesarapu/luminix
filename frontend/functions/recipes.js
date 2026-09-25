@@ -75,17 +75,21 @@ Return STRICTLY a JSON object matching this schema:
   ]
 }`;
 
-                const models = ["gemini-flash-latest", "gemini-3.5-flash", "gemini-flash-lite-latest", "gemini-3.8-flash"];
+                const models = ["gemini-flash-lite-latest", "gemini-3.5-flash-lite", "gemini-3.6-flash"];
                 for (const model of models) {
                     try {
-                        const geminiRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`, {
+                        const controller = new AbortController();
+                        const tid = setTimeout(() => controller.abort(), 9000);
+                        const geminiRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${encodeURIComponent(apiKey)}`, {
                             method: "POST",
                             headers: { "Content-Type": "application/json" },
+                            signal: controller.signal,
                             body: JSON.stringify({
                                 contents: [{ parts: [{ text: systemPrompt }] }],
                                 generationConfig: { response_mime_type: "application/json" }
                             })
                         });
+                        clearTimeout(tid);
 
                         if (geminiRes.ok) {
                             const geminiData = await geminiRes.json();

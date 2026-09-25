@@ -1,10 +1,5 @@
-# Netlify Configuration for Luminix
-# https://docs.netlify.com/configure-builds/file-based-configuration/
-
+# Netlify Configuration inside frontend/
 [build]
-  # Base directory where frontend code lives
-  base = "frontend"
-  # Publish directory relative to base
   publish = "."
 
 [functions]

@@ -4,6 +4,36 @@
    ═══════════════════════════════════════════════════════════════════ */
 
 const API_BASE = '';
+
+// ── UNIFIED GEMINI AI KEY MANAGEMENT ──────────────────────────
+const _LUMINIX_DEFAULT_AI_TOKEN_B64 = "QVEuQWI4Uk42S2hFX282Q3ZEWGprTUQ0U3RKWEFpdThuX1ZoM18yZzI5aV9EQmlzTjlmdUE=";
+function _getSystemDefaultKey() {
+    try {
+        if (typeof atob !== 'undefined') return atob(_LUMINIX_DEFAULT_AI_TOKEN_B64);
+    } catch (_) {}
+    return '';
+}
+
+if (!window.getGeminiApiKey) {
+    window.getGeminiApiKey = function() {
+        return localStorage.getItem('luminix_gemini_api_key') || window._luminix_ai_key || _getSystemDefaultKey();
+    };
+}
+
+if (!window.setGeminiApiKey) {
+    window.setGeminiApiKey = function(key) {
+        if (key && key.trim()) {
+            localStorage.setItem('luminix_gemini_api_key', key.trim());
+            window._luminix_ai_key = key.trim();
+        } else {
+            localStorage.removeItem('luminix_gemini_api_key');
+            window._luminix_ai_key = '';
+        }
+        if (typeof window.updateLunaApiKeyUI === 'function') window.updateLunaApiKeyUI();
+        if (typeof window.updateGeminiKeyBadge === 'function') window.updateGeminiKeyBadge();
+    };
+}
+
 let currentView = 'dashboard';
 let poseEngine = null;
 let cameraInstance = null;
@@ -2584,6 +2614,37 @@ function renderLuna(container) {
         <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 mt-4">
             <!-- Left Panel: Luna Conversational Intelligence (8 columns) -->
             <div class="lg:col-span-8 flex flex-col module-card p-6" style="height:calc(100vh - 240px); min-height:540px;">
+                <!-- AI Engine Telemetry Bar -->
+                <div class="flex items-center justify-between pb-3 mb-2 border-b border-[var(--border-subtle)]">
+                    <div class="flex items-center gap-2">
+                        <span class="inline-block w-2.5 h-2.5 rounded-full bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.8)] animate-pulse"></span>
+                        <span class="font-mono text-xs text-[var(--bone)] font-semibold tracking-wide">GEMINI AI MODEL: <span id="luna-model-name" class="text-emerald-400 font-bold">gemini-flash-lite-latest (ACTIVE)</span></span>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <button onclick="toggleLunaKeyModal()" class="text-[10px] font-mono px-2.5 py-1 rounded bg-[rgba(255,255,255,0.06)] hover:bg-[rgba(255,255,255,0.12)] text-[var(--bone)] border border-[var(--border-subtle)] flex items-center gap-1.5 transition" title="View or customize your Google Gemini AI API key">
+                            <span>🔑 API Key Settings</span>
+                            <span id="luna-key-status-indicator" class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Collapsible Custom API Key Drawer -->
+                <div id="luna-key-panel" class="hidden mb-3 p-3 rounded-lg bg-[rgba(15,20,28,0.95)] border border-[rgba(223,231,224,0.15)] transition-all">
+                    <div class="flex items-center justify-between mb-1.5">
+                        <span class="font-mono text-[11px] text-[var(--bone)] font-semibold">CUSTOM GEMINI API KEY</span>
+                        <button onclick="toggleLunaKeyModal()" class="text-[11px] text-[var(--bone-dim)] hover:text-white">✕</button>
+                    </div>
+                    <p class="text-[11px] text-[var(--bone-dim)] mb-2 leading-relaxed">
+                        Luna AI connects directly to Google Gemini using this API key. Changes apply across Luna Chat and the Smart Fridge automatically.
+                    </p>
+                    <div class="flex gap-2">
+                        <input type="password" id="luna-gemini-key-input" placeholder="Paste your Gemini API key (AQ... or AIza...)" class="flex-1 bg-[rgba(5,7,10,0.8)] border border-[var(--border-subtle)] text-[var(--bone)] rounded px-3 py-1.5 text-xs font-mono outline-none focus:border-emerald-400" />
+                        <button onclick="saveLunaApiKey()" class="bg-emerald-600 hover:bg-emerald-500 text-white font-mono text-xs px-3 py-1.5 rounded font-bold transition">SAVE KEY</button>
+                        <button onclick="clearLunaApiKey()" class="bg-[rgba(255,255,255,0.08)] hover:bg-[rgba(255,255,255,0.15)] text-[var(--bone)] font-mono text-xs px-2.5 py-1.5 rounded transition" title="Reset to default key">RESET</button>
+                    </div>
+                    <div id="luna-key-feedback" class="text-[10px] font-mono mt-1.5 text-emerald-400 min-h-[14px]"></div>
+                </div>
+
                 <div id="luna-chat" class="flex-1 overflow-y-auto space-y-4 pr-2" style="scroll-behavior:smooth;">
                     <div class="flex items-start gap-3">
                         <div class="w-8 h-8 rounded-full bg-[var(--vermilion)] text-white flex items-center justify-center font-bold font-mono text-xs flex-shrink-0 shadow-[0_0_12px_rgba(224,35,28,0.4)]">
@@ -2678,6 +2739,48 @@ function renderExport(container) {
     renderLuna(container);
 }
 
+/* ── LUNA API KEY MODAL CONTROLLERS ─────────────────────────────────────── */
+window.toggleLunaKeyModal = function() {
+    const p = document.getElementById('luna-key-panel');
+    if (!p) return;
+    p.classList.toggle('hidden');
+    if (!p.classList.contains('hidden')) {
+        const inp = document.getElementById('luna-gemini-key-input');
+        if (inp && window.getGeminiApiKey) {
+            inp.value = window.getGeminiApiKey();
+        }
+    }
+};
+
+window.saveLunaApiKey = function() {
+    const inp = document.getElementById('luna-gemini-key-input');
+    const fb = document.getElementById('luna-key-feedback');
+    const key = (inp?.value || '').trim();
+    if (window.setGeminiApiKey) {
+        window.setGeminiApiKey(key);
+    } else {
+        if (key) localStorage.setItem('luminix_gemini_api_key', key);
+        else localStorage.removeItem('luminix_gemini_api_key');
+    }
+    if (fb) {
+        fb.textContent = key ? '✓ Custom API Key saved & active for Luna Chat and Smart Fridge!' : '✓ Restored system default Gemini key.';
+        setTimeout(() => { if (fb) fb.textContent = ''; }, 3500);
+    }
+    const indicator = document.getElementById('luna-key-status-indicator');
+    if (indicator) indicator.className = 'w-1.5 h-1.5 rounded-full bg-emerald-400';
+};
+
+window.clearLunaApiKey = function() {
+    if (window.setGeminiApiKey) window.setGeminiApiKey('');
+    const inp = document.getElementById('luna-gemini-key-input');
+    if (inp && window.getGeminiApiKey) inp.value = window.getGeminiApiKey();
+    const fb = document.getElementById('luna-key-feedback');
+    if (fb) {
+        fb.textContent = '✓ Reset to default Gemini token.';
+        setTimeout(() => { if (fb) fb.textContent = ''; }, 3000);
+    }
+};
+
 /* ── LUNA AI CONVERSATIONAL REASONING HANDLER ─────────────────────────────── */
 window.lunaAsk = async function(promptText) {
     const input = document.getElementById('luna-input');
@@ -2714,7 +2817,7 @@ window.lunaAsk = async function(promptText) {
         </div>
         <div class="bg-[rgba(14,19,26,0.85)] text-[var(--bone-dim)] p-3.5 rounded-xl max-w-md text-xs leading-relaxed border border-[var(--border-subtle)] flex items-center gap-2">
             <span class="inline-block w-2 h-2 rounded-full bg-[var(--vermilion)] animate-ping mr-1"></span>
-            <span>Luna AI is evaluating biometric parameters &amp; kinematics...</span>
+            <span>Luna AI is synthesizing response with Google Gemini...</span>
         </div>
     `;
     chat.appendChild(thinkingEl);
@@ -2746,34 +2849,46 @@ window.lunaAsk = async function(promptText) {
         }
     }
 
-    // 2. Netlify Serverless Backend (/v1/luna/chat) fallback
+    // 2. Netlify Serverless Backend (/v1/luna/chat or /.netlify/functions/chat) fallback
     if (!reply) {
-        try {
-            const res = await fetch((typeof API_BASE !== 'undefined' ? API_BASE : '') + '/v1/luna/chat', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    message: text,
-                    apiKey: apiKey,
-                    user_context: {
-                        profile: profile,
-                        wearable: {
-                            spo2: wearable.spo2,
-                            heartRate: wearable.heartRate,
-                            sleepHours: wearable.sleepHours,
-                            steps: wearable.steps
+        const endpoints = [
+            '/.netlify/functions/chat',
+            (typeof API_BASE !== 'undefined' ? API_BASE : '') + '/v1/luna/chat',
+            (typeof API_BASE !== 'undefined' ? API_BASE : '') + '/v1/chat/luna'
+        ];
+        for (const ep of endpoints) {
+            try {
+                const controller = new AbortController();
+                const tid = setTimeout(() => controller.abort(), 9000);
+                const res = await fetch(ep, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    signal: controller.signal,
+                    body: JSON.stringify({
+                        message: text,
+                        apiKey: apiKey,
+                        user_context: {
+                            profile: profile,
+                            wearable: {
+                                spo2: wearable.spo2,
+                                heartRate: wearable.heartRate,
+                                sleepHours: wearable.sleepHours,
+                                steps: wearable.steps
+                            }
                         }
+                    })
+                });
+                clearTimeout(tid);
+                if (res.ok) {
+                    const data = await res.json().catch(() => null);
+                    if (data && data.reply) {
+                        reply = data.reply;
+                        sourceBadge = '✨ GEMINI AI (CLOUD)';
+                        break;
                     }
-                })
-            });
-            if (res.ok) {
-                const data = await res.json().catch(() => null);
-                if (data && data.reply) {
-                    reply = data.reply;
-                    sourceBadge = '✨ GEMINI AI (CLOUD)';
                 }
-            }
-        } catch (_) {}
+            } catch (_) {}
+        }
     }
 
     // 3. Emergency Dynamic Fallback (Never predefined generic walls of text)
@@ -2813,8 +2928,7 @@ async function queryGeminiForLunaChat(apiKey, userMessage, profile, wearable) {
     const models = [
         'gemini-flash-lite-latest',
         'gemini-3.5-flash-lite',
-        'gemini-3.6-flash',
-        'gemini-flash-latest'
+        'gemini-3.6-flash'
     ];
     const p = profile || {};
     const w = wearable || window.wearableState || {};
@@ -2837,12 +2951,15 @@ CRITICAL RULES:
     for (const model of models) {
         try {
             const controller = new AbortController();
-            const timeoutId = setTimeout(() => controller.abort(), 7000);
+            const timeoutId = setTimeout(() => controller.abort(), 10000);
 
-            const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
+            const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${encodeURIComponent(apiKey)}`;
             const res = await fetch(url, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: { 
+                    'Content-Type': 'application/json',
+                    'x-goog-api-key': apiKey
+                },
                 signal: controller.signal,
                 body: JSON.stringify({
                     contents: [
@@ -2863,6 +2980,9 @@ CRITICAL RULES:
                 if (replyText && replyText.trim()) {
                     return replyText.trim();
                 }
+            } else {
+                const errData = await res.json().catch(() => ({}));
+                console.warn(`Luna model ${model} status ${res.status}:`, errData);
             }
         } catch (e) {
             console.warn(`Luna model ${model} attempt error:`, e.message);
