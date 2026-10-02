@@ -1,0 +1,9 @@
+{
+  "luna": {
+    "title": "Luna AI & Klinisches Studio",
+    "greeting": "Hallo! Ich bin Luna, Ihre Luminix Gesundheits- und Ernährungsintelligenz-Assistentin. Sie können mich alles fragen über:",
+    "inputPlaceholder": "Fragen Sie Luna zu Ernährung, Essen oder Training...",
+    "send": "SENDEN",
+    "thinking": "Luna AI synthetisiert die Antwort mit Google Gemini..."
+  }
+}

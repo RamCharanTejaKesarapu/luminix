@@ -1,0 +1,27 @@
+{
+  "gym": {
+    "title": "అడాప్టివ్ జిమ్ ఇంజిన్",
+    "workout": "వర్కౌట్",
+    "exercise": "వ్యాయామం",
+    "sets": "సెట్లు",
+    "reps": "రెప్స్",
+    "repetitions": "పునరావృతాలు",
+    "weight": "బరువు",
+    "rest": "విశ్రాంతి",
+    "duration": "వ్యవధి",
+    "difficulty": "కష్టతరం",
+    "muscleGroup": "కండర సమూహం",
+    "strength": "బలం",
+    "progress": "పురోగతి",
+    "startWorkout": "వర్కౌట్ ప్రారంభించు",
+    "pauseWorkout": "వర్కౌట్ ఆపు",
+    "finishWorkout": "వర్కౌట్ పూర్తి చేయి",
+    "repCounter": "రెప్ కౌంటర్",
+    "formScore": "ఫార్మ్ స్కోరు",
+    "excellent": "అద్భుతం",
+    "good": "మంచిది",
+    "squats": "స్క్వాట్స్",
+    "pushups": "పుష్-అప్స్",
+    "lunges": "లంజ్‌లు"
+  }
+}

@@ -1,0 +1,23 @@
+{
+  "nutrition": {
+    "title": "मेटाबॉलिक मैट्रिक्स & पोषण",
+    "calories": "कैलोरी",
+    "protein": "प्रोटीन",
+    "carbohydrates": "कार्बोहाइड्रेट",
+    "fat": "वसा",
+    "fiber": "फाइबर",
+    "water": "पानी",
+    "breakfast": "नाश्ता",
+    "lunch": "दोपहर का भोजन",
+    "dinner": "रात का भोजन",
+    "snacks": "स्नैक्स",
+    "calculate": "गणना करें",
+    "weight": "वज़न",
+    "height": "ऊँचाई",
+    "age": "उम्र",
+    "male": "पुरुष",
+    "female": "महिला",
+    "foodTracker": "भोजन ट्रैकर",
+    "hydration": "हाइड्रेशन"
+  }
+}

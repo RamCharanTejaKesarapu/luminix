@@ -154,6 +154,9 @@ async def no_cache_static_middleware(request: Request, call_next):
 
 app.mount("/static", StaticFiles(directory=str(STATIC_DIR)), name="static")
 app.mount("/assets", StaticFiles(directory=str(ASSETS_DIR)), name="assets")
+LANGUAGES_DIR = PROJECT_ROOT / "languages"
+if LANGUAGES_DIR.exists():
+    app.mount("/languages", StaticFiles(directory=str(LANGUAGES_DIR)), name="languages")
 IMAGES_DIR = STATIC_DIR / "images"
 if IMAGES_DIR.exists():
     app.mount("/images", StaticFiles(directory=str(IMAGES_DIR)), name="images")

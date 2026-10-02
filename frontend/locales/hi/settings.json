@@ -1,0 +1,14 @@
+{
+  "settings": {
+    "title": "सेटिंग्स",
+    "profile": "प्रोफ़ाइल",
+    "language": "भाषा",
+    "theme": "थीम",
+    "notifications": "सूचनाएं",
+    "privacy": "गोपनीयता",
+    "security": "सुरक्षा",
+    "logout": "लॉग आउट",
+    "deleteAccount": "खाता हटाएं",
+    "saveChanges": "परिवर्तन सहेजें"
+  }
+}

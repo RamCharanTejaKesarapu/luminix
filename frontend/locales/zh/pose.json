@@ -1,0 +1,11 @@
+{
+  "pose": {
+    "title": "60帧实时姿态引擎",
+    "poseAnalysis": "姿态分析",
+    "startAnalysis": "开始分析",
+    "posture": "姿势",
+    "alignment": "对齐",
+    "riskDetection": "风险检测",
+    "warnings": "警告"
+  }
+}

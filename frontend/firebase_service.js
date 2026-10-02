@@ -349,6 +349,12 @@
             // 1. Fetch user profile from Firestore
             const cloudProfile = await fetchUserProfile(uid);
             if (cloudProfile) {
+                if (cloudProfile.preferred_language && window.luminixI18n?.setLanguage) {
+                    if (cloudProfile.preferred_language !== window.luminixI18n.getCurrentLang()) {
+                        console.log('[Luminix Cloud Sync] Restoring user preferred language:', cloudProfile.preferred_language);
+                        window.luminixI18n.setLanguage(cloudProfile.preferred_language);
+                    }
+                }
                 if (cloudProfile.profile_data) {
                     localStorage.setItem('luminix_guest_profile', JSON.stringify(cloudProfile.profile_data));
                 }
@@ -411,6 +417,20 @@
         return () => {};
     }
 
+    /**
+     * Persists language preference to authenticated user profile in Firestore.
+     */
+    async function saveLanguagePreference(language, locale) {
+        const uid = getActiveUid();
+        if (!uid || uid.startsWith('guest_')) return;
+        try {
+            await saveUserProfile(uid, { preferred_language: language, preferred_locale: locale });
+            console.log('[Luminix Firebase] Saved language preference:', language, locale);
+        } catch (err) {
+            console.warn('[Luminix Firebase] Could not save language to profile:', err.message);
+        }
+    }
+
     // Expose Global Firebase Service
     window.luminixFirebase = {
         initFirebase,
@@ -427,6 +447,7 @@
         getActiveUid,
         saveTelemetryLog,
         subscribeTelemetry,
+        saveLanguagePreference,
         getDb: () => firestoreDb,
         getStorage: () => firebaseStorage,
         isLive: () => isFirebaseLive,

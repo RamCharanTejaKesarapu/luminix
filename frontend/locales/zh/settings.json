@@ -1,0 +1,14 @@
+{
+  "settings": {
+    "title": "设置",
+    "profile": "个人资料",
+    "language": "语言",
+    "theme": "主题",
+    "notifications": "通知",
+    "privacy": "隐私",
+    "security": "安全",
+    "logout": "退出登录",
+    "deleteAccount": "删除账户",
+    "saveChanges": "保存更改"
+  }
+}

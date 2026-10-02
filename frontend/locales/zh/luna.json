@@ -1,0 +1,9 @@
+{
+  "luna": {
+    "title": "Luna AI & 临床工作室",
+    "greeting": "你好！我是Luna，你的Luminix健康与营养智能助手。你可以向我询问任何问题：",
+    "inputPlaceholder": "向Luna询问营养、饮食或锻炼问题...",
+    "send": "发送",
+    "thinking": "Luna AI 正在通过 Google Gemini 生成回复..."
+  }
+}

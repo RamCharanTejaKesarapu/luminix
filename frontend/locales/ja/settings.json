@@ -1,0 +1,14 @@
+{
+  "settings": {
+    "title": "設定",
+    "profile": "プロフィール",
+    "language": "言語",
+    "theme": "テーマ",
+    "notifications": "通知",
+    "privacy": "プライバシー",
+    "security": "セキュリティ",
+    "logout": "ログアウト",
+    "deleteAccount": "アカウント削除",
+    "saveChanges": "変更を保存"
+  }
+}

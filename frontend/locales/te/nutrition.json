@@ -1,0 +1,33 @@
+{
+  "nutrition": {
+    "title": "జీవక్రియ మ్యాట్రిక్స్ & పోషణ",
+    "calories": "కేలరీలు",
+    "protein": "ప్రోటీన్",
+    "carbohydrates": "కార్బోహైడ్రేట్లు",
+    "fat": "కొవ్వు",
+    "fiber": "ఫైబర్",
+    "water": "నీళ్ళు",
+    "meals": "భోజనాలు",
+    "breakfast": "అల్పాహారం",
+    "lunch": "మధ్యాహ్న భోజనం",
+    "dinner": "రాత్రి భోజనం",
+    "snacks": "స్నాక్స్",
+    "food": "ఆహారం",
+    "bmr": "BMR",
+    "tdee": "TDEE",
+    "bmi": "BMI",
+    "age": "వయస్సు",
+    "weight": "బరువు",
+    "height": "ఎత్తు",
+    "gender": "లింగం",
+    "male": "పురుషుడు",
+    "female": "స్త్రీ",
+    "calculate": "లెక్కించు",
+    "dailyTarget": "రోజువారీ లక్ష్యం",
+    "foodTracker": "ఆహార ట్రాకర్",
+    "addMeal": "భోజనం చేర్చు",
+    "hydration": "హైడ్రేషన్",
+    "waterIntake": "నీటి తీసుకోలు",
+    "glasses": "గ్లాసులు"
+  }
+}

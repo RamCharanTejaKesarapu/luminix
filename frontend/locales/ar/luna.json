@@ -1,0 +1,9 @@
+{
+  "luna": {
+    "title": "Luna AI والاستوديو السريري",
+    "greeting": "مرحباً! أنا Luna، مساعدتك الذكية للصحة والتغذية في Luminix. يمكنك سؤالي عن أي شيء:",
+    "inputPlaceholder": "اسأل Luna عن التغذية أو الطعام أو التمارين...",
+    "send": "إرسال",
+    "thinking": "Luna AI تقوم بتجميع الرد عبر Google Gemini..."
+  }
+}

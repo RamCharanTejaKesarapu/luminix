@@ -1,0 +1,25 @@
+{
+  "settings": {
+    "title": "సెట్టింగ్స్",
+    "profile": "ప్రొఫైల్",
+    "account": "ఖాతా",
+    "language": "భాష",
+    "appearance": "రూపం",
+    "theme": "థీమ్",
+    "darkMode": "డార్క్ మోడ్",
+    "lightMode": "లైట్ మోడ్",
+    "notifications": "నోటిఫికేషన్లు",
+    "privacy": "గోప్యత",
+    "security": "భద్రత",
+    "connectedDevices": "కనెక్ట్ చేసిన పరికరాలు",
+    "logout": "లాగ్ అవుట్",
+    "deleteAccount": "ఖాతా తొలగించు",
+    "saveChanges": "మార్పులు భద్రపరచు",
+    "fullName": "పూర్తి పేరు / కోడ్ నేమ్",
+    "age": "వయస్సు (సంవత్సరాలు)",
+    "bodyWeight": "శరీర బరువు (KG)",
+    "heightCm": "ఎత్తు (CM)",
+    "personalizeSanctuary": "మీ శరణాలయాన్ని",
+    "sanctuaryWord": "వ్యక్తిగతీకరించండి."
+  }
+}

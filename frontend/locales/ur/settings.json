@@ -1,0 +1,14 @@
+{
+  "settings": {
+    "title": "ترتیبات",
+    "profile": "پروفائل",
+    "language": "زبان",
+    "theme": "تھیم",
+    "notifications": "اطلاعات",
+    "privacy": "رازداری",
+    "security": "سیکیورٹی",
+    "logout": "لاگ آؤٹ",
+    "deleteAccount": "اکاؤنٹ حذف کریں",
+    "saveChanges": "تبدیلیاں محفوظ کریں"
+  }
+}

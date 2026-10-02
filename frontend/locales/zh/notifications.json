@@ -1,0 +1,11 @@
+{
+  "notifications": {
+    "success": "成功",
+    "warning": "警告",
+    "error": "错误",
+    "confirmAction": "确认操作",
+    "areYouSure": "您确定要继续吗？",
+    "proceed": "继续",
+    "acceptAll": "全部接受"
+  }
+}

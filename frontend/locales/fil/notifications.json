@@ -1,0 +1,11 @@
+{
+  "notifications": {
+    "success": "Tagumpay",
+    "warning": "Babala",
+    "error": "Error",
+    "confirmAction": "Kumpirmahin ang Aksyon",
+    "areYouSure": "Sigurado ka bang gusto mong magpatuloy?",
+    "proceed": "Magpatuloy",
+    "acceptAll": "TANGGAPIN LAHAT"
+  }
+}

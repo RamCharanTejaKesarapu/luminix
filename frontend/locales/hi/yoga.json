@@ -1,0 +1,16 @@
+{
+  "yoga": {
+    "title": "17 पवित्र योगासन",
+    "pose": "आसन",
+    "breathing": "श्वसन",
+    "startSession": "सत्र शुरू करें",
+    "endSession": "सत्र समाप्त करें",
+    "beginner": "शुरुआती",
+    "intermediate": "मध्यम",
+    "advanced": "उन्नत",
+    "inhale": "श्वास लें",
+    "exhale": "श्वास छोड़ें",
+    "hold": "रोकें",
+    "relax": "आराम करें"
+  }
+}

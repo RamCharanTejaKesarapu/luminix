@@ -1,0 +1,15 @@
+{
+  "nutrition": {
+    "title": "میٹابولک میٹرکس اور غذائیت",
+    "calories": "کیلوریز",
+    "protein": "پروٹین",
+    "carbohydrates": "کاربوہائیڈریٹس",
+    "fat": "چربی",
+    "water": "پانی",
+    "breakfast": "ناشتہ",
+    "lunch": "دوپہر کا کھانا",
+    "dinner": "رات کا کھانا",
+    "calculate": "حساب لگائیں",
+    "foodTracker": "فوڈ ٹریکر"
+  }
+}

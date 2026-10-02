@@ -1,0 +1,14 @@
+{
+  "settings": {
+    "title": "Mga Setting",
+    "profile": "Profile",
+    "language": "Wika",
+    "theme": "Tema",
+    "notifications": "Mga Notipikasyon",
+    "privacy": "Privacy",
+    "security": "Seguridad",
+    "logout": "Mag-logout",
+    "deleteAccount": "Burahin ang Account",
+    "saveChanges": "I-save ang mga pagbabago"
+  }
+}

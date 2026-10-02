@@ -1,0 +1,15 @@
+{
+  "nutrition": {
+    "title": "Metabolic Matrix at Nutrisyon",
+    "calories": "Mga Kalori",
+    "protein": "Protina",
+    "carbohydrates": "Karbohidrato",
+    "fat": "Taba",
+    "water": "Tubig",
+    "breakfast": "Almusal",
+    "lunch": "Tanghalian",
+    "dinner": "Hapunan",
+    "calculate": "Kalkulahin",
+    "foodTracker": "Food Tracker"
+  }
+}

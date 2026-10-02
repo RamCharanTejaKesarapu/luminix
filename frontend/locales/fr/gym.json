@@ -1,0 +1,15 @@
+{
+  "gym": {
+    "title": "Moteur Adaptatif de Salle de Sport",
+    "workout": "Entraînement",
+    "exercise": "Exercice",
+    "sets": "Séries",
+    "reps": "Répétitions",
+    "weight": "Poids",
+    "rest": "Repos",
+    "startWorkout": "Démarrer l'entraînement",
+    "progress": "Progrès",
+    "squats": "Squats",
+    "pushups": "Pompes"
+  }
+}

@@ -1,0 +1,11 @@
+{
+  "notifications": {
+    "success": "Erfolg",
+    "warning": "Warnung",
+    "error": "Fehler",
+    "confirmAction": "Aktion bestätigen",
+    "areYouSure": "Sind Sie sicher, dass Sie fortfahren möchten?",
+    "proceed": "Fortfahren",
+    "acceptAll": "ALLE AKZEPTIEREN"
+  }
+}

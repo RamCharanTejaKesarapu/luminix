@@ -1,0 +1,9 @@
+{
+  "luna": {
+    "title": "Luna AI at Clinical Studio",
+    "greeting": "Kumusta! Ako si Luna, ang iyong Luminix health at nutrition intelligence assistant. Pwede mo akong tanungin tungkol sa kahit ano:",
+    "inputPlaceholder": "Magtanong kay Luna tungkol sa nutrisyon, pagkain, o ehersisyo...",
+    "send": "IPADALA",
+    "thinking": "Gumagawa ng sagot si Luna AI gamit ang Google Gemini..."
+  }
+}

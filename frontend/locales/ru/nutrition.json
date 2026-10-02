@@ -1,0 +1,15 @@
+{
+  "nutrition": {
+    "title": "Метаболическая Матрица и Питание",
+    "calories": "Калории",
+    "protein": "Белок",
+    "carbohydrates": "Углеводы",
+    "fat": "Жиры",
+    "water": "Вода",
+    "breakfast": "Завтрак",
+    "lunch": "Обед",
+    "dinner": "Ужин",
+    "calculate": "Рассчитать",
+    "foodTracker": "Трекер питания"
+  }
+}

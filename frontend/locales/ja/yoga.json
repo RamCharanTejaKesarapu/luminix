@@ -1,0 +1,33 @@
+{
+  "yoga": {
+    "title": "17の神聖なヨガ・アーサナ",
+    "pageTitle": "17の神聖なヨガ・アーサナ — キネマティクスガイダンス | Luminix",
+    "moduleTag": "モジュール 03 // 神聖な姿勢キネマティクス",
+    "pose": "ポーズ",
+    "breathing": "呼吸",
+    "duration": "時間",
+    "difficulty": "難易度",
+    "instructions": "説明",
+    "startSession": "セッション開始",
+    "endSession": "セッション終了",
+    "beginner": "初級",
+    "intermediate": "中級",
+    "advanced": "上級",
+    "safetyWarnings": "安全警告",
+    "recommendations": "推奨事項",
+    "progress": "進捗",
+    "holdTime": "キープ時間",
+    "holdDuration": "保持時間",
+    "poseGuide": "ポーズガイド",
+    "alignmentTips": "アライメントのヒント",
+    "benefits": "効果",
+    "asanaLibrary": "アーサナライブラリ",
+    "selectedPose": "選択中のポーズ",
+    "formAccuracy": "フォーム精度",
+    "breathingPattern": "呼吸パターン",
+    "inhale": "吸う",
+    "exhale": "吐く",
+    "hold": "止める",
+    "relax": "リラックス"
+  }
+}

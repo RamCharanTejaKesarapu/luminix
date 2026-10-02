@@ -1,0 +1,33 @@
+{
+  "yoga": {
+    "title": "17 Sagradong Yoga Asana",
+    "pageTitle": "17 Sagradong Yoga Asana — Gabay sa Porma | Luminix",
+    "moduleTag": "MODYUL 03 // SACRED POSTURE KINEMATICS",
+    "pose": "Pustura",
+    "breathing": "Paghinga",
+    "duration": "Tagal",
+    "difficulty": "Antas ng Hirap",
+    "instructions": "Mga Tagubilin",
+    "startSession": "Simulan ang Sesyon",
+    "endSession": "Tapusin ang Sesyon",
+    "beginner": "Baguhan",
+    "intermediate": "Katamtaman",
+    "advanced": "Mataas na Antas",
+    "safetyWarnings": "Mga Babala sa Kaligtasan",
+    "recommendations": "Mga Rekomendasyon",
+    "progress": "Progreso",
+    "holdTime": "Oras ng Paghawak",
+    "holdDuration": "Tagal ng Paghawak",
+    "poseGuide": "Gabay sa Pustura",
+    "alignmentTips": "Mga Tip sa Pagkakatugma",
+    "benefits": "Mga Benepisyo",
+    "asanaLibrary": "Aklatan ng Asana",
+    "selectedPose": "Piling Pustura",
+    "formAccuracy": "Kawastuhan ng Porma",
+    "breathingPattern": "Huwaran ng Paghinga",
+    "inhale": "Langhap",
+    "exhale": "Buga",
+    "hold": "Hawak",
+    "relax": "Magpahinga"
+  }
+}

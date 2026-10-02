@@ -1,0 +1,9 @@
+{
+  "luna": {
+    "title": "Luna AI ve Klinik Stüdyo",
+    "greeting": "Merhaba! Ben Luna, Luminix sağlık ve beslenme zekâ asistanınızım. Bana her şeyi sorabilirsiniz:",
+    "inputPlaceholder": "Luna'ya beslenme, yemek veya egzersiz soruları sorun...",
+    "send": "GÖNDER",
+    "thinking": "Luna AI Google Gemini ile yanıt sentezliyor..."
+  }
+}

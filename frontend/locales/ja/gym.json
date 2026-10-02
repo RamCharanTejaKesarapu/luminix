@@ -1,0 +1,14 @@
+{
+  "gym": {
+    "title": "アダプティブジムエンジン",
+    "workout": "ワークアウト",
+    "exercise": "エクササイズ",
+    "sets": "セット",
+    "reps": "レップ",
+    "weight": "ウェイト",
+    "rest": "休憩",
+    "startWorkout": "ワークアウト開始",
+    "squats": "スクワット",
+    "pushups": "腕立て伏せ"
+  }
+}

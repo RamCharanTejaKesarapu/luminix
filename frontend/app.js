@@ -100,15 +100,15 @@ window.nav = function(view) {
         'accessibility': 'Accessibility Statement — Digital Inclusion | Luminix'
     };
     const viewNames = {
-        'dashboard': 'Sanctuary System',
-        'live-pose': '60 FPS Live Pose Engine',
-        'gym': 'Adaptive Gym Engine',
-        'yoga': '17 Sacred Yoga Asanas',
-        'bmi': 'Metabolic Matrix & Nutrition',
-        'food-tracker': 'Food & Hydration Intelligence',
-        'luna': 'Luna AI & Clinical Studio',
-        'connect': 'Connect with Lumi (Wearables & Mobile)',
-        'export': 'Luna AI & Clinical Studio',
+        'dashboard': (typeof t === 'function' ? t('nav.sanctuarySystem') : 'Sanctuary System'),
+        'live-pose': (typeof t === 'function' ? t('nav.livePoseEngine') : '60 FPS Live Pose Engine'),
+        'gym': (typeof t === 'function' ? t('nav.adaptiveGymEngine') : 'Adaptive Gym Engine'),
+        'yoga': (typeof t === 'function' ? t('nav.sacredYogaAsanas') : '17 Sacred Yoga Asanas'),
+        'bmi': (typeof t === 'function' ? t('nav.metabolicMatrix') : 'Metabolic Matrix & Nutrition'),
+        'food-tracker': (typeof t === 'function' ? t('nav.foodHydration') : 'Food & Hydration Intelligence'),
+        'luna': (typeof t === 'function' ? t('nav.lunaAIClinical') : 'Luna AI & Clinical Studio'),
+        'connect': (typeof t === 'function' ? t('nav.connectWearables') : 'Connect with Lumi (Wearables & Mobile)'),
+        'export': (typeof t === 'function' ? t('nav.lunaAIClinical') : 'Luna AI & Clinical Studio'),
         'privacy': 'Zero-Leak Privacy Covenant',
         'terms': 'Biomechanical Terms of Service',
         'accessibility': 'Accessibility Statement & WCAG'
@@ -178,10 +178,12 @@ window.nav = function(view) {
         const breadcrumbNav = document.createElement('nav');
         breadcrumbNav.className = 'editorial-breadcrumbs';
         breadcrumbNav.setAttribute('aria-label', 'Breadcrumb');
+        const _bcSanctuary = typeof t === 'function' ? t('common.breadcrumbSanctuary') : 'Sanctuary';
+        const _bcModules = typeof t === 'function' ? t('common.breadcrumbModules') : 'Modules';
         breadcrumbNav.innerHTML = `
-            <a class="breadcrumb-link" onclick="nav('dashboard')" title="Back to Sanctuary">Sanctuary</a>
+            <a class="breadcrumb-link" onclick="nav('dashboard')" title="${_bcSanctuary}">${_bcSanctuary}</a>
             <span class="breadcrumb-sep">/</span>
-            <span class="breadcrumb-link" onclick="nav('dashboard')">Modules</span>
+            <span class="breadcrumb-link" onclick="nav('dashboard')">${_bcModules}</span>
             <span class="breadcrumb-sep">/</span>
             <span class="breadcrumb-curr">${viewNames[view] || view}</span>
         `;
@@ -972,30 +974,31 @@ async function renderDashboard(container) {
         if (g?.categories) gymCount = g.categories.length;
     } catch (_) {}
 
+    const _t = typeof t === 'function' ? t : (k) => k;
     container.innerHTML = `
         <!-- ── CHAPTER 00: THE HIDDEN GATE (HERO) ── -->
         <section class="hero" id="hero" data-cam="0">
             <div class="hero-top">
                 <div class="eyebrow">
-                    <span class="dot"></span> Chapter 00 — The Hidden Gate // Biomechanics Sanctuary
+                    <span class="dot"></span> ${_t('dashboard.chapterZero')}
                 </div>
                 <h1 class="display h-hero">
-                    <span class="mask-line"><span>Where stillness</span></span>
-                    <span class="mask-line"><span>reveals the</span></span>
-                    <span class="mask-line"><span>unseen.</span></span>
+                    <span class="mask-line"><span>${_t('dashboard.heroLine1')}</span></span>
+                    <span class="mask-line"><span>${_t('dashboard.heroLine2')}</span></span>
+                    <span class="mask-line"><span>${_t('dashboard.heroLine3')}</span></span>
                 </h1>
                 <p class="hero-sub body">
-                    Enter Luminix through its quiet thresholds: an intelligent sanctuary of 60 FPS computer vision, adaptive strength protocols, yoga alignment, and Luna AI.
+                    ${_t('dashboard.heroSub')}
                 </p>
                 <div class="hero-actions-bar">
                     <button onclick="nav('live-pose')" class="btn-editorial-primary" aria-label="Launch 60 FPS Live Camera Pose Detection">
-                        ⚡ LAUNCH 60 FPS VISION →
+                        ${_t('dashboard.launchVision')}
                     </button>
                     <button onclick="nav('gym')" class="btn-editorial-secondary" aria-label="Open Adaptive Gym Rep Counter">
-                        🏋️ START WORKOUT →
+                        ${_t('dashboard.startWorkout')}
                     </button>
                     <button onclick="scrollToSanctuary()" class="btn-editorial-secondary" aria-label="Explore Sanctuary Systems">
-                        EXPLORE SANCTUARY ↓
+                        ${_t('common.exploreSanctuary')}
                     </button>
                 </div>
             </div>
@@ -1004,36 +1007,36 @@ async function renderDashboard(container) {
 
             <div class="hero-foot">
                 <div class="hero-cue">
-                    <span>Scroll to enter</span>
+                <span>${_t('common.scrollToEnter')}</span>
                     <span class="track"><i></i></span>
                 </div>
                 <div class="chapters" id="chips">
                     <div class="chip" onclick="nav('live-pose')">
                         <span class="num">01</span>
                         <span class="tx">
-                            <b>Thresholds</b>
-                            <p>Real-time 60 FPS vision tracking & joint vector biomechanics.</p>
+                            <b>${_t('dashboard.thresholds')}</b>
+                            <p>${_t('dashboard.thresholdsDesc')}</p>
                         </span>
                     </div>
                     <div class="chip" onclick="nav('gym')">
                         <span class="num">02</span>
                         <span class="tx">
-                            <b>Still Gardens</b>
-                            <p>Adaptive gym routines, automated rep counter & rest intervals.</p>
+                            <b>${_t('dashboard.stillGardens')}</b>
+                            <p>${_t('dashboard.stillGardensDesc')}</p>
                         </span>
                     </div>
                     <div class="chip" onclick="nav('yoga')">
                         <span class="num">03</span>
                         <span class="tx">
-                            <b>Sacred Craft</b>
-                            <p>${yogaCount} guided yoga asana poses with hold duration checking.</p>
+                            <b>${_t('dashboard.sacredCraft')}</b>
+                            <p>${_t('dashboard.sacredCraftDesc', { count: yogaCount })}</p>
                         </span>
                     </div>
                     <div class="chip" onclick="nav('bmi')">
                         <span class="num">04</span>
                         <span class="tx">
-                            <b>Night Rituals</b>
-                            <p>Metabolic intelligence, BMR, TDEE & macro nutrition matrices.</p>
+                            <b>${_t('dashboard.nightRituals')}</b>
+                            <p>${_t('dashboard.nightRitualsDesc')}</p>
                         </span>
                     </div>
                 </div>
@@ -2594,19 +2597,20 @@ function formatLunaMarkdown(text) {
 }
 
 function renderLuna(container) {
+    const _t = typeof t === 'function' ? t : (k) => k;
     container.innerHTML = `
         <div class="module-header flex items-center justify-between flex-wrap gap-4">
             <div>
-                <div class="hero-category-tag"><span class="w-2 h-2 rounded-full bg-[var(--vermilion)] inline-block shadow-[0_0_8px_var(--vermilion)] mr-1.5"></span> MODULE 07 // CLINICAL INTELLIGENCE & EXPORT STUDIO</div>
-                <h1 class="module-title-large">LUNA AI & <span class="text-vermilion font-display font-extrabold">CLINICAL STUDIO.</span></h1>
-                <p class="text-secondary text-sm mt-1">Conversational health intelligence, personalized meal telemetry, and automated engineering-grade clinical PDF exports.</p>
+                <div class="hero-category-tag"><span class="w-2 h-2 rounded-full bg-[var(--vermilion)] inline-block shadow-[0_0_8px_var(--vermilion)] mr-1.5"></span> ${_t('luna.moduleTag')}</div>
+                <h1 class="module-title-large" data-i18n-html="luna.heading">LUNA AI & <span class="text-vermilion font-display font-extrabold">CLINICAL STUDIO.</span></h1>
+                <p class="text-secondary text-sm mt-1">${_t('luna.subtitle')}</p>
             </div>
             <div class="flex items-center gap-2">
                 <button onclick="downloadPDF()" class="btn-editorial-primary text-xs py-2 px-4" title="Compile comprehensive biometric PDF dossier">
-                    DOWNLOAD CLINICAL PDF ↓
+                    ${_t('luna.downloadPDF')}
                 </button>
                 <button onclick="nav('connect')" class="btn-editorial-secondary text-xs py-2 px-3" title="Open wearable telemetry chamber">
-                    CONNECT WEARABLES →
+                    ${_t('luna.connectWearables')}
                 </button>
             </div>
         </div>
@@ -2655,7 +2659,7 @@ function renderLuna(container) {
                                 <span class="font-bold text-[var(--bone)]">Luna AI</span>
                                 <span class="font-mono text-[10px] px-2 py-0.5 bg-[rgba(224,35,28,0.15)] text-[var(--vermilion)] rounded-full border border-[rgba(224,35,28,0.3)] font-semibold">✨ CLINICAL NUTRITION & FITNESS</span>
                             </div>
-                            Hello! I am Luna, your Luminix health & nutrition intelligence assistant. You can ask me anything about:
+                            ${_t('luna.greeting')}
                             <ul class="list-disc ml-4 mt-2 space-y-1 text-xs text-[var(--bone-dim)]">
                                 <li><strong>Nutrition & Diet:</strong> Optimal macros, meal planning, caloric deficits, protein synthesis, food tracking.</li>
                                 <li><strong>Meal Analysis:</strong> Type any meal (e.g. <em>"200g chicken, quinoa, and avocado"</em>) for instant macro breakdowns.</li>
@@ -2668,14 +2672,14 @@ function renderLuna(container) {
 
                 <div class="pt-4 border-t border-[var(--border-subtle)] mt-4">
                     <div class="flex flex-wrap gap-2 mb-3">
-                        <button class="text-xs font-mono bg-[rgba(223,231,224,0.06)] hover:bg-[rgba(223,231,224,0.14)] text-[var(--bone)] border border-[var(--border-subtle)] px-3 py-1.5 rounded transition" onclick="lunaAsk('What is my optimal daily protein and calorie target for lean muscle gain?')">🥗 Optimal Protein & Macros</button>
-                        <button class="text-xs font-mono bg-[rgba(223,231,224,0.06)] hover:bg-[rgba(223,231,224,0.14)] text-[var(--bone)] border border-[var(--border-subtle)] px-3 py-1.5 rounded transition" onclick="lunaAsk('Analyze my meal: 150g grilled salmon, 1 cup brown rice, 1/2 avocado, and steamed broccoli')">🥑 Analyze Meal</button>
-                        <button class="text-xs font-mono bg-[rgba(223,231,224,0.06)] hover:bg-[rgba(223,231,224,0.14)] text-[var(--bone)] border border-[var(--border-subtle)] px-3 py-1.5 rounded transition" onclick="lunaAsk('Generate a 1-day high-protein balanced meal plan with exact macros')">📋 1-Day Meal Plan</button>
-                        <button class="text-xs font-mono bg-[rgba(223,231,224,0.06)] hover:bg-[rgba(223,231,224,0.14)] text-[var(--bone)] border border-[var(--border-subtle)] px-3 py-1.5 rounded transition" onclick="lunaAsk('How does my sleep score and SpO2 impact workout recovery today?')">💤 Sleep & Vitals</button>
+                        <button class="text-xs font-mono bg-[rgba(223,231,224,0.06)] hover:bg-[rgba(223,231,224,0.14)] text-[var(--bone)] border border-[var(--border-subtle)] px-3 py-1.5 rounded transition" onclick="lunaAsk('What is my optimal daily protein and calorie target for lean muscle gain?')">${_t('luna.quickOptimalProtein')}</button>
+                        <button class="text-xs font-mono bg-[rgba(223,231,224,0.06)] hover:bg-[rgba(223,231,224,0.14)] text-[var(--bone)] border border-[var(--border-subtle)] px-3 py-1.5 rounded transition" onclick="lunaAsk('Analyze my meal: 150g grilled salmon, 1 cup brown rice, 1/2 avocado, and steamed broccoli')">${_t('luna.quickAnalyzeMeal')}</button>
+                        <button class="text-xs font-mono bg-[rgba(223,231,224,0.06)] hover:bg-[rgba(223,231,224,0.14)] text-[var(--bone)] border border-[var(--border-subtle)] px-3 py-1.5 rounded transition" onclick="lunaAsk('Generate a 1-day high-protein balanced meal plan with exact macros')">${_t('luna.quickMealPlan')}</button>
+                        <button class="text-xs font-mono bg-[rgba(223,231,224,0.06)] hover:bg-[rgba(223,231,224,0.14)] text-[var(--bone)] border border-[var(--border-subtle)] px-3 py-1.5 rounded transition" onclick="lunaAsk('How does my sleep score and SpO2 impact workout recovery today?')">${_t('luna.quickSleepVitals')}</button>
                     </div>
                     <div class="flex gap-2">
-                        <input type="text" id="luna-input" placeholder="Ask Luna any nutrition, food, or workout questions..." class="flex-1 bg-[rgba(10,14,18,0.85)] border border-[var(--border-subtle)] text-[var(--bone)] rounded-full px-4 py-2.5 text-sm outline-none focus:border-[var(--vermilion)] placeholder-[var(--muted)]" onkeydown="if(event.key==='Enter')lunaAsk()" />
-                        <button onclick="lunaAsk()" class="btn-editorial-primary px-6">SEND</button>
+                        <input type="text" id="luna-input" placeholder="${_t('luna.inputPlaceholder')}" class="flex-1 bg-[rgba(10,14,18,0.85)] border border-[var(--border-subtle)] text-[var(--bone)] rounded-full px-4 py-2.5 text-sm outline-none focus:border-[var(--vermilion)] placeholder-[var(--muted)]" onkeydown="if(event.key==='Enter')lunaAsk()" />
+                        <button onclick="lunaAsk()" class="btn-editorial-primary px-6">${_t('luna.send')}</button>
                     </div>
                 </div>
             </div>
@@ -2817,7 +2821,7 @@ window.lunaAsk = async function(promptText) {
         </div>
         <div class="bg-[rgba(14,19,26,0.85)] text-[var(--bone-dim)] p-3.5 rounded-xl max-w-md text-xs leading-relaxed border border-[var(--border-subtle)] flex items-center gap-2">
             <span class="inline-block w-2 h-2 rounded-full bg-[var(--vermilion)] animate-ping mr-1"></span>
-            <span>Luna AI is synthesizing response with Google Gemini...</span>
+            <span>${typeof t === 'function' ? t('luna.thinking') : 'Luna AI is synthesizing response with Google Gemini...'}</span>
         </div>
     `;
     chat.appendChild(thinkingEl);
@@ -2867,6 +2871,8 @@ window.lunaAsk = async function(promptText) {
                     body: JSON.stringify({
                         message: text,
                         apiKey: apiKey,
+                        language: (typeof window.luminixI18n !== 'undefined') ? window.luminixI18n.getCurrentLang() : 'en',
+                        locale: (typeof window.luminixI18n !== 'undefined') ? window.luminixI18n.getCurrentLocale() : 'en-US',
                         user_context: {
                             profile: profile,
                             wearable: {
@@ -2933,6 +2939,9 @@ async function queryGeminiForLunaChat(apiKey, userMessage, profile, wearable) {
     const p = profile || {};
     const w = wearable || window.wearableState || {};
 
+    // Dynamically inject language context into the system prompt
+    const _lunaLangCtx = (typeof window.luminixI18n !== 'undefined') ? window.luminixI18n.getLunaLanguageContext() : { language: 'en', languageName: 'English', systemInstruction: '' };
+
     const systemPrompt = `You are Luna AI, the supreme clinical intelligence, sports nutritionist, biomechanics expert, and personal AI companion of Luminix.
 You possess deep expertise in exercise physiology, sports science, human kinematics, programming/computer science, mathematics, software coding, and holistic wellness.
 
@@ -2946,7 +2955,8 @@ CRITICAL RULES:
 3. If the user says "hi" or greets you, greet them warmly and concisely as Luna AI.
 4. If the user asks for recipes, workouts, biomechanics, or nutrition, provide exact metrics, sets, reps, macros, or timings.
 5. NEVER ignore the user's prompt. NEVER return a canned generic menu or predefined wall of text.
-6. Format your response cleanly using GitHub-flavored Markdown.`;
+6. Format your response cleanly using GitHub-flavored Markdown.
+${_lunaLangCtx.systemInstruction}`;
 
     for (const model of models) {
         try {

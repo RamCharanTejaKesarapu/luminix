@@ -1,0 +1,14 @@
+{
+  "gym": {
+    "title": "Adaptive Gym Engine",
+    "workout": "Workout",
+    "exercise": "Ehersisyo",
+    "sets": "Mga Set",
+    "reps": "Mga Rep",
+    "weight": "Timbang",
+    "rest": "Pahinga",
+    "startWorkout": "Simulan ang Workout",
+    "squats": "Squats",
+    "pushups": "Push-ups"
+  }
+}

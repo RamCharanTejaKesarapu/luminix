@@ -1,0 +1,15 @@
+{
+  "nutrition": {
+    "title": "Metabolik Matris ve Beslenme",
+    "calories": "Kalori",
+    "protein": "Protein",
+    "carbohydrates": "Karbonhidrat",
+    "fat": "Yağ",
+    "water": "Su",
+    "breakfast": "Kahvaltı",
+    "lunch": "Öğle yemeği",
+    "dinner": "Akşam yemeği",
+    "calculate": "Hesapla",
+    "foodTracker": "Yemek Takipçisi"
+  }
+}

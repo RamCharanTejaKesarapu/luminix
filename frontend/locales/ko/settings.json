@@ -1,0 +1,14 @@
+{
+  "settings": {
+    "title": "설정",
+    "profile": "프로필",
+    "language": "언어",
+    "theme": "테마",
+    "notifications": "알림",
+    "privacy": "개인정보",
+    "security": "보안",
+    "logout": "로그아웃",
+    "deleteAccount": "계정 삭제",
+    "saveChanges": "변경 저장"
+  }
+}

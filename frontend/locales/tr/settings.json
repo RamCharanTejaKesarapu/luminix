@@ -1,0 +1,14 @@
+{
+  "settings": {
+    "title": "Ayarlar",
+    "profile": "Profil",
+    "language": "Dil",
+    "theme": "Tema",
+    "notifications": "Bildirimler",
+    "privacy": "Gizlilik",
+    "security": "Güvenlik",
+    "logout": "Çıkış",
+    "deleteAccount": "Hesabı Sil",
+    "saveChanges": "Değişiklikleri Kaydet"
+  }
+}

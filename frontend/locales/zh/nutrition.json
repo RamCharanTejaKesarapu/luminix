@@ -1,0 +1,15 @@
+{
+  "nutrition": {
+    "title": "代谢矩阵与营养",
+    "calories": "卡路里",
+    "protein": "蛋白质",
+    "carbohydrates": "碳水化合物",
+    "fat": "脂肪",
+    "water": "水",
+    "breakfast": "早餐",
+    "lunch": "午餐",
+    "dinner": "晚餐",
+    "calculate": "计算",
+    "foodTracker": "饮食追踪"
+  }
+}

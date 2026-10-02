@@ -113,31 +113,32 @@ const YOGA_CRITERIA = {
 window.renderYogaView = function(container) {
     yogaMode = 'library';
     try { stopYogaCamera(); } catch (_) {}
+    const _t = typeof t === 'function' ? t : (k) => k;
 
     container.innerHTML = `
         <div class="module-header flex flex-wrap justify-between items-end gap-4">
             <div>
-                <div class="hero-category-tag"><span class="w-2 h-2 rounded-full bg-[var(--vermilion)] inline-block shadow-[0_0_8px_var(--vermilion)] mr-1.5"></span> MODULE 03 // GUIDANCE</div>
-                <h1 class="module-title-large">YOGA <span class="text-vermilion font-display font-extrabold">LIBRARY.</span></h1>
-                <p class="text-secondary text-sm mt-1">17 structured yoga poses with real-time AI node alignment, hold timer & rep counting.</p>
+                <div class="hero-category-tag"><span class="w-2 h-2 rounded-full bg-[var(--vermilion)] inline-block shadow-[0_0_8px_var(--vermilion)] mr-1.5"></span> ${_t('yoga.moduleTag', 'MODULE 03 // GUIDANCE')}</div>
+                <h1 class="module-title-large">YOGA <span class="text-vermilion font-display font-extrabold">${_t('yoga.asanaLibrary', 'LIBRARY.')}</span></h1>
+                <p class="text-secondary text-sm mt-1">${_t('yoga.pageSubtitle', '17 structured yoga poses with real-time AI node alignment, hold timer & rep counting.')}</p>
             </div>
             <div class="flex gap-2">
-                <button onclick="startQuickYogaPractice()" class="btn-editorial-primary">⚡ START GUIDED SESSION</button>
+                <button onclick="startQuickYogaPractice()" class="btn-editorial-primary">⚡ ${_t('yoga.startSession', 'START GUIDED SESSION')}</button>
             </div>
         </div>
 
         <div class="flex flex-wrap gap-2 mb-6" id="yoga-filters">
-            <button class="nav-btn nav-active text-xs" onclick="filterYoga('all')" data-filter="all">ALL POSES</button>
-            <button class="nav-btn text-xs" onclick="filterYoga('Beginner')" data-filter="Beginner">BEGINNER</button>
-            <button class="nav-btn text-xs" onclick="filterYoga('Intermediate')" data-filter="Intermediate">INTERMEDIATE</button>
-            <button class="nav-btn text-xs" onclick="filterYoga('Advanced')" data-filter="Advanced">ADVANCED</button>
+            <button class="nav-btn nav-active text-xs" onclick="filterYoga('all')" data-filter="all">${_t('common.all', 'ALL POSES')}</button>
+            <button class="nav-btn text-xs" onclick="filterYoga('Beginner')" data-filter="Beginner">${_t('yoga.beginner', 'BEGINNER')}</button>
+            <button class="nav-btn text-xs" onclick="filterYoga('Intermediate')" data-filter="Intermediate">${_t('yoga.intermediate', 'INTERMEDIATE')}</button>
+            <button class="nav-btn text-xs" onclick="filterYoga('Advanced')" data-filter="Advanced">${_t('yoga.advanced', 'ADVANCED')}</button>
         </div>
 
         <div id="yoga-content-area">
             <div id="yoga-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                 <div class="module-card p-12 text-center" style="grid-column:1/-1">
                     <div class="loading-spinner mx-auto mb-3"></div>
-                    <p class="text-secondary text-sm">Loading yoga library...</p>
+                    <p class="text-secondary text-sm">${_t('common.loading', 'Loading yoga library...')}</p>
                 </div>
             </div>
         </div>
@@ -179,9 +180,10 @@ function getFallbackYogaPoses() {
 function renderYogaGrid(poses) {
     const grid = document.getElementById('yoga-grid');
     if (!grid) return;
+    const _t = typeof t === 'function' ? t : (k) => k;
 
     if (!poses.length) {
-        grid.innerHTML = `<p class="text-secondary text-sm text-center py-8" style="grid-column:1/-1">No poses found.</p>`;
+        grid.innerHTML = `<p class="text-secondary text-sm text-center py-8" style="grid-column:1/-1">${_t('common.noData', 'No poses found.')}</p>`;
         return;
     }
 
@@ -217,7 +219,7 @@ function renderYogaGrid(poses) {
                 <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent"></div>
                 <div class="absolute top-3 right-3">
                     <span class="font-mono text-[10px] px-2 py-0.5 rounded-full border font-semibold ${badgeClass}">
-                        ${p.difficulty}
+                        ${_t('yoga.' + p.difficulty.toLowerCase(), p.difficulty)}
                     </span>
                 </div>
                 <div class="absolute bottom-3 left-4 right-4 text-white">
@@ -229,22 +231,22 @@ function renderYogaGrid(poses) {
             <div class="p-5 flex-1 flex flex-col justify-between">
                 <div class="space-y-3">
                     <div>
-                        <p class="font-mono text-[10px] uppercase tracking-wider text-secondary font-bold mb-1">Benefits</p>
+                        <p class="font-mono text-[10px] uppercase tracking-wider text-secondary font-bold mb-1">${_t('yoga.benefits', 'Benefits')}</p>
                         <p class="text-xs text-primary leading-relaxed">${p.benefits}</p>
                     </div>
 
                     <div>
-                        <p class="font-mono text-[10px] uppercase tracking-wider text-secondary font-bold mb-1">Technique Cue</p>
+                        <p class="font-mono text-[10px] uppercase tracking-wider text-secondary font-bold mb-1">${_t('yoga.instructions', 'Technique Cue')}</p>
                         <p class="text-xs text-secondary leading-relaxed">${p.instructions}</p>
                     </div>
                 </div>
 
                 <div class="pt-4 mt-4 border-t border-gray-200 flex items-center justify-between gap-3">
                     <span class="font-mono text-xs text-blue-primary font-bold flex items-center gap-1">
-                        <span>⏱</span> ${targetHold}s HOLD
+                        <span>⏱</span> ${targetHold}s ${_t('yoga.hold', 'HOLD')}
                     </span>
                     <button onclick="startYogaPractice(${i})" class="btn-editorial-primary text-xs py-2 px-4 flex items-center gap-1.5">
-                        <span>📷</span> PRACTICE POSE
+                        <span>📷</span> ${_t('yoga.practicePose', 'PRACTICE POSE')}
                     </button>
                 </div>
             </div>
@@ -275,6 +277,7 @@ window.startQuickYogaPractice = function() {
 window.startYogaPractice = function(poseIndex) {
     yogaMode = 'practice';
     currentYogaPose = allYogaPoses[poseIndex] || allYogaPoses[0];
+    const _t = typeof t === 'function' ? t : (k) => k;
     const criteria = YOGA_CRITERIA[currentYogaPose.name] || {
         targetHold: 10,
         checks: [
@@ -296,24 +299,24 @@ window.startYogaPractice = function(poseIndex) {
         <div class="mb-6 flex flex-wrap justify-between items-center gap-4 border-b border-gray-200 pb-4">
             <div class="flex items-center gap-3">
                 <button onclick="exitYogaPractice()" class="btn-ghost-editorial text-xs flex items-center gap-1">
-                    ← BACK TO YOGA LIBRARY
+                    ← ${_t('yoga.asanaLibrary', 'BACK TO YOGA LIBRARY')}
                 </button>
                 <div class="h-4 w-px bg-gray-300"></div>
                 <h2 class="font-display text-xl font-bold text-primary flex items-center gap-2">
                     <span>${currentYogaPose.name}</span>
-                    <span class="font-mono text-[10px] px-2 py-0.5 rounded-full bg-blue-50 text-blue-600 border border-blue-200 font-semibold">${currentYogaPose.difficulty}</span>
+                    <span class="font-mono text-[10px] px-2 py-0.5 rounded-full bg-blue-50 text-blue-600 border border-blue-200 font-semibold">${_t('yoga.' + (currentYogaPose.difficulty || 'beginner').toLowerCase(), currentYogaPose.difficulty)}</span>
                 </h2>
             </div>
             <div class="flex items-center gap-3">
-                <span class="font-mono text-xs text-secondary font-bold">TARGET HOLD:</span>
+                <span class="font-mono text-xs text-secondary font-bold">${_t('yoga.holdDuration', 'TARGET HOLD')}:</span>
                 <select id="yoga-hold-select" onchange="setYogaTargetHold(this.value)" class="form-input-editorial text-xs py-1.5 px-3" style="width:auto">
-                    <option value="5" ${yogaTargetHold === 5 ? 'selected' : ''}>5 Seconds</option>
-                    <option value="10" ${yogaTargetHold === 10 ? 'selected' : ''}>10 Seconds</option>
-                    <option value="15" ${yogaTargetHold === 15 ? 'selected' : ''}>15 Seconds</option>
-                    <option value="30" ${yogaTargetHold === 30 ? 'selected' : ''}>30 Seconds</option>
+                    <option value="5" ${yogaTargetHold === 5 ? 'selected' : ''}>5 ${_t('common.seconds', 'Seconds')}</option>
+                    <option value="10" ${yogaTargetHold === 10 ? 'selected' : ''}>10 ${_t('common.seconds', 'Seconds')}</option>
+                    <option value="15" ${yogaTargetHold === 15 ? 'selected' : ''}>15 ${_t('common.seconds', 'Seconds')}</option>
+                    <option value="30" ${yogaTargetHold === 30 ? 'selected' : ''}>30 ${_t('common.seconds', 'Seconds')}</option>
                 </select>
-                <button onclick="switchYogaPose(${poseIndex - 1})" class="btn-secondary-editorial text-xs px-3 py-1.5" ${poseIndex <= 0 ? 'disabled style="opacity:0.4"' : ''}>← Prev</button>
-                <button onclick="switchYogaPose(${poseIndex + 1})" class="btn-secondary-editorial text-xs px-3 py-1.5" ${poseIndex >= allYogaPoses.length - 1 ? 'disabled style="opacity:0.4"' : ''}>Next →</button>
+                <button onclick="switchYogaPose(${poseIndex - 1})" class="btn-secondary-editorial text-xs px-3 py-1.5" ${poseIndex <= 0 ? 'disabled style="opacity:0.4"' : ''}>← ${_t('common.prev', 'Prev')}</button>
+                <button onclick="switchYogaPose(${poseIndex + 1})" class="btn-secondary-editorial text-xs px-3 py-1.5" ${poseIndex >= allYogaPoses.length - 1 ? 'disabled style="opacity:0.4"' : ''}>${_t('common.next', 'Next')} →</button>
             </div>
         </div>
 
@@ -326,9 +329,9 @@ window.startYogaPractice = function(poseIndex) {
                 <!-- Top Camera HUD -->
                 <div class="absolute top-4 left-4 right-4 z-20 flex justify-between items-center pointer-events-none">
                     <span class="hud-pill-mono">
-                        YOGA AI // 60 FPS STREAM
+                        YOGA AI // 60 FPS ${_t('pose.bodyTracking', 'STREAM')}
                     </span>
-                    <div id="yoga-match-badge" class="risk-badge risk-safe">● CALIBRATING</div>
+                    <div id="yoga-match-badge" class="risk-badge risk-safe">● ${_t('pose.alignment', 'CALIBRATING')}</div>
                 </div>
 
                 <!-- Posture & Camera Angle Pop-up Alert Toast -->
@@ -336,12 +339,12 @@ window.startYogaPractice = function(poseIndex) {
                     <div class="posture-alert-header">
                         <div class="flex items-center gap-1.5">
                             <span class="posture-alert-icon">⚠️</span>
-                            <div class="posture-alert-title">POSTURE & CAMERA ANGLE ALERT</div>
+                            <div class="posture-alert-title">${_t('pose.riskAlert', 'POSTURE & CAMERA ANGLE ALERT')}</div>
                         </div>
-                        <button type="button" onclick="dismissPostureAlert(this)" class="posture-alert-close" title="Dismiss Alert">✕</button>
+                        <button type="button" onclick="dismissPostureAlert(this)" class="posture-alert-close" title="${_t('common.close', 'Dismiss')}">✕</button>
                     </div>
                     <div class="posture-alert-content">
-                        <div class="posture-alert-msg">Adjust posture & camera angle</div>
+                        <div class="posture-alert-msg">${_t('pose.alignment', 'Adjust posture & camera angle')}</div>
                         <div class="posture-alert-tips"></div>
                     </div>
                 </div>
@@ -357,7 +360,7 @@ window.startYogaPractice = function(poseIndex) {
                 <div class="absolute bottom-4 left-4 right-4 z-20 flex items-center justify-between pointer-events-auto bg-black/80 backdrop-blur-md p-3.5 rounded-xl border border-white/10 text-white">
                     <div class="flex-1 max-w-xs mr-4">
                         <div class="flex justify-between items-center text-[10px] text-gray-400 mb-1 font-mono uppercase">
-                            <span>Asana Alignment Match</span>
+                            <span>${_t('yoga.formAccuracy', 'Asana Alignment Match')}</span>
                             <span id="yoga-form-score" class="text-blue-400 font-bold">0%</span>
                         </div>
                         <div class="w-full bg-white/20 h-2 rounded-full overflow-hidden">
@@ -365,8 +368,8 @@ window.startYogaPractice = function(poseIndex) {
                         </div>
                     </div>
                     <div class="flex items-center gap-2">
-                        <button onclick="switchYogaCameraFacing()" id="yoga-flip-cam-btn" class="bg-white/10 hover:bg-white/20 text-white text-xs px-3 py-1.5 rounded-lg font-mono font-bold transition" title="Switch Camera">🔄 FLIP</button>
-                        <button onclick="toggleYogaCameraStream()" id="yoga-camera-toggle-btn" class="bg-blue-600 hover:bg-blue-500 text-white text-xs px-4 py-2 rounded-lg font-mono font-bold transition">Stop Camera</button>
+                        <button onclick="switchYogaCameraFacing()" id="yoga-flip-cam-btn" class="bg-white/10 hover:bg-white/20 text-white text-xs px-3 py-1.5 rounded-lg font-mono font-bold transition" title="Switch Camera">🔄 ${_t('common.flip', 'FLIP')}</button>
+                        <button onclick="toggleYogaCameraStream()" id="yoga-camera-toggle-btn" class="bg-blue-600 hover:bg-blue-500 text-white text-xs px-4 py-2 rounded-lg font-mono font-bold transition">${_t('gym.stopCamera', 'Stop Camera')}</button>
                     </div>
                 </div>
             </div>
@@ -377,9 +380,9 @@ window.startYogaPractice = function(poseIndex) {
                 <div class="module-card p-6 text-center relative overflow-hidden">
                     <div class="flex justify-around items-center mb-6">
                         <div>
-                            <p class="font-mono text-[10px] text-secondary font-bold uppercase tracking-wider">Holds Completed</p>
+                            <p class="font-mono text-[10px] text-secondary font-bold uppercase tracking-wider">${_t('yoga.holdTime', 'Holds Completed')}</p>
                             <h3 class="text-4xl font-extrabold font-display text-primary mt-1" id="yoga-rep-count">0</h3>
-                            <p class="font-mono text-xs text-secondary">Reps</p>
+                            <p class="font-mono text-xs text-secondary">${_t('gym.reps', 'Reps')}</p>
                         </div>
                         <!-- Circular Hold Gauge -->
                         <div class="relative flex items-center justify-center" style="width: 110px; height: 110px;">
@@ -400,7 +403,7 @@ window.startYogaPractice = function(poseIndex) {
                     <div class="p-4 rounded-xl bg-[rgba(14,19,26,0.85)] border border-[var(--border-subtle)] text-left">
                         <div class="flex items-center gap-2 mb-1">
                             <span class="w-2 h-2 rounded-full bg-[var(--vermilion)] animate-pulse"></span>
-                            <span class="font-mono text-[10px] font-bold text-[var(--vermilion)] uppercase tracking-wider">AI Asana Coach</span>
+                            <span class="font-mono text-[10px] font-bold text-[var(--vermilion)] uppercase tracking-wider">${_t('yoga.poseGuide', 'AI Asana Coach')}</span>
                         </div>
                         <p id="yoga-coach-feedback" class="text-xs text-[var(--bone)] leading-relaxed">${criteria.cue}</p>
                     </div>
@@ -409,7 +412,7 @@ window.startYogaPractice = function(poseIndex) {
                 <!-- Joint Alignment Checklist -->
                 <div class="module-card p-6 flex-1 flex flex-col justify-between">
                     <div>
-                        <p class="font-mono text-xs font-bold uppercase tracking-wider text-[var(--bone-dim)] mb-4">Pose Alignment Checkpoints</p>
+                        <p class="font-mono text-xs font-bold uppercase tracking-wider text-[var(--bone-dim)] mb-4">${_t('yoga.alignmentTips', 'Pose Alignment Checkpoints')}</p>
                         <div class="space-y-3" id="yoga-checkpoints-list">
                             ${criteria.checks.map((chk, idx) => `
                                 <div class="p-3 rounded-xl bg-[rgba(14,19,26,0.85)] border border-[var(--border-subtle)] flex items-center justify-between" id="yoga-chk-${idx}">
@@ -417,18 +420,18 @@ window.startYogaPractice = function(poseIndex) {
                                         <span class="w-5 h-5 rounded-full flex items-center justify-center text-xs bg-[rgba(255,255,255,0.08)] text-[var(--bone-dim)] font-mono" id="yoga-chk-icon-${idx}">○</span>
                                         <div>
                                             <div class="text-xs font-semibold text-[var(--bone)]">${chk.name}</div>
-                                            <div class="font-mono text-[10px] text-[var(--bone-dim)]">Target: ${chk.target}</div>
+                                            <div class="font-mono text-[10px] text-[var(--bone-dim)]">${_t('gym.target', 'Target')}: ${chk.target}</div>
                                         </div>
                                     </div>
-                                    <span class="font-mono text-xs font-bold text-[var(--bone-dim)]" id="yoga-chk-val-${idx}">Waiting</span>
+                                    <span class="font-mono text-xs font-bold text-[var(--bone-dim)]" id="yoga-chk-val-${idx}">${_t('pose.processing', 'Waiting')}</span>
                                 </div>
                             `).join('')}
                         </div>
                     </div>
 
                     <div class="mt-6 pt-4 border-t border-[var(--border-subtle)] flex justify-between items-center">
-                        <button onclick="resetYogaCounter()" class="btn-ghost-editorial text-xs">Reset Reps</button>
-                        <button onclick="switchYogaPose(${poseIndex + 1})" class="btn-editorial-primary text-xs px-4">Next Asana →</button>
+                        <button onclick="resetYogaCounter()" class="btn-ghost-editorial text-xs">${_t('common.reset', 'Reset Reps')}</button>
+                        <button onclick="switchYogaPose(${poseIndex + 1})" class="btn-editorial-primary text-xs px-4">${_t('common.next', 'Next Asana')} →</button>
                     </div>
                 </div>
             </div>

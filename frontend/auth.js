@@ -418,13 +418,16 @@ window.renderAuthView = async function() {
         githubConfigured = !!health.github_oauth_configured;
     } catch (_) {}
 
+    const _t = typeof t === 'function' ? t : (k) => k;
+
     main.innerHTML = `
-        <div class="auth-page-editorial">
+        <div class="auth-page-editorial" id="auth-page-editorial">
             <div class="auth-card-editorial">
                 <!-- Header with Firewall Status & Theme Toggle -->
                 <div class="flex items-center justify-between mb-4">
-                    <div class="hero-category-tag">SYSTEM // ACCESS GATE</div>
+                    <div class="hero-category-tag">SYSTEM // ${_t('auth.security', 'ACCESS GATE').toUpperCase()}</div>
                     <div class="flex items-center gap-2">
+                        <div id="auth-lang-selector-mount"></div>
                         <button type="button" class="header-action-btn theme-toggle-btn" onclick="window.toggleTheme()" title="Toggle Dark / White Mode" aria-label="Toggle Theme" style="padding: 4px 8px; font-size: 11px;">
                             <span class="theme-icon-sun">☀️</span>
                             <span class="theme-icon-moon hidden">🌙</span>
@@ -434,27 +437,27 @@ window.renderAuthView = async function() {
 
                 <div class="mb-6">
                     <h2 class="text-3xl font-display font-bold text-[var(--bone)] tracking-tight">
-                        LUMINIX <span class="text-vermilion font-display font-extrabold">INTELLIGENCE.</span>
+                        LUMINIX <span class="text-vermilion font-display font-extrabold">${_t('auth.intelligence', 'INTELLIGENCE.')}</span>
                     </h2>
-                    <p class="text-[var(--bone-dim)] text-xs mt-1">Authenticate to synchronize your biometrics, pose telemetry & workout history.</p>
+                    <p class="text-[var(--bone-dim)] text-xs mt-1">${_t('auth.subtitle', 'Authenticate to synchronize your biometrics, pose telemetry & workout history.')}</p>
                 </div>
 
                 <!-- Tabs -->
                 <div id="auth-tabs-header" class="flex border-b border-[var(--border-subtle)] mb-5">
-                    <button type="button" id="auth-tab-login" class="flex-1 py-2 font-mono text-xs uppercase font-bold text-[var(--vermilion)] border-b-2 border-[var(--vermilion)]" onclick="switchAuthTab('login')">Sign In</button>
-                    <button type="button" id="auth-tab-register" class="flex-1 py-2 font-mono text-xs uppercase font-medium text-[var(--bone-dim)] hover:text-[var(--bone)]" onclick="switchAuthTab('register')">Register</button>
+                    <button type="button" id="auth-tab-login" class="flex-1 py-2 font-mono text-xs uppercase font-bold text-[var(--vermilion)] border-b-2 border-[var(--vermilion)]" onclick="switchAuthTab('login')">${_t('auth.signIn', 'Sign In')}</button>
+                    <button type="button" id="auth-tab-register" class="flex-1 py-2 font-mono text-xs uppercase font-medium text-[var(--bone-dim)] hover:text-[var(--bone)]" onclick="switchAuthTab('register')">${_t('auth.register', 'Register')}</button>
                 </div>
 
                 <!-- Email Login Form -->
                 <form id="auth-form-login" class="space-y-4" onsubmit="submitAuthLogin(event)">
                     <div class="form-group-editorial">
-                        <label class="form-label-editorial text-[10px]">EMAIL ADDRESS</label>
+                        <label class="form-label-editorial text-[10px]">${_t('auth.email', 'EMAIL ADDRESS').toUpperCase()}</label>
                         <input type="email" id="auth-email" required placeholder="name@luminix.com" class="form-input-editorial" oninput="this.classList.remove('input-has-error')">
                     </div>
                     <div class="form-group-editorial">
                         <div class="flex justify-between items-center mb-1">
-                            <label class="form-label-editorial text-[10px] m-0">PASSWORD</label>
-                            <button type="button" onclick="switchAuthTab('forgot')" class="text-[10px] font-mono text-[var(--bone-dim)] hover:text-[var(--vermilion)] underline">Forgot?</button>
+                            <label class="form-label-editorial text-[10px] m-0">${_t('auth.password', 'PASSWORD').toUpperCase()}</label>
+                            <button type="button" onclick="switchAuthTab('forgot')" class="text-[10px] font-mono text-[var(--bone-dim)] hover:text-[var(--vermilion)] underline">${_t('auth.forgotPassword', 'Forgot?')}</button>
                         </div>
                         <div class="password-input-wrap">
                             <input type="password" id="auth-password" required minlength="8" placeholder="••••••••" class="form-input-editorial" oninput="this.classList.remove('input-has-error')">
@@ -465,22 +468,22 @@ window.renderAuthView = async function() {
                         </div>
                     </div>
                     <button type="submit" class="btn-editorial-primary w-full mt-2" id="auth-login-btn">
-                        AUTHENTICATE SECURELY →
+                        ${_t('auth.signIn', 'AUTHENTICATE SECURELY')} &rarr;
                     </button>
                 </form>
 
                 <!-- Registration Form -->
                 <form id="auth-form-register" class="space-y-4 hidden" onsubmit="submitAuthRegister(event)">
                     <div class="form-group-editorial">
-                        <label class="form-label-editorial text-[10px]">FULL NAME</label>
+                        <label class="form-label-editorial text-[10px]">${_t('auth.fullName', 'FULL NAME')}</label>
                         <input type="text" id="auth-name" placeholder="Alex Morgan" class="form-input-editorial">
                     </div>
                     <div class="form-group-editorial">
-                        <label class="form-label-editorial text-[10px]">EMAIL ADDRESS</label>
+                        <label class="form-label-editorial text-[10px]">${_t('auth.email', 'EMAIL ADDRESS').toUpperCase()}</label>
                         <input type="email" id="auth-reg-email" required placeholder="name@luminix.com" class="form-input-editorial" oninput="this.classList.remove('input-has-error')">
                     </div>
                     <div class="form-group-editorial">
-                        <label class="form-label-editorial text-[10px]">CREATE PASSWORD (MIN. 8 CHARS)</label>
+                        <label class="form-label-editorial text-[10px]">${_t('auth.createPassword', 'CREATE PASSWORD (MIN. 8 CHARS)')}</label>
                         <div class="password-input-wrap">
                             <input type="password" id="auth-reg-password" required minlength="8" placeholder="Minimum 8 characters" class="form-input-editorial" oninput="this.classList.remove('input-has-error')">
                             <button type="button" class="pw-toggle-btn" onclick="window.togglePasswordVisibility('auth-reg-password', this)" aria-label="Toggle password visibility" title="Show/Hide password">
@@ -490,25 +493,25 @@ window.renderAuthView = async function() {
                         </div>
                     </div>
                     <button type="submit" class="btn-editorial-primary w-full mt-2" id="auth-register-btn">
-                        CREATE BIOMETRIC PROFILE →
+                        ${_t('auth.createAccount', 'CREATE BIOMETRIC PROFILE')} &rarr;
                     </button>
                 </form>
 
                 <!-- Forgot Password Form -->
                 <form id="auth-form-forgot" class="space-y-4 hidden" onsubmit="submitAuthForgot(event)">
                     <div class="p-3 bg-neutral-900/50 border border-[var(--border-subtle)] rounded text-xs text-[var(--bone-dim)]">
-                        Enter your registered email to request a secure password recovery token (valid for 15 minutes).
+                        ${_t('auth.forgotInstructions', 'Enter your registered email to request a secure password recovery token (valid for 15 minutes).')}
                     </div>
                     <div class="form-group-editorial">
-                        <label class="form-label-editorial text-[10px]">EMAIL ADDRESS</label>
+                        <label class="form-label-editorial text-[10px]">${_t('auth.email', 'EMAIL ADDRESS').toUpperCase()}</label>
                         <input type="email" id="auth-forgot-email" required placeholder="name@luminix.com" class="form-input-editorial">
                     </div>
                     <button type="submit" class="btn-editorial-primary w-full mt-2" id="auth-forgot-btn">
-                        GENERATE RESET TOKEN →
+                        ${_t('auth.generateResetToken', 'GENERATE RESET TOKEN')} &rarr;
                     </button>
                     <div class="text-center mt-2">
                         <button type="button" onclick="switchAuthTab('login')" class="text-xs font-mono text-[var(--bone-dim)] hover:text-white underline">
-                            ← Return to Sign In
+                            &larr; ${_t('auth.signIn', 'Return to Sign In')}
                         </button>
                     </div>
                 </form>
@@ -516,28 +519,27 @@ window.renderAuthView = async function() {
                 <!-- Reset Password Form -->
                 <form id="auth-form-reset" class="space-y-4 hidden" onsubmit="submitAuthReset(event)">
                     <div class="p-3 bg-neutral-900/50 border border-[var(--border-subtle)] rounded text-xs text-[var(--bone-dim)]">
-                        Enter your one-time reset token and your new secure password (minimum 8 characters).
+                        ${_t('auth.resetInstructions', 'Enter your one-time reset token and your new secure password (minimum 8 characters).')}
                     </div>
                     <div class="form-group-editorial">
-                        <label class="form-label-editorial text-[10px]">RESET TOKEN</label>
+                        <label class="form-label-editorial text-[10px]">${_t('auth.resetToken', 'RESET TOKEN')}</label>
                         <input type="text" id="auth-reset-token" required placeholder="Paste reset token here" class="form-input-editorial">
                     </div>
                     <div class="form-group-editorial">
-                        <label class="form-label-editorial text-[10px]">NEW PASSWORD (MIN. 8 CHARS)</label>
+                        <label class="form-label-editorial text-[10px]">${_t('auth.newPassword', 'NEW PASSWORD (MIN. 8 CHARS)')}</label>
                         <div class="password-input-wrap">
                             <input type="password" id="auth-reset-password" required minlength="8" placeholder="••••••••" class="form-input-editorial">
                             <button type="button" class="pw-toggle-btn" onclick="window.togglePasswordVisibility('auth-reset-password', this)" aria-label="Toggle password visibility" title="Show/Hide password">
-                                <svg class="eye-open" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
-                                <svg class="eye-closed hidden" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
+                                <svg class="eye-open" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
                             </button>
                         </div>
                     </div>
                     <button type="submit" class="btn-editorial-primary w-full mt-2" id="auth-reset-btn">
-                        RESET PASSWORD & INVALIDATE OLD SESSIONS →
+                        ${_t('auth.resetPassword', 'RESET PASSWORD')} &rarr;
                     </button>
                     <div class="text-center mt-2">
                         <button type="button" onclick="switchAuthTab('login')" class="text-xs font-mono text-[var(--bone-dim)] hover:text-white underline">
-                            ← Return to Sign In
+                            &larr; ${_t('auth.signIn', 'Return to Sign In')}
                         </button>
                     </div>
                 </form>
@@ -548,7 +550,7 @@ window.renderAuthView = async function() {
                 <div id="auth-oauth-section" class="relative my-5 text-center">
                     <hr class="border-[var(--border-subtle)]">
                     <span class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-[var(--ink-2)] px-3 font-mono text-[9px] text-[var(--bone-dim)] uppercase tracking-wider">
-                        OR SINGLE SIGN-ON
+                        ${_t('auth.orContinueWith', 'OR SINGLE SIGN-ON')}
                     </span>
                 </div>
 
@@ -561,7 +563,7 @@ window.renderAuthView = async function() {
                             <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z" fill="#FBBC05"/>
                             <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z" fill="#EA4335"/>
                         </svg>
-                        <span>Continue with Google</span>
+                        <span>${_t('auth.googleSignIn', 'Continue with Google')}</span>
                         <span class="ml-auto font-mono text-[9px] text-blue-400 font-medium">
                             Single Sign-On
                         </span>
@@ -570,30 +572,43 @@ window.renderAuthView = async function() {
 
                 <div class="text-center mt-3">
                     <button type="button" onclick="window.instantSanctuaryAccess()" class="font-mono text-[10px] text-[var(--bone-dim)] hover:text-[var(--vermilion)] underline transition-colors cursor-pointer" title="Enter Luminix immediately in Guest Sanctuary Mode">
-                        ⚡ Quick Sanctuary Guest Access &rarr;
+                        ⚡ ${_t('common.quickGuestAccess', 'Quick Sanctuary Guest Access')} &rarr;
                     </button>
                 </div>
 
                 <div class="mt-4 pt-3 border-t border-gray-200 text-center space-y-1.5">
                     <p class="font-mono text-[10px] text-editorial-dim">
-                        Encrypted with Argon2/Bcrypt + JWT HS256 & WAF Shield.
+                        ${_t('auth.securityCovenant', 'Encrypted with Argon2/Bcrypt + JWT HS256 & WAF Shield.')}
                     </p>
                     <div class="flex items-center justify-center gap-2 text-[10px] font-mono text-editorial-dim">
-                        <a href="/" class="underline hover:text-white">Sanctuary</a>
+                        <a href="/" class="underline hover:text-white">${_t('nav.sanctuary', 'Sanctuary')}</a>
                         <span>•</span>
-                        <a href="/privacy" class="underline hover:text-white">Privacy</a>
+                        <a href="/privacy" class="underline hover:text-white">${_t('settings.privacy', 'Privacy')}</a>
                         <span>•</span>
-                        <a href="/terms" class="underline hover:text-white">Terms</a>
+                        <a href="/terms" class="underline hover:text-white">${_t('settings.terms', 'Terms')}</a>
                         <span>•</span>
-                        <a href="/accessibility" class="underline hover:text-white">Accessibility</a>
-                    </div>
-                    <div class="text-[9px] font-mono text-editorial-dim pt-1 border-t border-gray-800/40">
-                        ♿ <strong>ACCESSIBILITY STATEMENT:</strong> Luminix conforms to WCAG 2.1 Level AA. <a href="/accessibility" class="underline hover:text-white">Read Statement &rarr;</a>
+                        <a href="/accessibility" class="underline hover:text-white">${_t('settings.accessibility', 'Accessibility')}</a>
                     </div>
                 </div>
             </div>
         </div>
     `;
+
+    // Mount language selector inside auth header
+    const langMount = document.getElementById('auth-lang-selector-mount');
+    if (langMount && window.luminixI18n?.createLanguageSelector) {
+        langMount.appendChild(window.luminixI18n.createLanguageSelector());
+    }
+
+    // Attach language change listener to re-render auth view dynamically
+    if (!window._authLangListenerAttached && window.luminixI18n?.onLanguageChange) {
+        window.luminixI18n.onLanguageChange(() => {
+            if (document.getElementById('auth-page-editorial')) {
+                window.renderAuthView();
+            }
+        });
+        window._authLangListenerAttached = true;
+    }
 
     const urlParams = new URLSearchParams(window.location.search);
     const resetToken = urlParams.get('reset_token') || urlParams.get('token_reset');
@@ -1509,13 +1524,15 @@ window.openUserProfileModal = async function() {
     const memberSince = activeUser.created_at ? new Date(activeUser.created_at).toLocaleDateString() : 'Active Member';
     const lastActive = activeUser.last_login ? new Date(activeUser.last_login).toLocaleTimeString() : 'Just now';
 
+    const _t = typeof t === 'function' ? t : (k) => k;
+
     overlay.innerHTML = `
         <div class="modal-box max-w-[520px]" onclick="event.stopPropagation()">
             <div class="flex items-center justify-between pb-3.5 border-b border-[var(--border-subtle)]">
                 <div class="flex items-center gap-2">
-                    <span class="hero-category-tag">BIOMETRIC SANCTUARY VAULT</span>
+                    <span class="hero-category-tag">${_t('auth.profile', 'BIOMETRIC SANCTUARY VAULT').toUpperCase()}</span>
                 </div>
-                <button type="button" onclick="closeUserProfileModal()" class="text-gray-400 hover:text-white font-mono text-lg font-bold">&times;</button>
+                <button type="button" onclick="closeUserProfileModal()" class="text-gray-400 hover:text-white font-mono text-lg font-bold" aria-label="${_t('common.close', 'Close')}">&times;</button>
             </div>
 
             <div class="flex items-center gap-4 my-4">
@@ -1529,34 +1546,48 @@ window.openUserProfileModal = async function() {
                     </div>
                 </div>
                 <button type="button" onclick="closeUserProfileModal(); window.openBiometricOnboardingModal();" class="btn-editorial-secondary text-[10px] py-1 px-2.5">
-                    EDIT SPECS ✎
+                    ${_t('common.edit', 'EDIT SPECS')} ✎
                 </button>
             </div>
 
             <!-- Registered Biometric Telemetry -->
             <div class="grid grid-cols-4 gap-2 mb-4">
                 <div class="stat-card p-2 text-center">
-                    <div class="font-mono text-[9px] text-[var(--text-dim)] uppercase">Weight</div>
+                    <div class="font-mono text-[9px] text-[var(--text-dim)] uppercase">${_t('nutrition.weight', 'Weight')}</div>
                     <div class="font-mono text-sm font-bold text-[var(--bone)] mt-0.5">${pData.weight || 72} kg</div>
                 </div>
                 <div class="stat-card p-2 text-center">
-                    <div class="font-mono text-[9px] text-[var(--text-dim)] uppercase">Age</div>
+                    <div class="font-mono text-[9px] text-[var(--text-dim)] uppercase">${_t('nutrition.age', 'Age')}</div>
                     <div class="font-mono text-sm font-bold text-[var(--bone)] mt-0.5">${pData.age || 26} yrs</div>
                 </div>
                 <div class="stat-card p-2 text-center">
-                    <div class="font-mono text-[9px] text-[var(--text-dim)] uppercase">Height</div>
+                    <div class="font-mono text-[9px] text-[var(--text-dim)] uppercase">${_t('nutrition.height', 'Height')}</div>
                     <div class="font-mono text-sm font-bold text-[var(--bone)] mt-0.5">${pData.height || 178} cm</div>
                 </div>
                 <div class="stat-card p-2 text-center">
-                    <div class="font-mono text-[9px] text-[var(--text-dim)] uppercase">Target Goal</div>
+                    <div class="font-mono text-[9px] text-[var(--text-dim)] uppercase">${_t('nutrition.goal', 'Target Goal')}</div>
                     <div class="font-mono text-[10px] font-bold text-[var(--vermilion)] mt-1 truncate">${(pData.goal || 'Hypertrophy').replace('_', ' ').toUpperCase()}</div>
                 </div>
+            </div>
+
+            <!-- Language Setting Row -->
+            <div class="bg-[rgba(255,255,255,0.02)] border border-[var(--border-subtle)] rounded-lg p-3 mb-4 flex items-center justify-between">
+                <div class="flex items-center gap-2.5">
+                    <span class="text-base">🌐</span>
+                    <div>
+                        <div class="font-display font-semibold text-xs text-[var(--bone)]">${_t('settings.language', 'Language')}</div>
+                        <div class="font-mono text-[10px] text-[var(--text-dim)]">${window.luminixI18n?.getLangConfig?.(window.luminixI18n?.getCurrentLang?.() || 'en')?.nativeName || 'English'} (${window.luminixI18n?.getLangConfig?.(window.luminixI18n?.getCurrentLang?.() || 'en')?.name || 'English'})</div>
+                    </div>
+                </div>
+                <button type="button" onclick="closeUserProfileModal(); window.toggleLanguageSelector?.();" class="btn-editorial-secondary text-[10px] py-1 px-3">
+                    ${_t('common.edit', 'Change')} ▾
+                </button>
             </div>
 
             <!-- Cloud Progress & Biomechanics Sync -->
             <div class="bg-[rgba(255,255,255,0.02)] border border-[var(--border-subtle)] rounded-lg p-3 mb-4">
                 <div class="flex items-center justify-between mb-2">
-                    <span class="font-mono text-[10px] uppercase font-bold text-[var(--bone-dim)]">CLOUD WORKOUT PROGRESS</span>
+                    <span class="font-mono text-[10px] uppercase font-bold text-[var(--bone-dim)]">${_t('dashboard.workoutProgress', 'CLOUD WORKOUT PROGRESS')}</span>
                     <span class="font-mono text-[10px] text-emerald-400 font-bold flex items-center gap-1">
                         <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
                         FIRESTORE SYNCED
@@ -1564,46 +1595,46 @@ window.openUserProfileModal = async function() {
                 </div>
                 <div class="grid grid-cols-4 gap-2 text-center mb-2.5">
                     <div class="p-2 rounded bg-white/5 border border-white/5">
-                        <div class="font-mono text-[9px] text-[var(--text-dim)] uppercase">Workouts</div>
+                        <div class="font-mono text-[9px] text-[var(--text-dim)] uppercase">${_t('dashboard.workout', 'Workouts')}</div>
                         <div class="font-mono text-sm font-bold text-[var(--bone)] mt-0.5" id="modal-cloud-workouts">0</div>
                     </div>
                     <div class="p-2 rounded bg-white/5 border border-white/5">
-                        <div class="font-mono text-[9px] text-[var(--text-dim)] uppercase">Total Reps</div>
+                        <div class="font-mono text-[9px] text-[var(--text-dim)] uppercase">${_t('gym.reps', 'Total Reps')}</div>
                         <div class="font-mono text-sm font-bold text-[var(--bone)] mt-0.5" id="modal-cloud-reps">0</div>
                     </div>
                     <div class="p-2 rounded bg-white/5 border border-white/5">
-                        <div class="font-mono text-[9px] text-[var(--text-dim)] uppercase">Yoga Holds</div>
+                        <div class="font-mono text-[9px] text-[var(--text-dim)] uppercase">${_t('yoga.title', 'Yoga Holds')}</div>
                         <div class="font-mono text-sm font-bold text-[var(--bone)] mt-0.5" id="modal-cloud-holds">0</div>
                     </div>
                     <div class="p-2 rounded bg-white/5 border border-white/5">
-                        <div class="font-mono text-[9px] text-[var(--text-dim)] uppercase">Active Streak</div>
+                        <div class="font-mono text-[9px] text-[var(--text-dim)] uppercase">${_t('dashboard.progress', 'Active Streak')}</div>
                         <div class="font-mono text-sm font-bold text-amber-400 mt-0.5" id="modal-cloud-streak">🔥 1d</div>
                     </div>
                 </div>
                 <div class="flex items-center justify-between text-[10px] font-mono text-[var(--bone-dim)] pt-2 border-t border-[var(--border-subtle)]">
-                    <span>Cloud Sync: Automatic on every set</span>
-                    <button type="button" onclick="window.luminixFirebase?.syncAccountOnLaunch?.()" class="text-[var(--vermilion)] hover:underline font-bold">↻ SYNC NOW</button>
+                    <span>${_t('dashboard.autoSync', 'Cloud Sync: Automatic on every set')}</span>
+                    <button type="button" onclick="window.luminixFirebase?.syncAccountOnLaunch?.()" class="text-[var(--vermilion)] hover:underline font-bold">↻ ${_t('common.retry', 'SYNC NOW')}</button>
                 </div>
             </div>
 
             <!-- Privacy Covenant & Firebase Status -->
             <div class="bg-[rgba(255,255,255,0.02)] border border-[var(--border-subtle)] rounded-lg p-3 mb-4">
                 <div class="flex items-center justify-between mb-1.5">
-                    <span class="font-mono text-[10px] uppercase font-bold text-[var(--bone-dim)]">Zero-Leak Privacy Status</span>
+                    <span class="font-mono text-[10px] uppercase font-bold text-[var(--bone-dim)]">${_t('auth.privacyCovenant', 'Zero-Leak Privacy Status')}</span>
                     <span class="font-mono text-[10px] text-emerald-400 font-semibold">&check; Strictly Protected (Cloud Firestore)</span>
                 </div>
                 <p class="font-mono text-[9.5px] text-[var(--text-dim)] leading-relaxed">
-                    Client-side inference active. Biometrics and exercise telemetry are synchronized to your Cloud Firestore account. Zero third-party sharing.
+                    ${_t('auth.privacyDescription', 'Client-side inference active. Biometrics and exercise telemetry are synchronized to your Cloud Firestore account. Zero third-party sharing.')}
                 </p>
             </div>
 
             <div class="grid grid-cols-2 gap-3 mb-4">
                 <div class="stat-card">
-                    <div class="stat-label">MEMBER SINCE</div>
+                    <div class="stat-label">${_t('dashboard.memberSince', 'MEMBER SINCE').toUpperCase()}</div>
                     <div class="font-mono text-xs font-semibold text-[var(--bone)] mt-1">${memberSince}</div>
                 </div>
                 <div class="stat-card">
-                    <div class="stat-label">LAST ACTIVE</div>
+                    <div class="stat-label">${_t('dashboard.lastActive', 'LAST ACTIVE').toUpperCase()}</div>
                     <div class="font-mono text-xs font-semibold text-[var(--bone)] mt-1">${lastActive}</div>
                 </div>
             </div>
@@ -1612,17 +1643,17 @@ window.openUserProfileModal = async function() {
             <!-- Account & Security Controls (DPDP Act & Security Hardening) -->
             <div class="border border-[var(--border-subtle)] rounded-lg p-3 mb-4 bg-[rgba(255,255,255,0.015)]">
                 <div class="flex items-center justify-between">
-                    <span class="font-mono text-[10px] uppercase font-bold text-[var(--bone-dim)]">Account Security & Privacy</span>
-                    <button type="button" onclick="document.getElementById('profile-sec-box')?.classList.toggle('hidden')" class="text-[10px] font-mono text-[var(--vermilion)] underline">Manage ▾</button>
+                    <span class="font-mono text-[10px] uppercase font-bold text-[var(--bone-dim)]">${_t('settings.security', 'Account Security & Privacy')}</span>
+                    <button type="button" onclick="document.getElementById('profile-sec-box')?.classList.toggle('hidden')" class="text-[10px] font-mono text-[var(--vermilion)] underline">${_t('common.edit', 'Manage')} ▾</button>
                 </div>
                 <div id="profile-sec-box" class="hidden space-y-3 pt-2 mt-2 border-t border-[var(--border-subtle)]">
                     <!-- Change Password -->
                     <form onsubmit="window.submitChangePasswordInModal(event)" class="space-y-2">
-                        <div class="text-[10px] font-mono font-bold text-[var(--bone)]">CHANGE PASSWORD</div>
+                        <div class="text-[10px] font-mono font-bold text-[var(--bone)]">${_t('auth.password', 'CHANGE PASSWORD')}</div>
                         <input type="password" id="modal-old-pw" placeholder="Current password" required class="form-input-editorial text-xs py-1.5 px-2 w-full">
                         <input type="password" id="modal-new-pw" minlength="8" placeholder="New password (min 8 chars)" required class="form-input-editorial text-xs py-1.5 px-2 w-full">
                         <div class="flex items-center justify-between pt-1">
-                            <button type="submit" id="modal-pw-btn" class="btn-editorial-secondary text-[10px] py-1 px-3">Update Password</button>
+                            <button type="submit" id="modal-pw-btn" class="btn-editorial-secondary text-[10px] py-1 px-3">${_t('common.save', 'Update Password')}</button>
                             <span id="modal-pw-status" class="text-[10px] font-mono"></span>
                         </div>
                     </form>
@@ -1632,7 +1663,7 @@ window.openUserProfileModal = async function() {
                         <div class="text-[10px] font-mono font-bold text-red-400">DATA PRIVACY: RIGHT TO ERASURE</div>
                         <p class="text-[9px] font-mono text-gray-400 mb-2">Permanently purge your account, biometric telemetry, and credentials from all databases.</p>
                         <button type="button" onclick="window.promptDeleteAccountModal()" class="btn-editorial-secondary text-red-400 border-red-800/60 hover:bg-red-950/40 text-[10px] py-1 px-2.5">
-                            Delete Account & Erase All Data
+                            ${_t('settings.deleteAccount', 'Delete Account & Erase All Data')}
                         </button>
                     </div>
                 </div>
@@ -1641,14 +1672,14 @@ window.openUserProfileModal = async function() {
 
             <div class="flex items-center justify-between pt-2 border-t border-[var(--border-subtle)]">
                 <button type="button" onclick="luminixAuth.logout(); localStorage.removeItem('luminix_guest_profile'); window.updateUserProfileUI(); closeUserProfileModal();" class="btn-editorial-secondary text-red-400 hover:border-red-500 hover:text-red-300 text-xs py-2 px-3">
-                    ${user ? 'SIGN OUT' : 'RESET GUEST VAULT'}
+                    ${user ? _t('auth.signOut', 'SIGN OUT') : _t('auth.resetVault', 'RESET GUEST VAULT')}
                 </button>
                 <div class="flex items-center gap-2">
                     <button type="button" onclick="closeUserProfileModal(); window.openBiometricOnboardingModal();" class="btn-editorial-secondary text-[var(--vermilion)] border-[rgba(224,35,28,0.4)] hover:border-[var(--vermilion)] text-xs py-2 px-3">
-                        ⚡ RE-CONFIGURE
+                        ⚡ ${_t('settings.reconfigure', 'RE-CONFIGURE')}
                     </button>
                     <button type="button" onclick="closeUserProfileModal()" class="btn-editorial-primary text-xs py-2 px-5">
-                        DONE &rarr;
+                        ${_t('common.done', 'DONE')} &rarr;
                     </button>
                 </div>
             </div>

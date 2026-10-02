@@ -1,0 +1,13 @@
+{
+  "yoga": {
+    "title": "17式瑜伽体式",
+    "pose": "体式",
+    "breathing": "呼吸",
+    "startSession": "开始课程",
+    "beginner": "初学者",
+    "intermediate": "中级",
+    "advanced": "高级",
+    "inhale": "吸气",
+    "exhale": "呼气"
+  }
+}

@@ -1,0 +1,20 @@
+{
+  "notifications": {
+    "success": "విజయం",
+    "warning": "హెచ్చరిక",
+    "error": "లోపం",
+    "info": "సమాచారం",
+    "healthAlert": "ఆరోగ్య హెచ్చరిక",
+    "deviceConnected": "పరికరం విజయవంతంగా కనెక్ట్ అయింది",
+    "syncComplete": "సమకాలీకరణ పూర్తయింది",
+    "profileUpdated": "ప్రొఫైల్ నవీకరించబడింది",
+    "workoutComplete": "వర్కౌట్ పూర్తయింది!",
+    "confirmAction": "చర్య నిర్ధారించు",
+    "areYouSure": "మీరు నిజంగా కొనసాగించాలనుకుంటున్నారా?",
+    "proceed": "కొనసాగించు",
+    "acceptAll": "అన్నీ అంగీకరించు",
+    "essentialOnly": "అవసరమైనవి మాత్రమే",
+    "customize": "అనుకూలీకరించు",
+    "savePreferences": "ప్రాధాన్యతలు భద్రపరచు"
+  }
+}

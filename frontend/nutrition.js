@@ -3,6 +3,9 @@
    BLACK × YELLOW × CYAN × METABOLIC INTELLIGENCE
    ═══════════════════════════════════════════════════════════════════ */
 
+// ── Localization Helper ───────────────────────────────────────────
+const _t = (key, fallback) => (typeof window.t === 'function' ? window.t(key) : null) || fallback;
+
 // ── Shared State & Persistence ───────────────────────────────────
 const NUTRITION_STORAGE_KEY = 'luminix_nutrition_profile';
 const FOOD_LOG_STORAGE_KEY = 'luminix_food_logs';
@@ -112,31 +115,31 @@ function computeClientMetrics(p = healthProfile) {
     const h_m = p.height_cm / 100.0;
     const bmi = p.weight_kg / (h_m * h_m);
     
-    let category = 'Normal Weight';
+    let category = _t('nutrition.normal', 'Normal Weight');
     let catClass = 'badge-emerald';
     let catColor = '#10B981';
-    let catDesc = 'You are in a healthy weight range. Maintain balanced nutrition and progressive overload.';
+    let catDesc = _t('nutrition.bmiDescNormal', 'You are in a healthy weight range. Maintain balanced nutrition and progressive overload.');
     
     if (bmi < 18.5) {
-        category = 'Underweight';
+        category = _t('nutrition.underweight', 'Underweight');
         catClass = 'badge-slate';
         catColor = '#94A3B8';
-        catDesc = 'Focus on nutrient-dense caloric surplus, healthy fats, and strength training to build lean mass.';
+        catDesc = _t('nutrition.bmiDescUnder', 'Focus on nutrient-dense caloric surplus, healthy fats, and strength training to build lean mass.');
     } else if (bmi < 25) {
-        category = 'Normal Weight';
+        category = _t('nutrition.normal', 'Normal Weight');
         catClass = 'badge-emerald';
         catColor = '#10B981';
-        catDesc = 'Optimal metabolic baseline. Focus on athletic performance, agility, and body recomposition.';
+        catDesc = _t('nutrition.bmiDescNormal', 'Optimal metabolic baseline. Focus on athletic performance, agility, and body recomposition.');
     } else if (bmi < 30) {
-        category = 'Overweight';
+        category = _t('nutrition.overweight', 'Overweight');
         catClass = 'badge-amber';
         catColor = '#F59E0B';
-        catDesc = 'Target a modest caloric deficit (300-500 kcal), prioritize high protein intake and daily activity.';
+        catDesc = _t('nutrition.bmiDescOver', 'Target a modest caloric deficit (300-500 kcal), prioritize high protein intake and daily activity.');
     } else {
-        category = 'Obese';
+        category = _t('nutrition.obese', 'Obese');
         catClass = 'badge-vermilion';
         catColor = '#E0231C';
-        catDesc = 'Structured caloric deficit, low-impact cardio, strength training, and whole foods are recommended.';
+        catDesc = _t('nutrition.bmiDescObese', 'Structured caloric deficit, low-impact cardio, strength training, and whole foods are recommended.');
     }
 
     // BMR Mifflin-St Jeor
@@ -272,9 +275,9 @@ window.renderBMIView = function(container) {
         <!-- Hero Header -->
         <div class="mb-6 relative overflow-hidden p-8 rounded-xl glass-card" style="background: linear-gradient(90deg, var(--black-1) 30%, transparent), url('/assets/Toji fushiguro (2).jpeg') center/cover; background-blend-mode: multiply; background-position: center 25%;">
             <div class="relative z-10">
-                <div class="hero-category-tag mb-2"><span class="w-2 h-2 rounded-full bg-[var(--vermilion)] inline-block shadow-[0_0_8px_var(--vermilion)] mr-1.5"></span> MODULE // METABOLIC INTELLIGENCE</div>
-                <h2 class="module-title-large">BMI & <span class="text-vermilion font-display font-extrabold">CALCULATOR.</span></h2>
-                <p style="color:var(--bone-dim);font-size:0.85rem; max-width: 500px;">Compute Body Mass Index, BMR (Mifflin & Harris-Benedict), TDEE, and optimal macro distribution with precision.</p>
+                <div class="hero-category-tag mb-2"><span class="w-2 h-2 rounded-full bg-[var(--vermilion)] inline-block shadow-[0_0_8px_var(--vermilion)] mr-1.5"></span> ${_t('nutrition.moduleTag', 'MODULE // METABOLIC INTELLIGENCE')}</div>
+                <h2 class="module-title-large">${_t('nutrition.bmi', 'BMI')} & <span class="text-vermilion font-display font-extrabold">${_t('nutrition.calculate', 'CALCULATOR.')}</span></h2>
+                <p style="color:var(--bone-dim);font-size:0.85rem; max-width: 500px;">${_t('nutrition.bmiPageDesc', 'Compute Body Mass Index, BMR (Mifflin & Harris-Benedict), TDEE, and optimal macro distribution with precision.')}</p>
             </div>
         </div>
 
@@ -284,26 +287,26 @@ window.renderBMIView = function(container) {
                 <div class="flex items-center justify-between border-b border-white/10 pb-4">
                     <h3 class="font-display font-extrabold text-[var(--vermilion)] tracking-wider text-base flex items-center gap-2" style="text-shadow: 0 0 16px rgba(224, 35, 28, 0.45);">
                         <span class="w-2 h-2 rounded-full bg-[var(--vermilion)] inline-block shadow-[0_0_8px_var(--vermilion)]"></span>
-                        METRIC CONTROLS
+                        ${_t('nutrition.metricControls', 'METRIC CONTROLS')}
                     </h3>
                     <div class="flex items-center bg-black/40 p-1 rounded-lg border border-white/10">
-                        <button onclick="setUnits('metric')" class="px-3 py-1 text-xs rounded font-bold transition-all ${!isImperial ? 'bg-[var(--vermilion)] text-white shadow-[0_0_10px_rgba(224,35,28,0.4)]' : 'text-[var(--bone-dim)] hover:text-white'}">Metric (kg/cm)</button>
-                        <button onclick="setUnits('imperial')" class="px-3 py-1 text-xs rounded font-bold transition-all ${isImperial ? 'bg-[var(--vermilion)] text-white shadow-[0_0_10px_rgba(224,35,28,0.4)]' : 'text-[var(--bone-dim)] hover:text-white'}">Imperial (lbs/ft)</button>
+                        <button onclick="setUnits('metric')" class="px-3 py-1 text-xs rounded font-bold transition-all ${!isImperial ? 'bg-[var(--vermilion)] text-white shadow-[0_0_10px_rgba(224,35,28,0.4)]' : 'text-[var(--bone-dim)] hover:text-white'}">${_t('nutrition.metricUnit', 'Metric (kg/cm)')}</button>
+                        <button onclick="setUnits('imperial')" class="px-3 py-1 text-xs rounded font-bold transition-all ${isImperial ? 'bg-[var(--vermilion)] text-white shadow-[0_0_10px_rgba(224,35,28,0.4)]' : 'text-[var(--bone-dim)] hover:text-white'}">${_t('nutrition.imperialUnit', 'Imperial (lbs/ft)')}</button>
                     </div>
                 </div>
 
                 <!-- Age & Gender -->
                 <div class="grid grid-cols-2 gap-4">
                     <div>
-                        <label class="text-xs text-[var(--bone-dim)] block mb-1 font-semibold uppercase tracking-wider">Age (Years)</label>
+                        <label class="text-xs text-[var(--bone-dim)] block mb-1 font-semibold uppercase tracking-wider">${_t('nutrition.age', 'Age (Years)')}</label>
                         <input type="number" id="inp-age" min="10" max="100" value="${healthProfile.age}" style="background:#0c1017 !important; color:#ffffff !important; border:1px solid rgba(223,231,224,0.22) !important; padding:0.65rem 0.85rem !important; border-radius:8px !important; font-weight:600 !important;" class="w-full" oninput="onBMIParamChange()">
                     </div>
                     <div>
-                        <label class="text-xs text-[var(--bone-dim)] block mb-1 font-semibold uppercase tracking-wider">Biological Sex</label>
+                        <label class="text-xs text-[var(--bone-dim)] block mb-1 font-semibold uppercase tracking-wider">${_t('nutrition.gender', 'Biological Sex')}</label>
                         <select id="inp-gender" style="background:#0c1017 !important; color:#ffffff !important; border:1px solid rgba(223,231,224,0.22) !important; padding:0.65rem 0.85rem !important; border-radius:8px !important; font-weight:600 !important;" class="w-full" onchange="onBMIParamChange()">
-                            <option value="male" ${healthProfile.gender === 'male' ? 'selected' : ''}>Male</option>
-                            <option value="female" ${healthProfile.gender === 'female' ? 'selected' : ''}>Female</option>
-                            <option value="other" ${healthProfile.gender === 'other' ? 'selected' : ''}>Other</option>
+                            <option value="male" ${healthProfile.gender === 'male' ? 'selected' : ''}>${_t('nutrition.male', 'Male')}</option>
+                            <option value="female" ${healthProfile.gender === 'female' ? 'selected' : ''}>${_t('nutrition.female', 'Female')}</option>
+                            <option value="other" ${healthProfile.gender === 'other' ? 'selected' : ''}>${_t('nutrition.nonBinary', 'Other')}</option>
                         </select>
                     </div>
                 </div>
@@ -312,7 +315,7 @@ window.renderBMIView = function(container) {
                 ${!isImperial ? `
                     <div>
                         <div class="flex justify-between text-xs mb-1">
-                            <span class="text-[var(--bone-dim)] font-semibold uppercase tracking-wider">Height (cm)</span>
+                            <span class="text-[var(--bone-dim)] font-semibold uppercase tracking-wider">${_t('nutrition.height', 'Height')} (cm)</span>
                             <span class="text-[var(--vermilion)] font-bold font-mono" id="val-height-cm">${healthProfile.height_cm} cm</span>
                         </div>
                         <input type="range" id="range-height-cm" min="120" max="230" value="${healthProfile.height_cm}" class="w-full accent-[var(--vermilion)]" oninput="syncHeightMetric(this.value)">
@@ -320,14 +323,14 @@ window.renderBMIView = function(container) {
                     </div>
                 ` : `
                     <div>
-                        <span class="text-[var(--bone-dim)] font-semibold uppercase text-xs block mb-1 tracking-wider">Height (Feet & Inches)</span>
+                        <span class="text-[var(--bone-dim)] font-semibold uppercase text-xs block mb-1 tracking-wider">${_t('nutrition.height', 'Height')} (${_t('nutrition.feetAndInches', 'Feet & Inches')})</span>
                         <div class="grid grid-cols-2 gap-3">
                             <div>
-                                <label class="text-xs text-[var(--bone-dim)]">Feet</label>
+                                <label class="text-xs text-[var(--bone-dim)]">${_t('nutrition.feet', 'Feet')}</label>
                                 <input type="number" id="inp-height-ft" min="3" max="8" value="${dispFeet}" style="background:#0c1017 !important; color:#ffffff !important; border:1px solid rgba(223,231,224,0.22) !important; padding:0.65rem 0.85rem !important; border-radius:8px !important; font-weight:600 !important;" class="w-full" oninput="syncHeightImperial()">
                             </div>
                             <div>
-                                <label class="text-xs text-[var(--bone-dim)]">Inches</label>
+                                <label class="text-xs text-[var(--bone-dim)]">${_t('nutrition.inches', 'Inches')}</label>
                                 <input type="number" id="inp-height-in" min="0" max="11" value="${dispInches}" style="background:#0c1017 !important; color:#ffffff !important; border:1px solid rgba(223,231,224,0.22) !important; padding:0.65rem 0.85rem !important; border-radius:8px !important; font-weight:600 !important;" class="w-full" oninput="syncHeightImperial()">
                             </div>
                         </div>
@@ -338,7 +341,7 @@ window.renderBMIView = function(container) {
                 ${!isImperial ? `
                     <div>
                         <div class="flex justify-between text-xs mb-1">
-                            <span class="text-[var(--bone-dim)] font-semibold uppercase tracking-wider">Weight (kg)</span>
+                            <span class="text-[var(--bone-dim)] font-semibold uppercase tracking-wider">${_t('nutrition.weight', 'Weight')} (kg)</span>
                             <span class="text-[var(--ember)] font-bold font-mono" id="val-weight-kg">${healthProfile.weight_kg} kg</span>
                         </div>
                         <input type="range" id="range-weight-kg" min="30" max="200" step="0.5" value="${healthProfile.weight_kg}" class="w-full accent-[var(--ember)]" oninput="syncWeightMetric(this.value)">
@@ -347,7 +350,7 @@ window.renderBMIView = function(container) {
                 ` : `
                     <div>
                         <div class="flex justify-between text-xs mb-1">
-                            <span class="text-[var(--bone-dim)] font-semibold uppercase tracking-wider">Weight (lbs)</span>
+                            <span class="text-[var(--bone-dim)] font-semibold uppercase tracking-wider">${_t('nutrition.weight', 'Weight')} (lbs)</span>
                             <span class="text-[var(--ember)] font-bold font-mono" id="val-weight-lbs">${dispWeight} lbs</span>
                         </div>
                         <input type="range" id="range-weight-lbs" min="65" max="450" step="1" value="${dispWeight}" class="w-full accent-[var(--ember)]" oninput="syncWeightImperial(this.value)">
@@ -357,33 +360,33 @@ window.renderBMIView = function(container) {
 
                 <!-- Activity Level -->
                 <div>
-                    <label class="text-xs text-[var(--bone-dim)] block mb-1 font-semibold uppercase tracking-wider">Daily Activity Factor</label>
+                    <label class="text-xs text-[var(--bone-dim)] block mb-1 font-semibold uppercase tracking-wider">${_t('nutrition.activityLevel', 'Daily Activity Factor')}</label>
                     <select id="inp-activity" style="background:#0c1017 !important; color:#ffffff !important; border:1px solid rgba(223,231,224,0.22) !important; padding:0.65rem 0.85rem !important; border-radius:8px !important; font-weight:600 !important;" class="w-full" onchange="onBMIParamChange()">
-                        <option value="sedentary" ${healthProfile.activity_level === 'sedentary' ? 'selected' : ''}>Sedentary (Little or no exercise, desk job)</option>
-                        <option value="light" ${healthProfile.activity_level === 'light' ? 'selected' : ''}>Lightly Active (Exercise 1-3 days/week)</option>
-                        <option value="moderate" ${healthProfile.activity_level === 'moderate' ? 'selected' : ''}>Moderately Active (Exercise 3-5 days/week)</option>
-                        <option value="active" ${healthProfile.activity_level === 'active' ? 'selected' : ''}>Very Active (Hard training 6-7 days/week)</option>
-                        <option value="very_active" ${healthProfile.activity_level === 'very_active' ? 'selected' : ''}>Athletic / Heavy Physical Job</option>
+                        <option value="sedentary" ${healthProfile.activity_level === 'sedentary' ? 'selected' : ''}>${_t('nutrition.sedentary', 'Sedentary (Little or no exercise, desk job)')}</option>
+                        <option value="light" ${healthProfile.activity_level === 'light' ? 'selected' : ''}>${_t('nutrition.lightlyActive', 'Lightly Active (Exercise 1-3 days/week)')}</option>
+                        <option value="moderate" ${healthProfile.activity_level === 'moderate' ? 'selected' : ''}>${_t('nutrition.moderatelyActive', 'Moderately Active (Exercise 3-5 days/week)')}</option>
+                        <option value="active" ${healthProfile.activity_level === 'active' ? 'selected' : ''}>${_t('nutrition.veryActive', 'Very Active (Hard training 6-7 days/week)')}</option>
+                        <option value="very_active" ${healthProfile.activity_level === 'very_active' ? 'selected' : ''}>${_t('nutrition.extremelyActive', 'Athletic / Heavy Physical Job')}</option>
                     </select>
                 </div>
 
                 <!-- Fitness Goal -->
                 <div class="grid grid-cols-2 gap-4">
                     <div>
-                        <label class="text-xs text-[var(--bone-dim)] block mb-1 font-semibold uppercase tracking-wider">Target Goal</label>
+                        <label class="text-xs text-[var(--bone-dim)] block mb-1 font-semibold uppercase tracking-wider">${_t('nutrition.goal', 'Target Goal')}</label>
                         <select id="inp-goal" style="background:#0c1017 !important; color:#ffffff !important; border:1px solid rgba(223,231,224,0.22) !important; padding:0.65rem 0.85rem !important; border-radius:8px !important; font-weight:600 !important;" class="w-full" onchange="onBMIParamChange()">
-                            <option value="fat_loss" ${healthProfile.fitness_goal === 'fat_loss' ? 'selected' : ''}>Fat Loss (-18% Deficit)</option>
-                            <option value="maintenance" ${healthProfile.fitness_goal === 'maintenance' ? 'selected' : ''}>Maintenance (Recomp)</option>
-                            <option value="muscle_gain" ${healthProfile.fitness_goal === 'muscle_gain' ? 'selected' : ''}>Muscle Gain (+12% Surplus)</option>
+                            <option value="fat_loss" ${healthProfile.fitness_goal === 'fat_loss' ? 'selected' : ''}>${_t('nutrition.loseFat', 'Fat Loss (-18% Deficit)')}</option>
+                            <option value="maintenance" ${healthProfile.fitness_goal === 'maintenance' ? 'selected' : ''}>${_t('nutrition.maintain', 'Maintenance (Recomp)')}</option>
+                            <option value="muscle_gain" ${healthProfile.fitness_goal === 'muscle_gain' ? 'selected' : ''}>${_t('nutrition.buildMuscle', 'Muscle Gain (+12% Surplus)')}</option>
                         </select>
                     </div>
                     <div>
-                        <label class="text-xs text-[var(--bone-dim)] block mb-1 font-semibold uppercase tracking-wider">Diet Type</label>
+                        <label class="text-xs text-[var(--bone-dim)] block mb-1 font-semibold uppercase tracking-wider">${_t('nutrition.dietType', 'Diet Type')}</label>
                         <select id="inp-diet" style="background:#0c1017 !important; color:#ffffff !important; border:1px solid rgba(223,231,224,0.22) !important; padding:0.65rem 0.85rem !important; border-radius:8px !important; font-weight:600 !important;" class="w-full" onchange="onBMIParamChange()">
-                            <option value="omnivore" ${healthProfile.diet_preference === 'omnivore' ? 'selected' : ''}>Omnivore / Standard</option>
-                            <option value="vegetarian" ${healthProfile.diet_preference === 'vegetarian' ? 'selected' : ''}>Vegetarian</option>
-                            <option value="vegan" ${healthProfile.diet_preference === 'vegan' ? 'selected' : ''}>Vegan (Plant-Based)</option>
-                            <option value="keto" ${healthProfile.diet_preference === 'keto' ? 'selected' : ''}>Keto / Low-Carb</option>
+                            <option value="omnivore" ${healthProfile.diet_preference === 'omnivore' ? 'selected' : ''}>${_t('nutrition.omnivore', 'Omnivore / Standard')}</option>
+                            <option value="vegetarian" ${healthProfile.diet_preference === 'vegetarian' ? 'selected' : ''}>${_t('nutrition.vegetarian', 'Vegetarian')}</option>
+                            <option value="vegan" ${healthProfile.diet_preference === 'vegan' ? 'selected' : ''}>${_t('nutrition.vegan', 'Vegan (Plant-Based)')}</option>
+                            <option value="keto" ${healthProfile.diet_preference === 'keto' ? 'selected' : ''}>${_t('nutrition.keto', 'Keto / Low-Carb')}</option>
                         </select>
                     </div>
                 </div>
@@ -391,10 +394,10 @@ window.renderBMIView = function(container) {
                 <!-- Action Buttons -->
                 <div class="pt-2 flex gap-3">
                     <button onclick="saveBMILog()" class="btn-editorial-primary w-full py-3 text-xs tracking-wider uppercase font-mono">
-                        Save to Health Profile →
+                        ${_t('nutrition.saveProfile', 'Save to Health Profile')} →
                     </button>
                     <button onclick="applyTargetsToTracker()" class="btn-secondary py-3 text-xs tracking-wider uppercase text-yellow">
-                        Sync To Food Tracker →
+                        ${_t('nutrition.syncTracker', 'Sync To Food Tracker')} →
                     </button>
                 </div>
             </div>
@@ -405,14 +408,14 @@ window.renderBMIView = function(container) {
                 <div class="glass-card p-6 rounded-xl relative overflow-hidden" id="bmi-score-card">
                     <div class="flex flex-wrap items-center justify-between gap-4 mb-4">
                         <div>
-                            <span class="text-xs text-dim font-bold tracking-widest uppercase">BODY MASS INDEX</span>
+                            <span class="text-xs text-dim font-bold tracking-widest uppercase">${_t('nutrition.bodyMassIndex', 'BODY MASS INDEX')}</span>
                             <div class="flex items-baseline gap-3 mt-1">
                                 <span class="text-5xl font-black text-white" id="disp-bmi-val">${metrics.bmi}</span>
                                 <span class="badge ${metrics.catClass} text-sm font-bold uppercase tracking-wider px-3 py-1" id="disp-bmi-badge">${metrics.category}</span>
                             </div>
                         </div>
                         <div class="text-right">
-                            <span class="text-xs text-dim block">Healthy Weight Target:</span>
+                            <span class="text-xs text-dim block">${_t('nutrition.healthyTarget', 'Healthy Weight Target:')}</span>
                             <span class="text-sm font-bold text-[#10b981]" id="disp-healthy-range">
                                 ${!isImperial ? `${metrics.healthy_range_kg[0]} – ${metrics.healthy_range_kg[1]} kg` : `${Math.round(metrics.healthy_range_kg[0] * 2.20462)} – ${Math.round(metrics.healthy_range_kg[1] * 2.20462)} lbs`}
                             </span>
@@ -438,10 +441,10 @@ window.renderBMIView = function(container) {
 
                         <!-- 4 Perfectly Aligned Segment Labels -->
                         <div class="flex text-[10px] font-mono font-bold uppercase mt-1 px-1">
-                            <span style="width: 25%; text-align: left; color: #94a3b8;">&lt; 18.5 Under</span>
-                            <span style="width: 25%; text-align: center; color: #10b981;">18.5 – 24.9 Normal</span>
-                            <span style="width: 25%; text-align: center; color: #f59e0b;">25 – 29.9 Over</span>
-                            <span style="width: 25%; text-align: right; color: #e0231c;">30+ Obese</span>
+                            <span style="width: 25%; text-align: left; color: #94a3b8;">&lt; 18.5 ${_t('nutrition.underweight', 'Under')}</span>
+                            <span style="width: 25%; text-align: center; color: #10b981;">18.5 – 24.9 ${_t('nutrition.normal', 'Normal')}</span>
+                            <span style="width: 25%; text-align: center; color: #f59e0b;">25 – 29.9 ${_t('nutrition.overweight', 'Over')}</span>
+                            <span style="width: 25%; text-align: right; color: #e0231c;">30+ ${_t('nutrition.obese', 'Obese')}</span>
                         </div>
                     </div>
 
@@ -453,34 +456,34 @@ window.renderBMIView = function(container) {
                 <!-- Metabolic Rates & Energy Grid (BMR, TDEE, Target Calories) -->
                 <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
                     <div class="glass-card p-4 rounded-xl text-center">
-                        <span class="text-[10px] text-dim uppercase tracking-wider font-bold block">BMR (Mifflin)</span>
+                        <span class="text-[10px] text-dim uppercase tracking-wider font-bold block">${_t('nutrition.bmr', 'BMR')} (Mifflin)</span>
                         <div class="text-xl font-extrabold text-white mt-1" id="disp-bmr-msj">${metrics.bmr_msj}</div>
-                        <span class="text-[10px] text-dim font-mono">kcal/day basal</span>
+                        <span class="text-[10px] text-dim font-mono">${_t('nutrition.kcalDayBasal', 'kcal/day basal')}</span>
                     </div>
 
                     <div class="glass-card p-4 rounded-xl text-center">
-                        <span class="text-[10px] text-dim uppercase tracking-wider font-bold block">BMR (Harris-B)</span>
+                        <span class="text-[10px] text-dim uppercase tracking-wider font-bold block">${_t('nutrition.bmr', 'BMR')} (Harris-B)</span>
                         <div class="text-xl font-extrabold text-white mt-1" id="disp-bmr-hb">${metrics.bmr_hb}</div>
-                        <span class="text-[10px] text-secondary font-mono">kcal/day basal</span>
+                        <span class="text-[10px] text-secondary font-mono">${_t('nutrition.kcalDayBasal', 'kcal/day basal')}</span>
                     </div>
 
                     <div class="glass-card p-4 rounded-xl text-center">
-                        <span class="text-[10px] text-dim uppercase tracking-wider font-bold block">TDEE Burn</span>
+                        <span class="text-[10px] text-dim uppercase tracking-wider font-bold block">${_t('nutrition.tdee', 'TDEE')}</span>
                         <div class="text-xl font-extrabold text-yellow mt-1" id="disp-tdee">${metrics.tdee}</div>
-                        <span class="text-[10px] text-yellow font-mono">daily energy</span>
+                        <span class="text-[10px] text-yellow font-mono">${_t('nutrition.dailyEnergy', 'daily energy')}</span>
                     </div>
 
                     <div class="glass-card p-4 rounded-xl text-center border border-[rgba(224,35,28,0.3)]" style="box-shadow: 0 0 15px rgba(224,35,28,0.08);">
-                        <span class="text-[10px] text-[var(--vermilion)] uppercase tracking-wider font-bold block">Target Calories</span>
+                        <span class="text-[10px] text-[var(--vermilion)] uppercase tracking-wider font-bold block">${_t('nutrition.targetCalories', 'Target Calories')}</span>
                         <div class="text-xl font-black text-white mt-1" id="disp-target-kcal">${metrics.target_kcal}</div>
-                        <span class="text-[10px] text-dim font-mono">goal adjusted</span>
+                        <span class="text-[10px] text-dim font-mono">${_t('nutrition.goalAdjusted', 'goal adjusted')}</span>
                     </div>
                 </div>
 
                 <!-- Macro Targets Breakdown -->
                 <div class="glass-card p-6 rounded-xl">
                     <div class="flex items-center justify-between mb-4">
-                        <h4 style="font-family:var(--font-display);font-size:1.05rem;font-weight:700;color:var(--white)">DAILY TARGET MACRO DISTRIBUTION</h4>
+                        <h4 style="font-family:var(--font-display);font-size:1.05rem;font-weight:700;color:var(--white)">${_t('nutrition.macroSplit', 'DAILY TARGET MACRO DISTRIBUTION')}</h4>
                         <span class="badge badge-amber text-xs font-bold">${healthProfile.fitness_goal.replace('_', ' ').toUpperCase()}</span>
                     </div>
 
@@ -496,7 +499,7 @@ window.renderBMIView = function(container) {
                         <div class="bg-black/30 p-3 rounded-lg border border-[#10b981]/25">
                             <div class="flex items-center gap-1.5 mb-1">
                                 <span class="w-2 h-2 rounded-full inline-block" style="background: #10b981;"></span>
-                                <span class="text-xs text-dim font-bold uppercase">Protein</span>
+                                <span class="text-xs text-dim font-bold uppercase">${_t('nutrition.protein', 'Protein')}</span>
                             </div>
                             <div class="text-lg font-black text-white" id="disp-macro-protein">${metrics.macros.protein_g}g</div>
                             <div class="text-[11px] font-mono" style="color: #10b981;" id="disp-macro-protein-sub">${metrics.macros.protein_g * 4} kcal (${metrics.macros.protein_pct}%)</div>
@@ -505,7 +508,7 @@ window.renderBMIView = function(container) {
                         <div class="bg-black/30 p-3 rounded-lg border border-[#f59e0b]/25">
                             <div class="flex items-center gap-1.5 mb-1">
                                 <span class="w-2 h-2 rounded-full inline-block" style="background: #f59e0b;"></span>
-                                <span class="text-xs text-dim font-bold uppercase">Carbs</span>
+                                <span class="text-xs text-dim font-bold uppercase">${_t('nutrition.carbs', 'Carbs')}</span>
                             </div>
                             <div class="text-lg font-black text-white" id="disp-macro-carbs">${metrics.macros.carbs_g}g</div>
                             <div class="text-[11px] font-mono" style="color: #f59e0b;" id="disp-macro-carbs-sub">${metrics.macros.carbs_g * 4} kcal (${metrics.macros.carbs_pct}%)</div>
@@ -514,7 +517,7 @@ window.renderBMIView = function(container) {
                         <div class="bg-black/30 p-3 rounded-lg border border-[#e0231c]/25">
                             <div class="flex items-center gap-1.5 mb-1">
                                 <span class="w-2 h-2 rounded-full inline-block" style="background: #e0231c;"></span>
-                                <span class="text-xs text-dim font-bold uppercase">Fats</span>
+                                <span class="text-xs text-dim font-bold uppercase">${_t('nutrition.fat', 'Fats')}</span>
                             </div>
                             <div class="text-lg font-black text-white" id="disp-macro-fat">${metrics.macros.fat_g}g</div>
                             <div class="text-[11px] font-mono" style="color: #e0231c;" id="disp-macro-fat-sub">${metrics.macros.fat_g * 9} kcal (${metrics.macros.fat_pct}%)</div>
@@ -526,7 +529,7 @@ window.renderBMIView = function(container) {
                 <div class="glass-card p-5 rounded-xl border border-white/5">
                     <div class="flex items-center gap-2 mb-2">
                         <span class="text-yellow text-sm">✦</span>
-                        <h4 class="text-xs font-bold text-dim uppercase tracking-wider">AI Nutritional Deficiency & Watchlist</h4>
+                        <h4 class="text-xs font-bold text-dim uppercase tracking-wider">${_t('nutrition.deficiencyWatchlist', 'AI Nutritional Deficiency & Watchlist')}</h4>
                     </div>
                     <ul class="space-y-1.5 text-xs text-secondary" id="disp-deficiencies">
                         ${metrics.deficiencies.map(d => `<li class="flex items-start gap-2"><span class="text-[var(--vermilion)] font-bold">•</span> <span>${d}</span></li>`).join('')}
@@ -539,10 +542,10 @@ window.renderBMIView = function(container) {
         <div class="glass-card p-6 rounded-xl">
             <div class="flex items-center justify-between mb-4">
                 <div>
-                    <h3 style="font-family:var(--font-display);font-size:1.15rem;font-weight:700;color:var(--white)">RECENT MEASUREMENT LOGS</h3>
-                    <p class="text-xs text-dim">Historical record of your BMI, body weight, and metabolic milestones.</p>
+                    <h3 style="font-family:var(--font-display);font-size:1.15rem;font-weight:700;color:var(--white)">${_t('nutrition.recentLogs', 'RECENT MEASUREMENT LOGS')}</h3>
+                    <p class="text-xs text-dim">${_t('nutrition.recentLogsDesc', 'Historical record of your BMI, body weight, and metabolic milestones.')}</p>
                 </div>
-                <button onclick="clearBMIHistory()" class="btn-ghost text-xs text-dim hover:text-danger">Clear History</button>
+                <button onclick="clearBMIHistory()" class="btn-ghost text-xs text-dim hover:text-danger">${_t('nutrition.clearHistory', 'Clear History')}</button>
             </div>
             <div id="bmi-history-table" class="overflow-x-auto">
                 <!-- Rendered dynamically -->
@@ -744,7 +747,7 @@ window.saveBMILog = async function() {
     } catch (_) {}
 
     renderBMIHistoryTable();
-    showToast('Measurement logged to health profile.');
+    showToast(_t('nutrition.measurementLogged', 'Measurement logged to health profile.'));
 };
 
 window.applyTargetsToTracker = function() {
@@ -754,7 +757,7 @@ window.applyTargetsToTracker = function() {
     healthProfile.target_carbs = m.macros.carbs_g;
     healthProfile.target_fat = m.macros.fat_g;
     saveNutritionState();
-    showToast(`Synced targets: ${m.target_kcal} kcal (${m.macros.protein_g}P / ${m.macros.carbs_g}C / ${m.macros.fat_g}F)`);
+    showToast(`${_t('nutrition.syncedTargets', 'Synced targets')}: ${m.target_kcal} kcal (${m.macros.protein_g}P / ${m.macros.carbs_g}C / ${m.macros.fat_g}F)`);
     if (window.nav) window.nav('food-tracker');
 };
 
@@ -770,7 +773,7 @@ function renderBMIHistoryTable() {
     if (!history.length) {
         container.innerHTML = `
             <div class="text-center py-6 text-dim text-xs">
-                No past records saved yet. Click "Save to Health Profile" above to track progress over time.
+                ${_t('nutrition.noPastRecords', 'No past records saved yet. Click "Save to Health Profile" above to track progress over time.')}
             </div>
         `;
         return;
@@ -780,12 +783,12 @@ function renderBMIHistoryTable() {
         <table class="w-full text-left text-xs">
             <thead>
                 <tr class="border-b border-white/10 text-dim">
-                    <th class="py-2">Date & Time</th>
-                    <th class="py-2">Weight</th>
-                    <th class="py-2">BMI</th>
-                    <th class="py-2">Category</th>
-                    <th class="py-2">Target Calories</th>
-                    <th class="py-2 text-right">Action</th>
+                    <th class="py-2">${_t('nutrition.dateTime', 'Date & Time')}</th>
+                    <th class="py-2">${_t('nutrition.weight', 'Weight')}</th>
+                    <th class="py-2">${_t('nutrition.bmi', 'BMI')}</th>
+                    <th class="py-2">${_t('nutrition.category', 'Category')}</th>
+                    <th class="py-2">${_t('nutrition.targetCalories', 'Target Calories')}</th>
+                    <th class="py-2 text-right">${_t('nutrition.action', 'Action')}</th>
                 </tr>
             </thead>
             <tbody>
@@ -846,9 +849,9 @@ window.renderFoodTrackerView = function(container) {
         <!-- Hero Header -->
         <div class="mb-6 relative overflow-hidden p-8 rounded-xl glass-card" style="background: linear-gradient(90deg, var(--black-1) 30%, transparent), url('/assets/Toji Fushiguro (1).jpeg') center/cover; background-blend-mode: multiply; background-position: center 20%;">
             <div class="relative z-10">
-                <div class="text-cyan mb-2" style="font-size: 0.65rem; font-weight: 700; letter-spacing: 0.2em; text-transform: uppercase;">MODULE // NUTRITION & FUEL</div>
-                <h2 style="font-family:var(--font-display);font-size:3rem;font-weight:800;text-transform:uppercase;line-height:1;margin-bottom:0.5rem">Food <span class="text-yellow" style="font-size:0.5em; letter-spacing:0.1em;">TRACKER</span></h2>
-                <p style="color:var(--text-secondary);font-size:0.85rem; max-width: 500px;">Log daily meals, monitor macro targets, generate AI 7-day meal plans, and discover fridge recipes.</p>
+                <div class="text-cyan mb-2" style="font-size: 0.65rem; font-weight: 700; letter-spacing: 0.2em; text-transform: uppercase;">${_t('nutrition.moduleTag', 'MODULE // NUTRITION & FUEL')}</div>
+                <h2 style="font-family:var(--font-display);font-size:3rem;font-weight:800;text-transform:uppercase;line-height:1;margin-bottom:0.5rem">${_t('nutrition.food', 'Food')} <span class="text-yellow" style="font-size:0.5em; letter-spacing:0.1em;">${_t('nutrition.foodTracker', 'TRACKER')}</span></h2>
+                <p style="color:var(--text-secondary);font-size:0.85rem; max-width: 500px;">${_t('nutrition.foodTrackerDesc', 'Log daily meals, monitor macro targets, generate AI 7-day meal plans, and discover fridge recipes.')}</p>
             </div>
         </div>
 
@@ -856,13 +859,13 @@ window.renderFoodTrackerView = function(container) {
         <div class="flex flex-wrap items-center justify-between gap-4 mb-6 border-b border-white/10 pb-4">
             <div class="flex gap-2">
                 <button onclick="setTrackerSubTab('daily-log')" class="${currentTrackerSubTab === 'daily-log' ? 'btn-primary' : 'btn-secondary'} text-xs uppercase font-bold tracking-wider">
-                    🍳 Daily Meal Log
+                    🍳 ${_t('nutrition.dailyMealLog', 'Daily Meal Log')}
                 </button>
                 <button onclick="setTrackerSubTab('meal-planner')" class="${currentTrackerSubTab === 'meal-planner' ? 'btn-primary' : 'btn-secondary'} text-xs uppercase font-bold tracking-wider">
-                    📋 AI Weekly Planner
+                    📋 ${_t('nutrition.aiWeeklyPlanner', 'AI Weekly Planner')}
                 </button>
                 <button onclick="setTrackerSubTab('recipes')" class="${currentTrackerSubTab === 'recipes' ? 'btn-primary' : 'btn-secondary'} text-xs uppercase font-bold tracking-wider">
-                    🥘 Fridge Recipe Finder
+                    🥘 ${_t('nutrition.fridgeRecipeFinder', 'Fridge Recipe Finder')}
                 </button>
             </div>
 
@@ -871,7 +874,7 @@ window.renderFoodTrackerView = function(container) {
                 <button onclick="changeTrackerDate(-1)" class="text-dim hover:text-white text-sm px-1">◀</button>
                 <span class="text-xs font-bold text-white tracking-wide" id="disp-tracker-date">${formatTrackerDate(activeTrackerDate)}</span>
                 <button onclick="changeTrackerDate(1)" class="text-dim hover:text-white text-sm px-1">▶</button>
-                <button onclick="setTrackerDateToday()" class="btn-ghost text-[10px] text-cyan ml-2 px-1">Today</button>
+                <button onclick="setTrackerDateToday()" class="btn-ghost text-[10px] text-cyan ml-2 px-1">${_t('common.today', 'Today')}</button>
             </div>
         </div>
 
@@ -897,11 +900,11 @@ function renderTrackerSubView(tab, logData, totals, t) {
             <div class="lg:col-span-5 glass-card p-6 rounded-xl relative overflow-hidden flex flex-col justify-between" style="box-shadow: 0 0 20px rgba(0,229,255,0.06);">
                 <div class="flex justify-between items-start">
                     <div>
-                        <span class="text-xs text-dim uppercase font-bold tracking-wider">DAILY CALORIE BUDGET</span>
+                        <span class="text-xs text-dim uppercase font-bold tracking-wider">${_t('nutrition.dailyBudget', 'DAILY CALORIE BUDGET')}</span>
                         <div class="text-4xl font-black text-white mt-1">${totals.kcal} <span class="text-sm font-normal text-dim">/ ${t.targetKcal} kcal</span></div>
                     </div>
                     <span class="badge ${t.remainingKcal >= 0 ? 'badge-cyan' : 'badge-danger'} text-xs font-bold">
-                        ${t.remainingKcal >= 0 ? `${t.remainingKcal} kcal remaining` : `${Math.abs(t.remainingKcal)} kcal over`}
+                        ${t.remainingKcal >= 0 ? `${t.remainingKcal} kcal ${_t('nutrition.remaining', 'remaining')}` : `${Math.abs(t.remainingKcal)} kcal ${_t('nutrition.over', 'over')}`}
                     </span>
                 </div>
 
@@ -911,64 +914,64 @@ function renderTrackerSubView(tab, logData, totals, t) {
                         <div class="h-full transition-all duration-500 ${t.calPct >= 100 ? 'bg-danger' : 'bg-cyan'}" style="width: ${t.calPct}%;"></div>
                     </div>
                     <div class="flex justify-between text-[11px] text-dim font-bold mt-1.5">
-                        <span>Consumed: ${totals.kcal} kcal</span>
-                        <span>${t.calPct}% Goal</span>
+                        <span>${_t('nutrition.consumed', 'Consumed')}: ${totals.kcal} kcal</span>
+                        <span>${t.calPct}% ${_t('nutrition.goal', 'Goal')}</span>
                     </div>
                 </div>
 
                 <!-- Quick Macro Mini Bar -->
                 <div class="pt-3 border-t border-white/5 flex justify-between text-xs text-dim">
-                    <span>Protein: <b class="text-cyan">${totals.p}g</b> / ${t.targetP}g</span>
-                    <span>Carbs: <b class="text-yellow">${totals.c}g</b> / ${t.targetC}g</span>
-                    <span>Fat: <b class="text-[#FF6A00]">${totals.f}g</b> / ${t.targetF}g</span>
+                    <span>${_t('nutrition.protein', 'Protein')}: <b class="text-cyan">${totals.p}g</b> / ${t.targetP}g</span>
+                    <span>${_t('nutrition.carbs', 'Carbs')}: <b class="text-yellow">${totals.c}g</b> / ${t.targetC}g</span>
+                    <span>${_t('nutrition.fat', 'Fat')}: <b class="text-[#FF6A00]">${totals.f}g</b> / ${t.targetF}g</span>
                 </div>
             </div>
 
             <!-- Macro Progress Rings / Bars (7 cols) -->
             <div class="lg:col-span-7 glass-card p-6 rounded-xl flex flex-col justify-between">
                 <div class="flex items-center justify-between mb-3">
-                    <span class="text-xs text-dim uppercase font-bold tracking-wider">MACRONUTRIENT TARGETS</span>
-                    <button onclick="openTargetConfigModal()" class="btn-ghost text-xs text-cyan">Edit Targets ⚙</button>
+                    <span class="text-xs text-dim uppercase font-bold tracking-wider">${_t('nutrition.macroSplit', 'MACRONUTRIENT TARGETS')}</span>
+                    <button onclick="openTargetConfigModal()" class="btn-ghost text-xs text-cyan">${_t('nutrition.editTargets', 'Edit Targets ⚙')}</button>
                 </div>
 
                 <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
                     <!-- Protein -->
                     <div class="bg-black/30 p-4 rounded-xl border border-cyan/20">
                         <div class="flex justify-between items-center mb-1">
-                            <span class="text-xs font-bold text-cyan uppercase">Protein</span>
+                            <span class="text-xs font-bold text-cyan uppercase">${_t('nutrition.protein', 'Protein')}</span>
                             <span class="text-[11px] text-dim">${t.pPct}%</span>
                         </div>
                         <div class="text-2xl font-black text-white">${totals.p} <span class="text-xs text-dim font-normal">/ ${t.targetP}g</span></div>
                         <div class="w-full h-2 rounded-full bg-white/5 mt-2 overflow-hidden">
                             <div class="h-full bg-cyan transition-all duration-300" style="width: ${t.pPct}%;"></div>
                         </div>
-                        <span class="text-[10px] text-dim mt-1.5 block">${Math.max(0, t.targetP - totals.p)}g left</span>
+                        <span class="text-[10px] text-dim mt-1.5 block">${Math.max(0, t.targetP - totals.p)}g ${_t('nutrition.left', 'left')}</span>
                     </div>
 
                     <!-- Carbs -->
                     <div class="bg-black/30 p-4 rounded-xl border border-yellow/20">
                         <div class="flex justify-between items-center mb-1">
-                            <span class="text-xs font-bold text-yellow uppercase">Carbs</span>
+                            <span class="text-xs font-bold text-yellow uppercase">${_t('nutrition.carbs', 'Carbs')}</span>
                             <span class="text-[11px] text-dim">${t.cPct}%</span>
                         </div>
                         <div class="text-2xl font-black text-white">${totals.c} <span class="text-xs text-dim font-normal">/ ${t.targetC}g</span></div>
                         <div class="w-full h-2 rounded-full bg-white/5 mt-2 overflow-hidden">
                             <div class="h-full bg-yellow transition-all duration-300" style="width: ${t.cPct}%;"></div>
                         </div>
-                        <span class="text-[10px] text-dim mt-1.5 block">${Math.max(0, t.targetC - totals.c)}g left</span>
+                        <span class="text-[10px] text-dim mt-1.5 block">${Math.max(0, t.targetC - totals.c)}g ${_t('nutrition.left', 'left')}</span>
                     </div>
 
                     <!-- Fats -->
                     <div class="bg-black/30 p-4 rounded-xl border border-[#FF6A00]/20">
                         <div class="flex justify-between items-center mb-1">
-                            <span class="text-xs font-bold text-[#FF6A00] uppercase">Fats</span>
+                            <span class="text-xs font-bold text-[#FF6A00] uppercase">${_t('nutrition.fat', 'Fats')}</span>
                             <span class="text-[11px] text-dim">${t.fPct}%</span>
                         </div>
                         <div class="text-2xl font-black text-white">${totals.f} <span class="text-xs text-dim font-normal">/ ${t.targetF}g</span></div>
                         <div class="w-full h-2 rounded-full bg-white/5 mt-2 overflow-hidden">
                             <div class="h-full bg-[#FF6A00] transition-all duration-300" style="width: ${t.fPct}%;"></div>
                         </div>
-                        <span class="text-[10px] text-dim mt-1.5 block">${Math.max(0, t.targetF - totals.f)}g left</span>
+                        <span class="text-[10px] text-dim mt-1.5 block">${Math.max(0, t.targetF - totals.f)}g ${_t('nutrition.left', 'left')}</span>
                     </div>
                 </div>
 
@@ -977,9 +980,9 @@ function renderTrackerSubView(tab, logData, totals, t) {
                     <div class="flex items-center gap-2">
                         <span class="text-cyan text-base">💧</span>
                         <div>
-                            <span class="text-xs font-bold text-white">Hydration:</span>
+                            <span class="text-xs font-bold text-white">${_t('nutrition.hydration', 'Hydration')}:</span>
                             <span class="text-xs text-cyan font-bold" id="disp-water-val">${logData.water_ml || 0} ml</span>
-                            <span class="text-[10px] text-dim">(${Math.round((logData.water_ml || 0) / 250)} / 8 glasses)</span>
+                            <span class="text-[10px] text-dim">(${Math.round((logData.water_ml || 0) / 250)} / 8 ${_t('nutrition.glasses', 'glasses')})</span>
                         </div>
                     </div>
                     <div class="flex items-center gap-1.5">
@@ -992,10 +995,10 @@ function renderTrackerSubView(tab, logData, totals, t) {
 
         <!-- 4 Meal Categories Grid -->
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-            ${renderMealSection('breakfast', '🍳 Breakfast', logData.breakfast)}
-            ${renderMealSection('lunch', '🥗 Lunch', logData.lunch)}
-            ${renderMealSection('dinner', '🍲 Dinner', logData.dinner)}
-            ${renderMealSection('snacks', '🍎 Snacks & Fuel', logData.snacks)}
+            ${renderMealSection('breakfast', '🍳 ' + _t('nutrition.breakfast', 'Breakfast'), logData.breakfast)}
+            ${renderMealSection('lunch', '🥗 ' + _t('nutrition.lunch', 'Lunch'), logData.lunch)}
+            ${renderMealSection('dinner', '🍲 ' + _t('nutrition.dinner', 'Dinner'), logData.dinner)}
+            ${renderMealSection('snacks', '🍎 ' + _t('nutrition.snacks', 'Snacks & Fuel'), logData.snacks)}
         </div>
     `;
 }
@@ -1023,7 +1026,7 @@ function renderMealSection(mealType, title, items = []) {
                         </div>
                     </div>
                     <button onclick="openAddFoodModal('${mealType}')" class="btn-primary px-3 py-1.5 text-xs font-bold uppercase tracking-wider text-black">
-                        + Add Food
+                        + ${_t('nutrition.addMeal', 'Add Food')}
                     </button>
                 </div>
 
@@ -1031,7 +1034,7 @@ function renderMealSection(mealType, title, items = []) {
                 <div class="space-y-2 mb-3">
                     ${items.length === 0 ? `
                         <div class="text-center py-4 text-dim text-xs border border-dashed border-white/10 rounded-lg">
-                            No food logged for this meal yet. Click <b>+ Add Food</b> to record items.
+                            ${_t('nutrition.noFoodLogged', 'No food logged for this meal yet.')} Click <b>+ ${_t('nutrition.addMeal', 'Add Food')}</b> ${_t('nutrition.toRecordItems', 'to record items.')}
                         </div>
                     ` : items.map((food, idx) => `
                         <div class="bg-black/30 p-2.5 rounded-lg border border-white/5 flex items-center justify-between hover:border-cyan/30 transition-all">
@@ -1063,7 +1066,7 @@ function computeDayTotals(logData) {
 }
 
 function formatTrackerDate(dateStr) {
-    if (dateStr === getTodayKey()) return 'Today';
+    if (dateStr === getTodayKey()) return _t('common.today', 'Today');
     const d = new Date(dateStr + 'T00:00:00');
     return d.toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' });
 }
@@ -1123,9 +1126,9 @@ window.openAddFoodModal = function(mealType) {
             <div class="flex justify-between items-center pb-4 border-b border-white/10">
                 <div>
                     <h3 style="font-family:var(--font-display);font-size:1.25rem;font-weight:800;color:var(--white)">
-                        ADD FOOD TO <span class="text-cyan uppercase">${mealType}</span>
+                        ${_t('nutrition.addFoodTo', 'ADD FOOD TO')} <span class="text-cyan uppercase">${mealType}</span>
                     </h3>
-                    <p class="text-xs text-dim">Search our verified nutrition database or enter a custom meal item.</p>
+                    <p class="text-xs text-dim">${_t('nutrition.modalSubtitle', 'Search our verified nutrition database or enter a custom meal item.')}</p>
                 </div>
                 <button onclick="closeAddFoodModal()" class="btn-ghost text-lg">✕</button>
             </div>
@@ -1133,20 +1136,20 @@ window.openAddFoodModal = function(mealType) {
             <!-- Tabs: Search Database vs Custom Entry -->
             <div class="flex gap-2 my-4">
                 <button id="tab-btn-db" onclick="switchFoodModalTab('db')" class="btn-primary flex-1 text-xs py-2 uppercase font-bold text-black">
-                    🔍 Search Database
+                    🔍 ${_t('nutrition.searchDb', 'Search Database')}
                 </button>
                 <button id="tab-btn-ai" onclick="switchFoodModalTab('ai')" class="btn-secondary flex-1 text-xs py-2 uppercase font-bold">
-                    ✨ AI Analyzer
+                    ✨ ${_t('nutrition.aiAnalyzer', 'AI Analyzer')}
                 </button>
                 <button id="tab-btn-custom" onclick="switchFoodModalTab('custom')" class="btn-secondary flex-1 text-xs py-2 uppercase font-bold">
-                    ✏️ Manual Entry
+                    ✏️ ${_t('nutrition.manualEntry', 'Manual Entry')}
                 </button>
             </div>
 
             <!-- Panel 1: Database Search -->
             <div id="panel-food-db" class="flex-1 overflow-y-auto space-y-4 pr-1">
                 <!-- Search bar -->
-                <input type="text" id="food-search-inp" placeholder="Type to search (e.g. Chicken, Oats, Rice, Eggs, Protein...)" 
+                <input type="text" id="food-search-inp" placeholder="${_t('nutrition.searchPlaceholder', 'Type to search (e.g. Chicken, Oats, Rice, Eggs, Protein...)')}" 
                     class="auth-input w-full text-xs py-2.5" oninput="filterFoodDatabase(this.value)">
 
                 <!-- Food items list -->
@@ -1163,7 +1166,7 @@ window.openAddFoodModal = function(mealType) {
 
                     <div class="grid grid-cols-2 gap-3 items-center">
                         <div>
-                            <label class="text-[11px] text-dim block mb-1 uppercase font-semibold">Portion Size</label>
+                            <label class="text-[11px] text-dim block mb-1 uppercase font-semibold">${_t('nutrition.portionSize', 'Portion Size')}</label>
                             <div class="flex items-center gap-2">
                                 <input type="number" id="inp-food-qty" min="1" max="2000" value="${selectedFoodBase.baseQty}" class="auth-input w-24 text-center text-sm font-bold" oninput="updateFoodPortionCalc()">
                                 <span class="text-xs text-dim" id="selected-food-unit">${selectedFoodBase.unit}</span>
@@ -1178,19 +1181,19 @@ window.openAddFoodModal = function(mealType) {
                 </div>
 
                 <button onclick="commitAddFoodFromDb()" class="btn-primary w-full py-3 text-xs tracking-wider uppercase font-bold text-black">
-                    Add To ${mealType.toUpperCase()}
+                    ${_t('nutrition.addTo', 'Add To')} ${mealType.toUpperCase()}
                 </button>
             </div>
 
             <!-- Panel 2: AI Food Analyzer -->
             <div id="panel-food-ai" class="hidden space-y-4 pr-1">
                 <div>
-                    <label class="text-xs text-dim block mb-1 uppercase font-semibold">Describe Any Food or Meal</label>
+                    <label class="text-xs text-dim block mb-1 uppercase font-semibold">${_t('nutrition.describeFood', 'Describe Any Food or Meal')}</label>
                     <textarea id="ai-food-query" rows="2" placeholder="e.g. 2 grilled chicken tacos with avocado salsa, or 1 bowl oatmeal with whey protein and berries" class="auth-input w-full text-xs p-3"></textarea>
                 </div>
 
                 <button onclick="analyzeFoodWithAI()" id="ai-analyze-btn" class="btn-primary w-full py-2.5 text-xs tracking-wider uppercase font-bold text-black">
-                    ✨ Analyze Meal with Luna AI
+                    ✨ ${_t('nutrition.analyzeWithLuna', 'Analyze Meal with Luna AI')}
                 </button>
 
                 <div id="ai-analysis-result" class="hidden bg-black/40 p-4 rounded-xl border border-cyan/30 space-y-3">
@@ -1206,16 +1209,16 @@ window.openAddFoodModal = function(mealType) {
                     </div>
 
                     <div class="grid grid-cols-4 gap-2 text-center bg-black/60 p-2 rounded-lg border border-white/5 text-xs">
-                        <div><span class="text-dim text-[10px] block">PROTEIN</span><b class="text-white" id="ai-res-p">0g</b></div>
-                        <div><span class="text-dim text-[10px] block">CARBS</span><b class="text-white" id="ai-res-c">0g</b></div>
-                        <div><span class="text-dim text-[10px] block">FAT</span><b class="text-white" id="ai-res-f">0g</b></div>
-                        <div><span class="text-dim text-[10px] block">FIBER</span><b class="text-cyan" id="ai-res-fiber">0g</b></div>
+                        <div><span class="text-dim text-[10px] block">${_t('nutrition.protein', 'PROTEIN').toUpperCase()}</span><b class="text-white" id="ai-res-p">0g</b></div>
+                        <div><span class="text-dim text-[10px] block">${_t('nutrition.carbs', 'CARBS').toUpperCase()}</span><b class="text-white" id="ai-res-c">0g</b></div>
+                        <div><span class="text-dim text-[10px] block">${_t('nutrition.fat', 'FAT').toUpperCase()}</span><b class="text-white" id="ai-res-f">0g</b></div>
+                        <div><span class="text-dim text-[10px] block">${_t('nutrition.fiber', 'FIBER').toUpperCase()}</span><b class="text-cyan" id="ai-res-fiber">0g</b></div>
                     </div>
 
                     <p class="text-[11px] text-secondary leading-relaxed" id="ai-res-notes"></p>
 
                     <button onclick="commitAddAiAnalyzedFood()" class="btn-editorial-primary w-full py-2 text-xs uppercase font-bold">
-                        + Add This Analyzed Meal to ${mealType.toUpperCase()}
+                        + ${_t('nutrition.addAnalyzedMeal', 'Add This Analyzed Meal to')} ${mealType.toUpperCase()}
                     </button>
                 </div>
             </div>
@@ -1223,36 +1226,36 @@ window.openAddFoodModal = function(mealType) {
             <!-- Panel 3: Custom Food Entry -->
             <div id="panel-food-custom" class="hidden space-y-4 pr-1">
                 <div>
-                    <label class="text-xs text-dim block mb-1 uppercase font-semibold">Item Name</label>
+                    <label class="text-xs text-dim block mb-1 uppercase font-semibold">${_t('nutrition.itemName', 'Item Name')}</label>
                     <input type="text" id="cust-food-name" placeholder="e.g. Grilled Salmon Bowl" class="auth-input w-full">
                 </div>
 
                 <div>
-                    <label class="text-xs text-dim block mb-1 uppercase font-semibold">Portion Text</label>
+                    <label class="text-xs text-dim block mb-1 uppercase font-semibold">${_t('nutrition.portionText', 'Portion Text')}</label>
                     <input type="text" id="cust-food-portion" placeholder="e.g. 1 bowl (250g)" class="auth-input w-full">
                 </div>
 
                 <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
                     <div>
-                        <label class="text-[11px] text-dim block mb-1 uppercase">Calories (kcal)</label>
+                        <label class="text-[11px] text-dim block mb-1 uppercase">${_t('nutrition.calories', 'Calories')} (kcal)</label>
                         <input type="number" id="cust-food-kcal" placeholder="350" class="auth-input w-full">
                     </div>
                     <div>
-                        <label class="text-[11px] text-dim block mb-1 uppercase">Protein (g)</label>
+                        <label class="text-[11px] text-dim block mb-1 uppercase">${_t('nutrition.protein', 'Protein')} (g)</label>
                         <input type="number" id="cust-food-p" placeholder="25" class="auth-input w-full">
                     </div>
                     <div>
-                        <label class="text-[11px] text-dim block mb-1 uppercase">Carbs (g)</label>
+                        <label class="text-[11px] text-dim block mb-1 uppercase">${_t('nutrition.carbs', 'Carbs')} (g)</label>
                         <input type="number" id="cust-food-c" placeholder="30" class="auth-input w-full">
                     </div>
                     <div>
-                        <label class="text-[11px] text-dim block mb-1 uppercase">Fat (g)</label>
+                        <label class="text-[11px] text-dim block mb-1 uppercase">${_t('nutrition.fat', 'Fat')} (g)</label>
                         <input type="number" id="cust-food-f" placeholder="10" class="auth-input w-full">
                     </div>
                 </div>
 
                 <button onclick="commitAddCustomFood()" class="btn-primary w-full py-3 text-xs tracking-wider uppercase font-bold text-black mt-4">
-                    Save Custom Food Item
+                    ${_t('nutrition.saveCustomFood', 'Save Custom Food Item')}
                 </button>
             </div>
         </div>
@@ -1511,19 +1514,19 @@ function renderWeeklyPlannerTab(targetKcal) {
             <div class="glass-card p-6 rounded-xl relative overflow-hidden" style="background: linear-gradient(90deg, var(--black-1) 50%, transparent), url('/assets/_ (1).jpeg') right center/cover; background-blend-mode: multiply;">
                 <div class="flex flex-wrap items-center justify-between gap-4 relative z-10">
                     <div>
-                        <h3 style="font-family:var(--font-display);font-size:1.25rem;font-weight:700;color:var(--white)">AI 7-DAY NUTRITION SCHEDULE</h3>
-                        <p class="text-xs text-dim">Generate an automated, goal-scaled weekly meal schedule with calculated macros.</p>
+                        <h3 style="font-family:var(--font-display);font-size:1.25rem;font-weight:700;color:var(--white)">${_t('nutrition.aiWeeklySchedule', 'AI 7-DAY NUTRITION SCHEDULE')}</h3>
+                        <p class="text-xs text-dim">${_t('nutrition.weeklyScheduleDesc', 'Generate an automated, goal-scaled weekly meal schedule with calculated macros.')}</p>
                     </div>
 
                     <div class="flex items-center gap-3">
                         <select id="planner-diet-select" class="auth-input text-xs py-2">
-                            <option value="omnivore" ${healthProfile.diet_preference === 'omnivore' ? 'selected' : ''}>Omnivore</option>
-                            <option value="vegetarian" ${healthProfile.diet_preference === 'vegetarian' ? 'selected' : ''}>Vegetarian</option>
-                            <option value="vegan" ${healthProfile.diet_preference === 'vegan' ? 'selected' : ''}>Vegan</option>
-                            <option value="keto" ${healthProfile.diet_preference === 'keto' ? 'selected' : ''}>Keto</option>
+                            <option value="omnivore" ${healthProfile.diet_preference === 'omnivore' ? 'selected' : ''}>${_t('nutrition.omnivore', 'Omnivore')}</option>
+                            <option value="vegetarian" ${healthProfile.diet_preference === 'vegetarian' ? 'selected' : ''}>${_t('nutrition.vegetarian', 'Vegetarian')}</option>
+                            <option value="vegan" ${healthProfile.diet_preference === 'vegan' ? 'selected' : ''}>${_t('nutrition.vegan', 'Vegan')}</option>
+                            <option value="keto" ${healthProfile.diet_preference === 'keto' ? 'selected' : ''}>${_t('nutrition.keto', 'Keto')}</option>
                         </select>
                         <button onclick="generateWeeklyPlanAPI()" class="btn-primary text-xs py-2 px-4 uppercase font-bold text-black">
-                            ⚡ Generate Plan
+                            ⚡ ${_t('nutrition.generatePlan', 'Generate Plan')}
                         </button>
                     </div>
                 </div>
@@ -1533,10 +1536,10 @@ function renderWeeklyPlannerTab(targetKcal) {
                 ${generatedWeeklyPlan ? renderWeeklyPlanDays(generatedWeeklyPlan) : `
                     <div class="glass-card p-12 rounded-xl text-center">
                         <div class="text-4xl mb-3">📋</div>
-                        <h4 class="text-white font-bold mb-1">No Plan Generated Yet</h4>
-                        <p class="text-xs text-dim mb-4">Click "Generate Plan" above to create a tailored 7-day meal plan based on your caloric target.</p>
+                        <h4 class="text-white font-bold mb-1">${_t('nutrition.noPlanYet', 'No Plan Generated Yet')}</h4>
+                        <p class="text-xs text-dim mb-4">${_t('nutrition.noPlanDesc', 'Click "Generate Plan" above to create a tailored 7-day meal plan based on your caloric target.')}</p>
                         <button onclick="generateWeeklyPlanAPI()" class="btn-primary text-xs py-2.5 px-6 font-bold text-black uppercase">
-                            Generate My 7-Day Plan
+                            ${_t('nutrition.generatePlan', 'Generate My 7-Day Plan')}
                         </button>
                     </div>
                 `}
@@ -1555,7 +1558,7 @@ window.generateWeeklyPlanAPI = async function() {
         display.innerHTML = `
             <div class="glass-card p-12 rounded-xl text-center">
                 <div class="loading-spinner mx-auto mb-3"></div>
-                <p class="text-xs text-dim">Computing daily nutrient targets & generating 7-day schedule...</p>
+                <p class="text-xs text-dim">${_t('nutrition.computingPlan', 'Computing daily nutrient targets & generating 7-day schedule...')}</p>
             </div>
         `;
     }
@@ -1594,9 +1597,9 @@ window.generateWeeklyPlanAPI = async function() {
         generatedWeeklyPlan = plan;
         selectedPlanDay = 1;
         if (display) display.innerHTML = renderWeeklyPlanDays(generatedWeeklyPlan);
-        showToast('7-Day weekly meal plan generated!');
+        showToast(_t('nutrition.planGenerated', '7-Day weekly meal plan generated!'));
     } else {
-        if (display) display.innerHTML = `<div class="glass-card p-6 text-center text-danger text-xs">Failed to generate meal plan. Please retry.</div>`;
+        if (display) display.innerHTML = `<div class="glass-card p-6 text-center text-danger text-xs">${_t('nutrition.planFailed', 'Failed to generate meal plan. Please retry.')}</div>`;
     }
 };
 window.generateWeeklyPlan = window.generateWeeklyPlanAPI;
@@ -1719,7 +1722,7 @@ function renderWeeklyPlanDays(plan) {
         <div class="flex flex-wrap gap-2 mb-6">
             ${plan.days.map(d => `
                 <button onclick="selectWeeklyPlanDay(${d.day})" class="${d.day === selectedPlanDay ? 'btn-primary' : 'btn-secondary'} text-xs font-bold px-4 py-2">
-                    Day ${d.day}
+                    ${_t('nutrition.day', 'Day')} ${d.day}
                 </button>
             `).join('')}
         </div>
@@ -1729,18 +1732,18 @@ function renderWeeklyPlanDays(plan) {
             <div class="flex flex-wrap items-center justify-between gap-4 border-b border-white/10 pb-4">
                 <div>
                     <h4 style="font-family:var(--font-display);font-size:1.25rem;font-weight:800;color:var(--white)">
-                        DAY ${curDay.day} MEAL PLAN <span class="text-cyan text-xs font-normal ml-2">(${plan.diet_preference.toUpperCase()})</span>
+                        ${_t('nutrition.day', 'DAY').toUpperCase()} ${curDay.day} ${_t('nutrition.mealPlan', 'MEAL PLAN').toUpperCase()} <span class="text-cyan text-xs font-normal ml-2">(${plan.diet_preference.toUpperCase()})</span>
                     </h4>
                     <div class="text-xs text-dim mt-1">
-                        Total: <b class="text-cyan">${curDay.daily_totals.calories} kcal</b> • 
-                        Protein: <b class="text-yellow">${curDay.daily_totals.protein_g}g</b> | 
-                        Carbs: <b>${curDay.daily_totals.carbs_g}g</b> | 
-                        Fat: <b>${curDay.daily_totals.fat_g}g</b>
+                        ${_t('nutrition.total', 'Total')}: <b class="text-cyan">${curDay.daily_totals.calories} kcal</b> • 
+                        ${_t('nutrition.protein', 'Protein')}: <b class="text-yellow">${curDay.daily_totals.protein_g}g</b> | 
+                        ${_t('nutrition.carbs', 'Carbs')}: <b>${curDay.daily_totals.carbs_g}g</b> | 
+                        ${_t('nutrition.fat', 'Fat')}: <b>${curDay.daily_totals.fat_g}g</b>
                     </div>
                 </div>
 
                 <button onclick="logWholeDayToTracker(${curDay.day})" class="btn-primary text-xs py-2 px-4 font-bold text-black uppercase tracking-wider">
-                    📥 Log This Day to Today's Tracker
+                    📥 ${_t('nutrition.logThisDay', 'Log This Day to Today\'s Tracker')}
                 </button>
             </div>
 
@@ -1973,6 +1976,11 @@ function extractJsonFromText(rawText) {
 
 async function queryGeminiForRecipes(apiKey, ingredients, cuisine, spiceLevel, customPrompt) {
     const models = ['gemini-flash-lite-latest', 'gemini-3.5-flash-lite', 'gemini-3.6-flash'];
+    let langInstruction = '';
+    if (window.luminixI18n && window.luminixI18n.currentLanguage !== 'en') {
+        const langName = window.luminixI18n.languages[window.luminixI18n.currentLanguage]?.name || window.luminixI18n.currentLanguage;
+        langInstruction = `\n- LANGUAGE REQUIREMENT: Write the recipe titles, descriptions, ingredients, and cooking steps in ${langName} (${window.luminixI18n.currentLanguage}).`;
+    }
     const prompt = `You are Chef Luna, an elite culinary master chef and clinical sports nutritionist.
 The user has the following kitchen ingredients available:
 ${ingredients}
@@ -1980,7 +1988,7 @@ ${ingredients}
 Culinary specifications:
 - Cuisine Style: ${cuisine}
 - Spice Intensity: ${spiceLevel}
-- Dietary Profile: High-nutrient, whole food, athletic optimization
+- Dietary Profile: High-nutrient, whole food, athletic optimization${langInstruction}
 ${customPrompt ? `- Custom User Culinary Request: "${customPrompt}"` : ''}
 
 CRITICAL INGREDIENT RESTRICTIONS:
@@ -2087,12 +2095,12 @@ function renderRecipeFinderTab() {
             <div class="glass-card p-6 rounded-xl border border-white/10 shadow-2xl">
                 <div class="flex flex-wrap items-center justify-between gap-2 mb-2">
                     <h3 style="font-family:var(--font-display);font-size:1.3rem;font-weight:700;color:var(--white);letter-spacing:0.02em;">
-                        SMART FRIDGE RECIPE FINDER // GEMINI AI ENGINE
+                        ${_t('nutrition.recipeFinder', 'SMART FRIDGE RECIPE FINDER')} // GEMINI AI ENGINE
                     </h3>
                     <span class="badge badge-cyan text-xs font-mono font-bold tracking-wider">LIVE GEMINI 3.5 FLASH</span>
                 </div>
                 <p class="text-xs text-dim mb-4">
-                    Select your regional cuisine, calibrate spice level, and pick or type ingredients. The live Gemini AI engine analyzes your items and synthesizes custom, non-predefined recipes with complete macros and step-by-step instructions.
+                    ${_t('nutrition.recipeFinderDesc', 'Select your regional cuisine, calibrate spice level, and pick or type ingredients. The live Gemini AI engine analyzes your items and synthesizes custom, non-predefined recipes with complete macros and step-by-step instructions.')}
                 </p>
 
                 <!-- 0. GEMINI API KEY ACCESS & LIVE STATUS BAR -->
@@ -2141,7 +2149,7 @@ function renderRecipeFinderTab() {
                 <div class="mb-5">
                     <div class="flex items-center justify-between mb-2">
                         <span class="text-xs font-bold text-white uppercase tracking-wider flex items-center gap-1.5">
-                            <span class="text-cyan">01 //</span> Select Cuisine
+                            <span class="text-cyan">01 //</span> ${_t('nutrition.selectCuisine', 'Select Cuisine')}
                         </span>
                         <span class="text-[11px] text-cyan font-mono font-bold">${selectedCuisine} Cuisine Active</span>
                     </div>
@@ -2160,7 +2168,7 @@ function renderRecipeFinderTab() {
                 <div class="mb-5">
                     <div class="flex items-center justify-between mb-2">
                         <span class="text-xs font-bold text-white uppercase tracking-wider flex items-center gap-1.5">
-                            <span class="text-yellow">02 //</span> Spice Preference
+                            <span class="text-yellow">02 //</span> ${_t('nutrition.spicePreference', 'Spice Preference')}
                         </span>
                         <span class="text-[11px] text-yellow font-mono font-bold">${selectedSpiceLevel} Intensity</span>
                     </div>
@@ -2178,11 +2186,11 @@ function renderRecipeFinderTab() {
                 <div class="mb-4">
                     <div class="flex items-center justify-between mb-2">
                         <span class="text-xs font-bold text-white uppercase tracking-wider flex items-center gap-1.5">
-                            <span class="text-emerald-400">03 //</span> Available Ingredients (${selectedIngredients.size})
+                            <span class="text-emerald-400">03 //</span> ${_t('nutrition.availableIngredients', 'Available Ingredients')} (${selectedIngredients.size})
                         </span>
                         <div class="flex gap-3">
-                            <button type="button" onclick="resetPantryStaples()" class="text-[11px] text-cyan hover:underline font-mono">Reset Staples</button>
-                            <button type="button" onclick="clearAllIngredients()" class="text-[11px] text-dim hover:text-red-400 hover:underline font-mono">Clear All</button>
+                            <button type="button" onclick="resetPantryStaples()" class="text-[11px] text-cyan hover:underline font-mono">${_t('nutrition.resetStaples', 'Reset Staples')}</button>
+                            <button type="button" onclick="clearAllIngredients()" class="text-[11px] text-dim hover:text-red-400 hover:underline font-mono">${_t('nutrition.clearAll', 'Clear All')}</button>
                         </div>
                     </div>
                     <div class="flex flex-wrap gap-2 p-3.5 bg-black/50 rounded-xl border border-white/10 min-h-[50px] items-center">
@@ -2198,7 +2206,7 @@ function renderRecipeFinderTab() {
 
                 <!-- 4. Quick Pantry Staples -->
                 <div class="mb-5">
-                    <span class="text-[11px] text-dim block mb-2 font-mono uppercase tracking-wider">QUICK STAPLE CHIPS (+ / ✓):</span>
+                    <span class="text-[11px] text-dim block mb-2 font-mono uppercase tracking-wider">${_t('nutrition.quickStaples', 'QUICK STAPLE CHIPS (+ / ✓):')}</span>
                     <div class="flex flex-wrap gap-1.5">
                         ${COMMON_PANTRY.map(ing => `
                             <button type="button" onclick="togglePantryChip('${ing}')" 
@@ -2212,13 +2220,13 @@ function renderRecipeFinderTab() {
                 <!-- 5. Custom Ingredient Input & Add Item -->
                 <div class="mb-4">
                     <span class="text-xs font-bold text-white uppercase tracking-wider block mb-2">
-                        <span class="text-cyan">04 //</span> Add Custom Ingredient
+                        <span class="text-cyan">04 //</span> ${_t('nutrition.addCustomIngredient', 'Add Custom Ingredient')}
                     </span>
                     <div class="flex gap-2">
-                        <input type="text" id="custom-ing-inp" placeholder="Type custom ingredient (e.g. spinach, ginger, beef, tofu, avocado)..." 
+                        <input type="text" id="custom-ing-inp" placeholder="${_t('nutrition.customIngPlaceholder', 'Type custom ingredient (e.g. spinach, ginger, beef, tofu, avocado)...')}" 
                             class="auth-input flex-1 text-xs" onkeydown="if(event.key==='Enter'){event.preventDefault();addCustomIngredient();}">
                         <button type="button" onclick="addCustomIngredient()" class="btn-secondary px-4 text-xs font-bold whitespace-nowrap">
-                            + Add Item
+                            + ${_t('nutrition.addItem', 'Add Item')}
                         </button>
                     </div>
                 </div>
@@ -2227,7 +2235,7 @@ function renderRecipeFinderTab() {
                 <div class="mb-5 p-3.5 rounded-xl border border-yellow/20 bg-yellow/5">
                     <div class="flex items-center justify-between mb-2">
                         <label for="ai-chef-prompt-inp" class="text-xs font-bold text-white uppercase tracking-wider flex items-center gap-1.5">
-                            <span class="text-yellow">💬</span> 05 // Ask Chef Luna What to Cook
+                            <span class="text-yellow">💬</span> 05 // ${_t('nutrition.askLunaChef', 'Ask Chef Luna What to Cook')}
                         </label>
                         <span class="text-[10px] text-dim font-mono">e.g. "15 min quick dinner", "High protein", "Crispy snack"</span>
                     </div>
@@ -2235,7 +2243,7 @@ function renderRecipeFinderTab() {
                         <input type="text" id="ai-chef-prompt-inp" placeholder="Optional request: e.g. What can I cook for lunch that takes under 20 mins and is high in protein?"
                             class="auth-input flex-1 text-xs" onkeydown="if(event.key==='Enter'){event.preventDefault();fetchFridgeRecipes();}">
                         <button type="button" onclick="fetchFridgeRecipes()" class="btn-secondary px-4 py-2.5 text-xs font-bold whitespace-nowrap text-yellow hover:text-white border-yellow/30">
-                            ✨ Ask AI Chef
+                            ✨ ${_t('nutrition.askLunaChefBtn', 'Ask AI Chef')}
                         </button>
                     </div>
                 </div>
@@ -2245,11 +2253,11 @@ function renderRecipeFinderTab() {
                     <label class="flex items-center gap-2 cursor-pointer select-none text-xs text-dim hover:text-white">
                         <input type="checkbox" id="auto-ask-ai-checkbox" ${autoAskAiOnIngredient ? 'checked' : ''} 
                             onchange="autoAskAiOnIngredient = this.checked;" class="rounded accent-cyan cursor-pointer">
-                        <span>Auto-ask Gemini AI whenever I add or toggle ingredients</span>
+                        <span>${_t('nutrition.autoAskAi', 'Auto-ask Gemini AI whenever I add or toggle ingredients')}</span>
                     </label>
 
                     <button type="button" onclick="fetchFridgeRecipes()" class="btn-primary w-full sm:w-auto px-7 py-3 text-xs font-bold text-black uppercase tracking-wider flex items-center justify-center gap-2 shadow-xl shadow-cyan/25 hover:scale-[1.02] transition-transform">
-                        <span>🧠</span> Synthesize Custom AI Recipes (${selectedIngredients.size} Items)
+                        <span>🧠</span> ${_t('nutrition.synthesizeRecipes', 'Synthesize Custom AI Recipes')} (${selectedIngredients.size} Items)
                     </button>
                 </div>
             </div>
@@ -2580,15 +2588,15 @@ function renderRecipeList(data) {
         <!-- Filter Summary Bar -->
         <div class="flex flex-wrap items-center justify-between gap-3 p-4 glass-card rounded-xl border border-cyan/30 mb-6">
             <div class="flex items-center gap-2 flex-wrap">
-                <span class="text-xs text-dim uppercase font-mono tracking-wider">ACTIVE RESULTS:</span>
-                <span class="badge badge-cyan text-xs font-bold uppercase">${data.cuisine || selectedCuisine} CUISINE</span>
-                <span class="badge badge-yellow text-xs font-bold uppercase">${data.spice_level || selectedSpiceLevel} SPICE</span>
+                <span class="text-xs text-dim uppercase font-mono tracking-wider">${_t('nutrition.activeResults', 'ACTIVE RESULTS')}:</span>
+                <span class="badge badge-cyan text-xs font-bold uppercase">${data.cuisine || selectedCuisine} ${_t('nutrition.cuisine', 'CUISINE')}</span>
+                <span class="badge badge-yellow text-xs font-bold uppercase">${data.spice_level || selectedSpiceLevel} ${_t('nutrition.spice', 'SPICE')}</span>
                 ${data.source === 'gemini' || allRecipes.some(r => r.is_ai) ? `<span class="badge badge-cyan text-xs font-mono font-bold">✨ LIVE GEMINI AI (${data.model || 'gemini-3.5-flash'})</span>` : ''}
-                <span class="text-xs text-dim font-mono">• ${allRecipes.length} Custom Recipes Available</span>
+                <span class="text-xs text-dim font-mono">• ${allRecipes.length} ${_t('nutrition.customRecipesAvailable', 'Custom Recipes Available')}</span>
             </div>
             ${data.prompt ? `<div class="w-full text-xs text-yellow font-mono mt-1">Chef Luna Focus: "${data.prompt}"</div>` : ''}
             <span class="text-xs text-cyan font-semibold flex items-center gap-1.5 cursor-pointer" onclick="window.scrollTo({top:0, behavior:'smooth'})">
-                <span>💡</span> Click any card to inspect full cooking guide
+                <span>💡</span> ${_t('nutrition.inspectGuide', 'Click any card to inspect full cooking guide')}
             </span>
         </div>
 
@@ -2642,7 +2650,7 @@ function renderRecipeList(data) {
 
                             <!-- Ingredients Preview -->
                             <div class="text-[11px] text-dim mb-4 line-clamp-2">
-                                <span class="text-white font-semibold">Key items:</span> ${(r.ingredients_needed || r.ingredients_used || []).slice(0, 4).join(', ')}
+                                <span class="text-white font-semibold">${_t('nutrition.keyItems', 'Key items')}:</span> ${(r.ingredients_needed || r.ingredients_used || []).slice(0, 4).join(', ')}
                             </div>
                         </div>
 
@@ -2650,11 +2658,11 @@ function renderRecipeList(data) {
                         <div class="pt-3 border-t border-white/5 flex flex-col gap-2">
                             <button type="button" onclick="event.stopPropagation(); openRecipeDetailModal(${idx})" 
                                 class="btn-primary w-full py-2 text-xs font-bold uppercase text-black flex items-center justify-center gap-1.5 shadow-md shadow-cyan/15">
-                                <span>👨‍🍳</span> View Cooking Steps (${stepsCount})
+                                <span>👨‍🍳</span> ${_t('nutrition.viewCookingSteps', 'View Cooking Steps')} (${stepsCount})
                             </button>
                             <button type="button" onclick="event.stopPropagation(); logRecipeDirectly('${title.replace(/'/g, "\\'")}', ${kcal}, ${protein}, ${carbs}, ${fat})" 
                                 class="btn-secondary w-full py-1.5 text-[11px] font-bold uppercase text-yellow hover:text-white">
-                                + Log To Today's Tracker
+                                + ${_t('nutrition.logTodayTracker', 'Log To Today\'s Tracker')}
                             </button>
                         </div>
                     </div>
@@ -2695,10 +2703,10 @@ window.openRecipeDetailModal = function(idx) {
     const steps = r.cooking_steps || r.steps || [];
     const ingredients = r.ingredients_needed || (r.ingredients_used || []).map(i => `Fresh ${i}`);
 
-    if (badgeEl) badgeEl.textContent = `${cuisine} CUISINE`;
-    if (spiceEl) spiceEl.textContent = `${spice.toUpperCase()} SPICE`;
-    if (diffEl) diffEl.textContent = `DIFFICULTY: ${diff.toUpperCase()}`;
-    if (timeEl) timeEl.textContent = `⏱ ${totalMins} MINS TOTAL`;
+    if (badgeEl) badgeEl.textContent = `${cuisine} ${_t('nutrition.cuisine', 'CUISINE')}`;
+    if (spiceEl) spiceEl.textContent = `${spice.toUpperCase()} ${_t('nutrition.spice', 'SPICE')}`;
+    if (diffEl) diffEl.textContent = `${_t('nutrition.difficulty', 'DIFFICULTY')}: ${diff.toUpperCase()}`;
+    if (timeEl) timeEl.textContent = `⏱ ${totalMins} ${_t('nutrition.minsTotal', 'MINS TOTAL')}`;
 
     bodyEl.innerHTML = `
         <!-- Title & Overview -->
@@ -2714,47 +2722,47 @@ window.openRecipeDetailModal = function(idx) {
         <!-- 4-Column Timing Banner -->
         <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
             <div class="p-3.5 bg-black/50 rounded-xl border border-white/10 text-center">
-                <span class="text-[10px] text-dim font-mono block uppercase">Prep Time</span>
+                <span class="text-[10px] text-dim font-mono block uppercase">${_t('nutrition.prepTime', 'Prep Time')}</span>
                 <span class="text-base font-bold text-cyan">⏱ ${prepMins}m</span>
             </div>
             <div class="p-3.5 bg-black/50 rounded-xl border border-white/10 text-center">
-                <span class="text-[10px] text-dim font-mono block uppercase">Cook Time</span>
+                <span class="text-[10px] text-dim font-mono block uppercase">${_t('nutrition.cookTime', 'Cook Time')}</span>
                 <span class="text-base font-bold text-yellow">🔥 ${cookMins}m</span>
             </div>
             <div class="p-3.5 bg-black/50 rounded-xl border border-white/10 text-center">
-                <span class="text-[10px] text-dim font-mono block uppercase">Total Time</span>
+                <span class="text-[10px] text-dim font-mono block uppercase">${_t('nutrition.totalTime', 'Total Time')}</span>
                 <span class="text-base font-bold text-white">⌛ ${totalMins}m</span>
             </div>
             <div class="p-3.5 bg-black/50 rounded-xl border border-white/10 text-center">
-                <span class="text-[10px] text-dim font-mono block uppercase">Yield / Portions</span>
-                <span class="text-base font-bold text-emerald-400">🍽️ ${servings} Servings</span>
+                <span class="text-[10px] text-dim font-mono block uppercase">${_t('nutrition.yieldPortions', 'Yield / Portions')}</span>
+                <span class="text-base font-bold text-emerald-400">🍽️ ${servings} ${_t('nutrition.servings', 'Servings')}</span>
             </div>
         </div>
 
         <!-- Nutritional Breakdown Grid -->
         <div>
             <h4 class="text-xs font-bold text-white uppercase tracking-wider mb-2.5 flex items-center gap-2">
-                <span class="text-cyan">01 //</span> Nutritional Profile (Per Serving)
+                <span class="text-cyan">01 //</span> ${_t('nutrition.nutritionAnalysis', 'Nutritional Profile (Per Serving)')}
             </h4>
             <div class="grid grid-cols-2 sm:grid-cols-5 gap-2.5">
                 <div class="p-3 bg-gradient-to-b from-yellow/10 to-black/40 rounded-xl border border-yellow/30 text-center">
-                    <span class="text-[10px] text-yellow font-bold uppercase block">Calories</span>
+                    <span class="text-[10px] text-yellow font-bold uppercase block">${_t('nutrition.calories', 'Calories')}</span>
                     <span class="text-lg font-black text-white">${kcal} <span class="text-[10px] text-dim font-normal">kcal</span></span>
                 </div>
                 <div class="p-3 bg-gradient-to-b from-cyan/10 to-black/40 rounded-xl border border-cyan/30 text-center">
-                    <span class="text-[10px] text-cyan font-bold uppercase block">Protein</span>
+                    <span class="text-[10px] text-cyan font-bold uppercase block">${_t('nutrition.protein', 'Protein')}</span>
                     <span class="text-lg font-black text-white">${protein}g</span>
                 </div>
                 <div class="p-3 bg-black/40 rounded-xl border border-white/10 text-center">
-                    <span class="text-[10px] text-dim font-bold uppercase block">Carbs</span>
+                    <span class="text-[10px] text-dim font-bold uppercase block">${_t('nutrition.carbs', 'Carbs')}</span>
                     <span class="text-lg font-black text-white">${carbs}g</span>
                 </div>
                 <div class="p-3 bg-black/40 rounded-xl border border-white/10 text-center">
-                    <span class="text-[10px] text-dim font-bold uppercase block">Fats</span>
+                    <span class="text-[10px] text-dim font-bold uppercase block">${_t('nutrition.fat', 'Fats')}</span>
                     <span class="text-lg font-black text-white">${fat}g</span>
                 </div>
                 <div class="p-3 bg-black/40 rounded-xl border border-white/10 text-center">
-                    <span class="text-[10px] text-dim font-bold uppercase block">Fiber</span>
+                    <span class="text-[10px] text-dim font-bold uppercase block">${_t('nutrition.fiber', 'Fiber')}</span>
                     <span class="text-lg font-black text-white">${fiber}g</span>
                 </div>
             </div>
@@ -2764,9 +2772,9 @@ window.openRecipeDetailModal = function(idx) {
         <div>
             <div class="flex items-center justify-between mb-2.5">
                 <h4 class="text-xs font-bold text-white uppercase tracking-wider flex items-center gap-2">
-                    <span class="text-emerald-400">02 //</span> Ingredients Required (${ingredients.length})
+                    <span class="text-emerald-400">02 //</span> ${_t('nutrition.ingredientsRequired', 'Ingredients Required')} (${ingredients.length})
                 </h4>
-                <span class="text-[10px] text-dim font-mono">Check off items as you prep</span>
+                <span class="text-[10px] text-dim font-mono">${_t('nutrition.checkOffItems', 'Check off items as you prep')}</span>
             </div>
             <div class="space-y-2 max-h-48 overflow-y-auto pr-1">
                 ${ingredients.map(ing => `
@@ -2782,13 +2790,13 @@ window.openRecipeDetailModal = function(idx) {
         <!-- Step-by-Step Cooking Guide -->
         <div>
             <h4 class="text-xs font-bold text-white uppercase tracking-wider mb-2.5 flex items-center gap-2">
-                <span class="text-yellow">03 //</span> Step-by-Step Cooking Instructions (${steps.length} Steps)
+                <span class="text-yellow">03 //</span> ${_t('nutrition.cookingInstructions', 'Step-by-Step Cooking Instructions')} (${steps.length} ${_t('nutrition.steps', 'Steps')})
             </h4>
             <div class="space-y-3">
                 ${steps.map((step, sIdx) => `
                     <div class="p-3.5 bg-black/50 rounded-xl border border-white/10 flex gap-3.5 items-start">
                         <span class="px-2.5 py-1 rounded-md bg-cyan/20 border border-cyan/40 text-cyan text-[11px] font-mono font-bold whitespace-nowrap">
-                            STEP ${(sIdx + 1).toString().padStart(2, '0')}
+                            ${_t('nutrition.step', 'STEP')} ${(sIdx + 1).toString().padStart(2, '0')}
                         </span>
                         <p class="text-xs text-secondary leading-relaxed pt-0.5">
                             ${step}
@@ -2803,7 +2811,7 @@ window.openRecipeDetailModal = function(idx) {
             <div class="p-4 bg-gradient-to-r from-cyan/10 to-yellow/10 rounded-xl border border-cyan/30 flex gap-3 items-start">
                 <span class="text-xl">💡</span>
                 <div>
-                    <span class="text-xs font-bold text-cyan uppercase tracking-wider block mb-1">Chef's Secret Technique</span>
+                    <span class="text-xs font-bold text-cyan uppercase tracking-wider block mb-1">${_t('nutrition.chefSecret', 'Chef\'s Secret Technique')}</span>
                     <p class="text-xs text-secondary italic leading-relaxed">
                         ${r.chef_tips}
                     </p>
@@ -2815,11 +2823,11 @@ window.openRecipeDetailModal = function(idx) {
         <div class="pt-4 border-t border-white/10 flex flex-col sm:flex-row gap-3">
             <button type="button" onclick="logRecipeDirectly('${title.replace(/'/g, "\\'")}', ${kcal}, ${protein}, ${carbs}, ${fat}); closeRecipeDetailModal();" 
                 class="btn-primary flex-1 py-3 text-xs font-bold uppercase text-black tracking-wider flex items-center justify-center gap-2 shadow-lg shadow-cyan/20">
-                <span>⚡</span> + Log This Dish to Today's Meals
+                <span>⚡</span> + ${_t('nutrition.logThisDish', 'Log This Dish to Today\'s Meals')}
             </button>
             <button type="button" onclick="closeRecipeDetailModal()" 
                 class="btn-secondary px-6 py-3 text-xs font-bold uppercase text-secondary hover:text-white">
-                Close Guide
+                ${_t('nutrition.closeGuide', 'Close Guide')}
             </button>
         </div>
     `;

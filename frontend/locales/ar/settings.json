@@ -1,0 +1,14 @@
+{
+  "settings": {
+    "title": "الإعدادات",
+    "profile": "الملف الشخصي",
+    "language": "اللغة",
+    "theme": "المظهر",
+    "notifications": "الإشعارات",
+    "privacy": "الخصوصية",
+    "security": "الأمان",
+    "logout": "تسجيل الخروج",
+    "deleteAccount": "حذف الحساب",
+    "saveChanges": "حفظ التغييرات"
+  }
+}

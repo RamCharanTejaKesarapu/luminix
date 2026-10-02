@@ -1,0 +1,21 @@
+{
+  "pose": {
+    "title": "60 FPS లైవ్ పోజ్ ఇంజిన్",
+    "poseAnalysis": "పోజ్ విశ్లేషణ",
+    "startAnalysis": "విశ్లేషణ ప్రారంభించు",
+    "stopAnalysis": "విశ్లేషణ ఆపు",
+    "cameraPermissions": "కెమెరా అనుమతి అవసరం",
+    "bodyTracking": "శరీర ట్రాకింగ్",
+    "poseDetection": "పోజ్ గుర్తింపు",
+    "jointTracking": "కీలు ట్రాకింగ్",
+    "posture": "భంగిమ",
+    "form": "రూపం",
+    "alignment": "అమరిక",
+    "riskDetection": "ప్రమాద గుర్తింపు",
+    "riskLevel": "ప్రమాద స్థాయి",
+    "movementQuality": "కదలిక నాణ్యత",
+    "recommendations": "సిఫార్సులు",
+    "warnings": "హెచ్చరికలు",
+    "analysisComplete": "విశ్లేషణ పూర్తయింది"
+  }
+}

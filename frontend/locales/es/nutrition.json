@@ -1,0 +1,15 @@
+{
+  "nutrition": {
+    "title": "Matriz Metabólica y Nutrición",
+    "calories": "Calorías",
+    "protein": "Proteína",
+    "carbohydrates": "Carbohidratos",
+    "fat": "Grasa",
+    "water": "Agua",
+    "breakfast": "Desayuno",
+    "lunch": "Almuerzo",
+    "dinner": "Cena",
+    "calculate": "Calcular",
+    "foodTracker": "Rastreador de Alimentos"
+  }
+}

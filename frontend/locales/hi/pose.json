@@ -1,0 +1,12 @@
+{
+  "pose": {
+    "title": "60 FPS लाइव पोज़ इंजन",
+    "poseAnalysis": "पोज़ विश्लेषण",
+    "startAnalysis": "विश्लेषण शुरू करें",
+    "cameraPermissions": "कैमरा अनुमति आवश्यक",
+    "posture": "मुद्रा",
+    "alignment": "संरेखण",
+    "riskDetection": "जोखिम पहचान",
+    "warnings": "चेतावनियाँ"
+  }
+}

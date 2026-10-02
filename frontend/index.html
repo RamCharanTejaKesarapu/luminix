@@ -235,7 +235,7 @@
 </head>
 <body class="editorial-body">
     <!-- Accessible Skip to Main Content Link -->
-    <a href="#main-content" class="skip-to-content" id="skip-to-content-link">Skip to Sanctuary Content</a>
+    <a href="#main-content" class="skip-to-content" id="skip-to-content-link" data-i18n="common.skipToContent">Skip to Sanctuary Content</a>
 
     <!-- Scroll Progress Bar -->
     <div id="scroll-progress-bar" class="scroll-progress-bar" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" aria-label="Page reading progress"></div>
@@ -259,7 +259,7 @@
         <div class="banner-inner">
             <span class="banner-pulse"></span>
             <span class="banner-text"><strong>KYOTO SPRING RELEASE</strong> — 60 FPS Camera Biomechanics & Adaptive Discrete State Counter v4.2 Active.</span>
-            <button type="button" onclick="nav('live-pose')" class="banner-cta">LAUNCH VISION →</button>
+            <button type="button" onclick="nav('live-pose')" class="banner-cta" data-i18n="notifications.launchVision">LAUNCH VISION →</button>
             <button type="button" class="banner-dismiss" onclick="window.dismissBanner()" aria-label="Dismiss announcement">&times;</button>
         </div>
     </aside>
@@ -278,20 +278,20 @@
                 </div>
 
                 <div class="header-center">
-                    <span class="system-descriptor">AI FITNESS // WELLNESS OS</span>
+                    <span class="system-descriptor" data-i18n="common.tagline">AI FITNESS // WELLNESS OS</span>
                 </div>
 
                 <div class="header-right">
                     <ul id="nav-menu">
-                        <li><button class="nav-btn nav-active" onclick="nav('dashboard')" data-view="dashboard">SYSTEM</button></li>
-                        <li><button class="nav-btn" onclick="nav('live-pose')" data-view="live-pose">LIVE POSE</button></li>
-                        <li><button class="nav-btn" onclick="nav('yoga')" data-view="yoga">YOGA</button></li>
-                        <li><button class="nav-btn" onclick="nav('gym')" data-view="gym">GYM</button></li>
-                        <li><button class="nav-btn" onclick="nav('bmi')" data-view="bmi">NUTRITION</button></li>
-                        <li><button class="nav-btn" onclick="nav('food-tracker')" data-view="food-tracker">FOOD</button></li>
-                        <li><button class="nav-btn" onclick="nav('luna')" data-view="luna">LUNA & EXPORT</button></li>
-                        <li><button class="nav-btn" onclick="nav('connect')" data-view="connect">CONNECT</button></li>
-                        <li><button class="nav-btn" onclick="openCreatorModal('story')" data-view="about">ABOUT</button></li>
+                        <li><button class="nav-btn nav-active" onclick="nav('dashboard')" data-view="dashboard" data-i18n="nav.system">SYSTEM</button></li>
+                        <li><button class="nav-btn" onclick="nav('live-pose')" data-view="live-pose" data-i18n="nav.livePose">LIVE POSE</button></li>
+                        <li><button class="nav-btn" onclick="nav('yoga')" data-view="yoga" data-i18n="nav.yoga">YOGA</button></li>
+                        <li><button class="nav-btn" onclick="nav('gym')" data-view="gym" data-i18n="nav.gym">GYM</button></li>
+                        <li><button class="nav-btn" onclick="nav('bmi')" data-view="bmi" data-i18n="nav.nutrition">NUTRITION</button></li>
+                        <li><button class="nav-btn" onclick="nav('food-tracker')" data-view="food-tracker" data-i18n="nav.food">FOOD</button></li>
+                        <li><button class="nav-btn" onclick="nav('luna')" data-view="luna" data-i18n="nav.lunaExport">LUNA & EXPORT</button></li>
+                        <li><button class="nav-btn" onclick="nav('connect')" data-view="connect" data-i18n="nav.connect">CONNECT</button></li>
+                        <li><button class="nav-btn" onclick="openCreatorModal('story')" data-view="about" data-i18n="nav.about">ABOUT</button></li>
                     </ul>
 
                     <!-- Search Palette Trigger Button -->
@@ -310,7 +310,7 @@
                     <div id="user-profile" class="header-profile-section">
                         <button class="profile-pill" onclick="window.openUserProfileModal()" title="View profile, biometrics & security details">
                             <span class="profile-avatar-ph">👤</span>
-                            <span id="profile-name">PROFILE</span>
+                            <span id="profile-name" data-i18n="settings.profile">PROFILE</span>
                             <span class="logout-tag">▾</span>
                         </button>
                     </div>
@@ -332,37 +332,41 @@
                 <div class="drawer-header">
                     <div class="drawer-brand">
                         <span class="drawer-dot"></span>
-                        <span class="drawer-title">LUMINIX // DISCIPLINE DIRECTORY</span>
+                        <span class="drawer-title" data-i18n="nav.disciplineDirectory">LUMINIX // DISCIPLINE DIRECTORY</span>
                     </div>
                     <button type="button" class="drawer-close-btn" onclick="window.closeMobileMenu()" aria-label="Close navigation">&times;</button>
                 </div>
                 
-                <div class="drawer-section-label">QUICK SHORTCUTS</div>
+                <div class="drawer-section-label" data-i18n="nav.quickShortcuts">QUICK SHORTCUTS</div>
                 <div class="drawer-quick-actions">
                     <button type="button" class="drawer-quick-btn" onclick="window.openSearchModal(); window.closeMobileMenu();">
                         <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-                        <span>Search (⌘K)</span>
+                        <span data-i18n="nav.searchShortcut">Search (⌘K)</span>
                     </button>
                     <button type="button" class="drawer-quick-btn" onclick="window.toggleTheme();">
                         <span class="drawer-theme-indicator">☀️/🌙</span>
-                        <span>Toggle Theme</span>
+                        <span data-i18n="nav.toggleTheme">Toggle Theme</span>
+                    </button>
+                    <button type="button" class="drawer-quick-btn" onclick="window.toggleLanguageSelector(); window.closeMobileMenu();">
+                        <span class="drawer-theme-indicator">🌐</span>
+                        <span data-i18n="settings.language">Language</span>
                     </button>
                 </div>
 
-                <div class="drawer-section-label">CHAMBERS & DISCIPLINES</div>
+                <div class="drawer-section-label" data-i18n="nav.chambersDisciplines">CHAMBERS & DISCIPLINES</div>
                 <ul class="drawer-links">
-                    <li><button onclick="nav('dashboard'); window.closeMobileMenu();" class="drawer-nav-btn active" data-mob-drawer="dashboard"><span class="d-num">00</span><span class="d-txt">Sanctuary System</span></button></li>
-                    <li><button onclick="nav('live-pose'); window.closeMobileMenu();" class="drawer-nav-btn" data-mob-drawer="live-pose"><span class="d-num">01</span><span class="d-txt">Live Pose Engine (60 FPS)</span></button></li>
-                    <li><button onclick="nav('gym'); window.closeMobileMenu();" class="drawer-nav-btn" data-mob-drawer="gym"><span class="d-num">02</span><span class="d-txt">Adaptive Gym Engine</span></button></li>
-                    <li><button onclick="nav('yoga'); window.closeMobileMenu();" class="drawer-nav-btn" data-mob-drawer="yoga"><span class="d-num">03</span><span class="d-txt">17 Sacred Yoga Asanas</span></button></li>
-                    <li><button onclick="nav('bmi'); window.closeMobileMenu();" class="drawer-nav-btn" data-mob-drawer="bmi"><span class="d-num">04</span><span class="d-txt">Metabolic Matrix & BMR</span></button></li>
-                    <li><button onclick="nav('food-tracker'); window.closeMobileMenu();" class="drawer-nav-btn" data-mob-drawer="food-tracker"><span class="d-num">05</span><span class="d-txt">Food & Hydration Tracking</span></button></li>
-                    <li><button onclick="nav('luna'); window.closeMobileMenu();" class="drawer-nav-btn" data-mob-drawer="luna"><span class="d-num">06</span><span class="d-txt">Luna AI & Clinical Studio</span></button></li>
-                    <li><button onclick="nav('connect'); window.closeMobileMenu();" class="drawer-nav-btn" data-mob-drawer="connect"><span class="d-num">07</span><span class="d-txt">Connect with Lumi (Wearables)</span></button></li>
-                    <li><button onclick="openCreatorModal('story'); window.closeMobileMenu();" class="drawer-nav-btn" data-mob-drawer="about"><span class="d-num">08</span><span class="d-txt">About Luminix & Vision</span></button></li>
+                    <li><button onclick="nav('dashboard'); window.closeMobileMenu();" class="drawer-nav-btn active" data-mob-drawer="dashboard"><span class="d-num">00</span><span class="d-txt" data-i18n="nav.sanctuarySystem">Sanctuary System</span></button></li>
+                    <li><button onclick="nav('live-pose'); window.closeMobileMenu();" class="drawer-nav-btn" data-mob-drawer="live-pose"><span class="d-num">01</span><span class="d-txt" data-i18n="nav.livePoseEngine">Live Pose Engine (60 FPS)</span></button></li>
+                    <li><button onclick="nav('gym'); window.closeMobileMenu();" class="drawer-nav-btn" data-mob-drawer="gym"><span class="d-num">02</span><span class="d-txt" data-i18n="nav.adaptiveGymEngine">Adaptive Gym Engine</span></button></li>
+                    <li><button onclick="nav('yoga'); window.closeMobileMenu();" class="drawer-nav-btn" data-mob-drawer="yoga"><span class="d-num">03</span><span class="d-txt" data-i18n="nav.sacredYogaAsanas">17 Sacred Yoga Asanas</span></button></li>
+                    <li><button onclick="nav('bmi'); window.closeMobileMenu();" class="drawer-nav-btn" data-mob-drawer="bmi"><span class="d-num">04</span><span class="d-txt" data-i18n="nav.metabolicMatrix">Metabolic Matrix & BMR</span></button></li>
+                    <li><button onclick="nav('food-tracker'); window.closeMobileMenu();" class="drawer-nav-btn" data-mob-drawer="food-tracker"><span class="d-num">05</span><span class="d-txt" data-i18n="nav.foodHydration">Food & Hydration Tracking</span></button></li>
+                    <li><button onclick="nav('luna'); window.closeMobileMenu();" class="drawer-nav-btn" data-mob-drawer="luna"><span class="d-num">06</span><span class="d-txt" data-i18n="nav.lunaAIClinical">Luna AI & Clinical Studio</span></button></li>
+                    <li><button onclick="nav('connect'); window.closeMobileMenu();" class="drawer-nav-btn" data-mob-drawer="connect"><span class="d-num">07</span><span class="d-txt" data-i18n="nav.connectWearables">Connect with Lumi (Wearables)</span></button></li>
+                    <li><button onclick="openCreatorModal('story'); window.closeMobileMenu();" class="drawer-nav-btn" data-mob-drawer="about"><span class="d-num">08</span><span class="d-txt" data-i18n="nav.aboutVision">About Luminix & Vision</span></button></li>
                 </ul>
 
-                <div class="drawer-section-label">THE ARCHITECT & SUPPORT</div>
+                <div class="drawer-section-label" data-i18n="dashboard.architectSupport">THE ARCHITECT & SUPPORT</div>
                 <div class="drawer-creator-box">
                     <div style="display:flex; align-items:center; gap:12px; margin-bottom:12px;">
                         <img src="/assets/togi pfp.jpeg" alt="Ram Charan Teja (@LUNO895) - Creator and Lead Architect of Luminix" style="width:42px; height:42px; border-radius:50%; object-fit:cover; border:2px solid var(--vermilion); box-shadow:0 0 10px rgba(224,35,28,0.4);" />
@@ -372,10 +376,10 @@
                         </div>
                     </div>
                     <div style="display:flex; gap:8px; flex-direction:column;">
-                        <button onclick="openCreatorModal('story'); window.closeMobileMenu();" class="drawer-action-btn">
+                        <button onclick="openCreatorModal('story'); window.closeMobileMenu();" class="drawer-action-btn" data-i18n="dashboard.viewCreatorDossier">
                             📜 View Creator Dossier & Story
                         </button>
-                        <button onclick="openCreatorModal('donate'); window.closeMobileMenu();" class="drawer-action-btn donate-highlight">
+                        <button onclick="openCreatorModal('donate'); window.closeMobileMenu();" class="drawer-action-btn donate-highlight" data-i18n="dashboard.donateCreator">
                             ❤️ Donate to Creator
                         </button>
                     </div>
@@ -394,7 +398,7 @@
 
         <!-- ── Floating System Button ───────────────────────── -->
         <div id="floating-cta-container">
-            <button id="floating-cta-btn" onclick="scrollToSystemIndex()">
+            <button id="floating-cta-btn" onclick="scrollToSystemIndex()" data-i18n="common.exploreSystem">
                 EXPLORE SYSTEM ↓
             </button>
         </div>
@@ -403,31 +407,31 @@
         <div class="mobile-bottom-nav">
             <button onclick="nav('dashboard')" class="mob-active" data-mob="dashboard">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="4" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="11" width="7" height="10" rx="1"/></svg>
-                System
+                <span data-i18n="nav.system">System</span>
             </button>
             <button onclick="nav('live-pose')" data-mob="live-pose">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="4" r="2"/><path d="M12 6v4m-4 2l4-2 4 2m-8 0v4l4 4 4-4v-4"/></svg>
-                Vision
+                <span data-i18n="nav.vision">Vision</span>
             </button>
             <button onclick="nav('gym')" data-mob="gym">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M6.5 6.5h11M2 12h3m14 0h3M5 8v8m14-8v8m-12-6v4m10-4v4"/></svg>
-                Gym
+                <span data-i18n="nav.gym">Gym</span>
             </button>
             <button onclick="nav('yoga')" data-mob="yoga">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="4" r="2"/><path d="M4 20l4-8 4 4 4-4 4 8"/></svg>
-                Yoga
+                <span data-i18n="nav.yoga">Yoga</span>
             </button>
             <button onclick="nav('bmi')" data-mob="bmi">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg>
-                Metrics
+                <span data-i18n="nav.metrics">Metrics</span>
             </button>
             <button onclick="nav('luna')" data-mob="luna">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="3"/><path d="M12 1v2m0 18v2M4.22 4.22l1.42 1.42m12.72 12.72l1.42 1.42M1 12h2m18 0h2"/></svg>
-                Luna
+                <span data-i18n="nav.luna">Luna</span>
             </button>
             <button onclick="nav('connect')" data-mob="connect">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="6" y="2" width="12" height="20" rx="3"/><path d="M12 18h.01"/><path d="M9 2h6M9 22h6"/></svg>
-                Sync
+                <span data-i18n="nav.sync">Sync</span>
             </button>
         </div>
     </div>
@@ -442,41 +446,41 @@
         <button type="button" id="floating-contact-btn" class="floating-contact-btn" onclick="window.toggleContactModal()" aria-label="Open Contact Modal" title="Direct Contact & Feedback">
             <span class="contact-pulse"></span>
             <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-            <span class="contact-label">CONTACT</span>
+            <span class="contact-label" data-i18n="common.contact">CONTACT</span>
         </button>
 
         <div id="floating-contact-modal" class="floating-contact-modal hidden" aria-hidden="true">
             <div class="contact-modal-header">
                 <div>
-                    <div class="contact-modal-tag font-mono">ENCRYPTED TRANSMISSION</div>
-                    <div class="contact-modal-title">Contact Architect & Support</div>
+                    <div class="contact-modal-tag font-mono" data-i18n="notifications.contactTag">ENCRYPTED TRANSMISSION</div>
+                    <div class="contact-modal-title" data-i18n="notifications.contactTitle">Contact Architect & Support</div>
                 </div>
                 <button type="button" class="contact-modal-close" onclick="window.closeContactModal()" aria-label="Close dialog">&times;</button>
             </div>
             <form id="floating-contact-form" onsubmit="window.handleFloatingContactSubmit(event)" class="contact-modal-form">
                 <div class="form-group-editorial">
-                    <label class="form-label-editorial text-[10px]">NAME / CALLSIGN</label>
+                    <label class="form-label-editorial text-[10px]" data-i18n="notifications.nameCallsign">NAME / CALLSIGN</label>
                     <input type="text" id="contact-name" required placeholder="Dr. Sarah Chen" class="form-input-editorial">
                 </div>
                 <div class="form-group-editorial">
-                    <label class="form-label-editorial text-[10px]">EMAIL ADDRESS</label>
+                    <label class="form-label-editorial text-[10px]" data-i18n="notifications.emailAddress">EMAIL ADDRESS</label>
                     <input type="email" id="contact-email" required placeholder="sarah@institution.org" class="form-input-editorial">
                 </div>
                 <div class="form-group-editorial">
-                    <label class="form-label-editorial text-[10px]">INQUIRY TYPE</label>
+                    <label class="form-label-editorial text-[10px]" data-i18n="notifications.inquiryType">INQUIRY TYPE</label>
                     <select id="contact-type" class="form-input-editorial">
-                        <option value="clinical">Clinical Integration & Biomechanics</option>
-                        <option value="vision">Computer Vision & Latency</option>
-                        <option value="feedback">Product Feedback & Feature Request</option>
-                        <option value="creator">Creator Tribute / Sponsorship</option>
-                        <option value="bug">Security / Bug Report</option>
+                        <option value="clinical" data-i18n="notifications.clinicalIntegration">Clinical Integration & Biomechanics</option>
+                        <option value="vision" data-i18n="notifications.computerVision">Computer Vision & Latency</option>
+                        <option value="feedback" data-i18n="notifications.productFeedback">Product Feedback & Feature Request</option>
+                        <option value="creator" data-i18n="notifications.creatorTribute">Creator Tribute / Sponsorship</option>
+                        <option value="bug" data-i18n="notifications.securityBugReport">Security / Bug Report</option>
                     </select>
                 </div>
                 <div class="form-group-editorial">
-                    <label class="form-label-editorial text-[10px]">MESSAGE</label>
-                    <textarea id="contact-message" required rows="3" placeholder="Specify your inquiry, telemetry feedback, or institutional request..." class="form-input-editorial"></textarea>
+                    <label class="form-label-editorial text-[10px]" data-i18n="notifications.message">MESSAGE</label>
+                    <textarea id="contact-message" required rows="3" data-i18n="[placeholder]notifications.messagePlaceholder" placeholder="Specify your inquiry, telemetry feedback, or institutional request..." class="form-input-editorial"></textarea>
                 </div>
-                <button type="submit" id="contact-modal-submit-btn" class="btn-editorial-primary w-full">
+                <button type="submit" id="contact-modal-submit-btn" class="btn-editorial-primary w-full" data-i18n="common.transmit">
                     TRANSMIT MESSAGE →
                 </button>
             </form>
@@ -489,23 +493,23 @@
         <div class="search-modal-box" role="dialog" aria-modal="true" aria-label="Command Palette Site Search">
             <div class="search-input-wrap">
                 <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" class="search-input-icon"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-                <input type="text" id="site-search-input" placeholder="Search chambers, 17 yoga asanas, gym exercises, nutrition..." autocomplete="off" spellcheck="false" oninput="window.handleSearchInput(this.value)" onkeydown="window.handleSearchKeydown(event)">
+                <input type="text" id="site-search-input" data-i18n="[placeholder]common.searchChambersPlaceholder" placeholder="Search chambers, 17 yoga asanas, gym exercises, nutrition..." autocomplete="off" spellcheck="false" oninput="window.handleSearchInput(this.value)" onkeydown="window.handleSearchKeydown(event)">
                 <button type="button" class="search-clear-btn" onclick="window.clearSearch()" aria-label="Clear search">&times;</button>
             </div>
             <div class="search-quick-chips">
-                <button type="button" class="search-chip" onclick="window.setSearchQuery('pose')">Live Pose</button>
-                <button type="button" class="search-chip" onclick="window.setSearchQuery('squat')">Squats</button>
-                <button type="button" class="search-chip" onclick="window.setSearchQuery('warrior')">Warrior Asana</button>
-                <button type="button" class="search-chip" onclick="window.setSearchQuery('macro')">BMR & Macros</button>
-                <button type="button" class="search-chip" onclick="window.setSearchQuery('creator')">Architect</button>
+                <button type="button" class="search-chip" onclick="window.setSearchQuery('pose')" data-i18n="nav.livePose">Live Pose</button>
+                <button type="button" class="search-chip" onclick="window.setSearchQuery('squat')" data-i18n="gym.squats">Squats</button>
+                <button type="button" class="search-chip" onclick="window.setSearchQuery('warrior')" data-i18n="yoga.warrior">Warrior Asana</button>
+                <button type="button" class="search-chip" onclick="window.setSearchQuery('macro')" data-i18n="dashboard.metabolicMatrix">BMR & Macros</button>
+                <button type="button" class="search-chip" onclick="window.setSearchQuery('creator')" data-i18n="dashboard.architectSupport">Architect</button>
             </div>
             <div id="site-search-results" class="search-results-list" role="listbox">
                 <!-- Populated dynamically by search controller -->
             </div>
             <div class="search-modal-footer">
-                <span class="search-footer-hint"><kbd>↑</kbd><kbd>↓</kbd> Navigate</span>
-                <span class="search-footer-hint"><kbd>↵</kbd> Select</span>
-                <span class="search-footer-hint"><kbd>ESC</kbd> Dismiss</span>
+                <span class="search-footer-hint"><kbd>↑</kbd><kbd>↓</kbd> <span data-i18n="common.navigate">Navigate</span></span>
+                <span class="search-footer-hint"><kbd>↵</kbd> <span data-i18n="common.select">Select</span></span>
+                <span class="search-footer-hint"><kbd>ESC</kbd> <span data-i18n="common.dismiss">Dismiss</span></span>
             </div>
         </div>
     </div>
@@ -515,11 +519,11 @@
         <div class="confirm-modal-backdrop" onclick="window.resolveConfirmModal(false)"></div>
         <div class="confirm-modal-card" role="alertdialog" aria-modal="true" aria-labelledby="confirm-modal-title" aria-describedby="confirm-modal-msg">
             <div class="confirm-modal-icon" id="confirm-modal-icon">⚠️</div>
-            <div class="confirm-modal-title" id="confirm-modal-title">Confirm Action</div>
-            <div class="confirm-modal-msg" id="confirm-modal-msg">Are you certain you wish to proceed?</div>
+            <div class="confirm-modal-title" id="confirm-modal-title" data-i18n="notifications.confirmAction">Confirm Action</div>
+            <div class="confirm-modal-msg" id="confirm-modal-msg" data-i18n="notifications.areYouSure">Are you certain you wish to proceed?</div>
             <div class="confirm-modal-actions">
-                <button type="button" id="confirm-cancel-btn" class="btn-editorial-secondary" onclick="window.resolveConfirmModal(false)">Cancel</button>
-                <button type="button" id="confirm-proceed-btn" class="btn-editorial-primary" onclick="window.resolveConfirmModal(true)">Proceed</button>
+                <button type="button" id="confirm-cancel-btn" class="btn-editorial-secondary" onclick="window.resolveConfirmModal(false)" data-i18n="common.cancel">Cancel</button>
+                <button type="button" id="confirm-proceed-btn" class="btn-editorial-primary" onclick="window.resolveConfirmModal(true)" data-i18n="notifications.proceed">Proceed</button>
             </div>
         </div>
     </div>
@@ -550,16 +554,16 @@
             <!-- Top Tag & Close/Skip Button -->
             <div class="flex items-center justify-between mb-3">
                 <div class="flex items-center gap-2">
-                    <span class="hero-category-tag">SYSTEM // BIOMETRIC REGISTRY</span>
+                    <span class="hero-category-tag" data-i18n="settings.biometricRegistry">SYSTEM // BIOMETRIC REGISTRY</span>
                 </div>
-                <button type="button" class="search-clear-btn" onclick="window.closeBiometricOnboardingModal(true)" title="Skip for now" aria-label="Close onboarding modal">&times;</button>
+                <button type="button" class="search-clear-btn" onclick="window.closeBiometricOnboardingModal(true)" title="Skip for now" data-i18n="[title]common.skipForNow" aria-label="Close onboarding modal">&times;</button>
             </div>
 
             <div class="mb-4">
                 <h2 id="onboarding-modal-title" class="text-2xl font-display font-bold text-[var(--bone)] tracking-tight">
-                    PERSONALIZE YOUR <span class="text-vermilion font-display font-extrabold">SANCTUARY.</span>
+                    <span data-i18n="settings.personalizeSanctuary">PERSONALIZE YOUR</span> <span class="text-vermilion font-display font-extrabold" data-i18n="settings.sanctuaryWord">SANCTUARY.</span>
                 </h2>
-                <p class="text-[var(--bone-dim)] text-xs mt-1 font-mono">
+                <p class="text-[var(--bone-dim)] text-xs mt-1 font-mono" data-i18n="settings.biometricDescription">
                     Register your biometric baseline, custom avatar, and weight for real-time calorie telemetry.
                 </p>
             </div>
@@ -576,10 +580,10 @@
                         <span class="avatar-edit-badge">+</span>
                     </div>
                     <div class="flex-1">
-                        <div class="font-display font-semibold text-xs text-[var(--bone)]">Custom Profile Picture</div>
-                        <div class="font-mono text-[10px] text-[var(--text-dim)] mt-0.5">Stored securely in Firebase Storage Vault.</div>
+                        <div class="font-display font-semibold text-xs text-[var(--bone)]" data-i18n="settings.customProfilePicture">Custom Profile Picture</div>
+                        <div class="font-mono text-[10px] text-[var(--text-dim)] mt-0.5" data-i18n="settings.storedSecurely">Stored securely in Firebase Storage Vault.</div>
                         <input type="file" id="onboarding-avatar-file" accept="image/*" class="hidden" onchange="window.handleAvatarFileSelect(event)">
-                        <button type="button" class="btn-editorial-secondary py-1 px-2.5 text-[10px] mt-1.5" onclick="document.getElementById('onboarding-avatar-file').click()">
+                        <button type="button" class="btn-editorial-secondary py-1 px-2.5 text-[10px] mt-1.5" onclick="document.getElementById('onboarding-avatar-file').click()" data-i18n="settings.selectAvatarImage">
                             SELECT AVATAR IMAGE…
                         </button>
                     </div>
@@ -587,18 +591,18 @@
 
                 <!-- Full Name -->
                 <div class="form-group-editorial">
-                    <label class="form-label-editorial text-[10px]">FULL NAME / CODENAME</label>
+                    <label class="form-label-editorial text-[10px]" data-i18n="settings.fullName">FULL NAME / CODENAME</label>
                     <input type="text" id="onboarding-name" required placeholder="E.g., Toji Zenin" class="form-input-editorial" autocomplete="name">
                 </div>
 
                 <!-- Age & Weight (Kg) -->
                 <div class="grid grid-cols-2 gap-3">
                     <div class="form-group-editorial">
-                        <label class="form-label-editorial text-[10px]">AGE (YEARS)</label>
+                        <label class="form-label-editorial text-[10px]" data-i18n="settings.age">AGE (YEARS)</label>
                         <input type="number" id="onboarding-age" required min="12" max="110" placeholder="26" class="form-input-editorial">
                     </div>
                     <div class="form-group-editorial">
-                        <label class="form-label-editorial text-[10px]">BODY WEIGHT (KG)</label>
+                        <label class="form-label-editorial text-[10px]" data-i18n="settings.bodyWeight">BODY WEIGHT (KG)</label>
                         <input type="number" id="onboarding-weight" required min="30" max="250" step="0.1" placeholder="75" class="form-input-editorial">
                     </div>
                 </div>
@@ -606,28 +610,28 @@
                 <!-- Height & Gender -->
                 <div class="grid grid-cols-2 gap-3">
                     <div class="form-group-editorial">
-                        <label class="form-label-editorial text-[10px]">HEIGHT (CM)</label>
+                        <label class="form-label-editorial text-[10px]" data-i18n="settings.heightCm">HEIGHT (CM)</label>
                         <input type="number" id="onboarding-height" min="100" max="240" placeholder="180" class="form-input-editorial">
                     </div>
                     <div class="form-group-editorial">
-                        <label class="form-label-editorial text-[10px]">GENDER</label>
+                        <label class="form-label-editorial text-[10px]" data-i18n="settings.gender">GENDER</label>
                         <select id="onboarding-gender" class="form-input-editorial">
-                            <option value="unspecified">Select Gender</option>
-                            <option value="male">Male</option>
-                            <option value="female">Female</option>
-                            <option value="nonbinary">Non-Binary / Custom</option>
+                            <option value="unspecified" data-i18n="settings.selectGender">Select Gender</option>
+                            <option value="male" data-i18n="gym.male">Male</option>
+                            <option value="female" data-i18n="gym.female">Female</option>
+                            <option value="nonbinary" data-i18n="gym.other">Non-Binary / Custom</option>
                         </select>
                     </div>
                 </div>
 
                 <!-- Primary Health / Fitness Goal -->
                 <div class="form-group-editorial">
-                    <label class="form-label-editorial text-[10px]">PRIMARY BIOMECHANICAL GOAL</label>
+                    <label class="form-label-editorial text-[10px]" data-i18n="settings.primaryGoal">PRIMARY BIOMECHANICAL GOAL</label>
                     <select id="onboarding-goal" class="form-input-editorial">
-                        <option value="lean_mass">Hypertrophy & Lean Muscle Mass</option>
-                        <option value="fat_loss">Aggressive Caloric Deficit & Fat Loss</option>
-                        <option value="biomechanics">Zero-Lag Pose Kinematics & Posture</option>
-                        <option value="endurance">Cardiovascular Health & Restorative Sleep</option>
+                        <option value="lean_mass" data-i18n="settings.hypertrophy">Hypertrophy & Lean Muscle Mass</option>
+                        <option value="fat_loss" data-i18n="settings.fatLoss">Aggressive Caloric Deficit & Fat Loss</option>
+                        <option value="biomechanics" data-i18n="settings.biomechanics">Zero-Lag Pose Kinematics & Posture</option>
+                        <option value="endurance" data-i18n="settings.endurance">Cardiovascular Health & Restorative Sleep</option>
                     </select>
                 </div>
 
@@ -635,11 +639,11 @@
                 <div class="terms-checkbox-wrap p-3 rounded bg-[rgba(255,255,255,0.02)] border border-[var(--border-subtle)]">
                     <label class="flex items-start gap-2.5 cursor-pointer select-none">
                         <input type="checkbox" id="onboarding-terms-check" required class="terms-checkbox mt-0.5" onchange="document.getElementById('onboarding-terms-error')?.classList.add('hidden')">
-                        <span class="text-xs text-[var(--bone)] leading-tight font-medium">
+                        <span class="text-xs text-[var(--bone)] leading-tight font-medium" data-i18n="auth.termsAgree">
                             I accept the Luminix Biometric Processing Terms & Conditions.
                         </span>
                     </label>
-                    <p class="terms-small-disclaimer font-mono text-[10px] text-[var(--text-dim)] mt-2 leading-relaxed">
+                    <p class="terms-small-disclaimer font-mono text-[10px] text-[var(--text-dim)] mt-2 leading-relaxed" data-i18n="auth.privacyDescription">
                         🔒 <strong>ZERO-LEAK PRIVACY COVENANT:</strong> We guarantee that all personal biometric information, including your name, age, body weight, height, health metrics, and custom profile picture, is strictly protected. <strong>Your information will NEVER be leaked, rented, sold, or shared with third parties, data brokers, or advertisers under any circumstance.</strong> Telemetry inference occurs entirely client-side, and cloud backups are encrypted with AES-256 via your private Firebase & local vault instance.
                     </p>
                     <div id="onboarding-terms-error" class="text-[var(--vermilion)] font-mono text-[10px] mt-1.5 hidden">
@@ -649,10 +653,10 @@
 
                 <!-- Action Controls -->
                 <div class="flex items-center justify-between gap-3 pt-2">
-                    <button type="button" class="font-mono text-xs text-[var(--bone-dim)] hover:text-[var(--bone)] underline underline-offset-4" onclick="window.closeBiometricOnboardingModal(true)">
+                    <button type="button" class="font-mono text-xs text-[var(--bone-dim)] hover:text-[var(--bone)] underline underline-offset-4" onclick="window.closeBiometricOnboardingModal(true)" data-i18n="common.skipForNow">
                         Skip for now &rarr;
                     </button>
-                    <button type="submit" id="onboarding-submit-btn" class="btn-editorial-primary py-2 px-5 text-xs">
+                    <button type="submit" id="onboarding-submit-btn" class="btn-editorial-primary py-2 px-5 text-xs" data-i18n="settings.saveInitialize">
                         SAVE & INITIALIZE VAULT &check;
                     </button>
                 </div>
@@ -664,17 +668,19 @@
     <div id="wearable-risk-modal" class="confirm-modal-overlay hidden" aria-hidden="true" role="alertdialog" aria-modal="true" aria-labelledby="wearable-risk-title">
         <div class="confirm-modal-backdrop" onclick="window.dismissRiskAlert()"></div>
         <div class="wearable-risk-card" onclick="event.stopPropagation()">
-            <div class="risk-badge-pulse" id="wearable-risk-badge">HYPERTENSION ALERT</div>
-            <div class="risk-device-tag">⌚ WATCH TELEMETRY TRIGGERED</div>
-            <h3 id="wearable-risk-title" class="font-display text-xl font-bold text-white mt-2">BIOMETRIC LIMIT EXCEEDED</h3>
-            <p id="wearable-risk-msg" class="text-xs text-[var(--bone-dim)] font-mono mt-3 leading-relaxed">
+            <div class="risk-badge-pulse" id="wearable-risk-badge" data-i18n="notifications.biometricAlert">HYPERTENSION ALERT</div>
+            <div class="risk-device-tag" data-i18n="notifications.watchTelemetryTriggered">⌚ WATCH TELEMETRY TRIGGERED</div>
+            <h3 id="wearable-risk-title" class="font-display text-xl font-bold text-white mt-2" data-i18n="notifications.biometricAlert">BIOMETRIC LIMIT EXCEEDED</h3>
+            <p id="wearable-risk-msg" class="text-xs text-[var(--bone-dim)] font-mono mt-3 leading-relaxed" data-i18n="notifications.biometricAlertDesc">
                 Vitals have exceeded safety thresholds. Resting baseline required.
             </p>
             <div class="risk-actions mt-5 flex gap-3">
-                <button type="button" class="btn-editorial-secondary flex-1 text-xs py-2" onclick="window.dismissRiskAlert()">ACKNOWLEDGE &amp; MONITOR</button>
-                <button type="button" class="btn-editorial-primary flex-1 text-xs py-2" onclick="window.fetchLatestHealthData()">SYNC REAL TELEMETRY</button>
+                <button type="button" class="btn-editorial-secondary flex-1 text-xs py-2" onclick="window.dismissRiskAlert()" data-i18n="notifications.acknowledgeMonitor">ACKNOWLEDGE &amp; MONITOR</button>
+                <button type="button" class="btn-editorial-primary flex-1 text-xs py-2" onclick="window.fetchLatestHealthData()" data-i18n="notifications.syncRealTelemetry">SYNC REAL TELEMETRY</button>
             </div>
         </div>
+    </div>
+
     <!-- ── Kyoto Social Share Modal ────────────────────────────── -->
     <div id="social-share-modal" class="search-modal-overlay hidden" aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="share-modal-title">
         <div class="search-modal-backdrop" onclick="window.closeShareModal()"></div>
@@ -683,8 +689,8 @@
                 <span class="cookie-tag">BROADCAST // SANCTUARY</span>
                 <button type="button" class="search-clear-btn" onclick="window.closeShareModal()" aria-label="Close share dialog">&times;</button>
             </div>
-            <h3 id="share-modal-title" class="text-xl font-display font-bold text-[var(--bone)]">SHARE LUMINIX INTELLIGENCE</h3>
-            <p class="text-xs text-[var(--bone-dim)] font-mono mt-1">Transmit the autonomous 60 FPS private health platform across your network.</p>
+            <h3 id="share-modal-title" class="text-xl font-display font-bold text-[var(--bone)]" data-i18n="notifications.shareLuminix">SHARE LUMINIX INTELLIGENCE</h3>
+            <p class="text-xs text-[var(--bone-dim)] font-mono mt-1" data-i18n="notifications.shareDescription">Transmit the autonomous 60 FPS private health platform across your network.</p>
 
             <div class="share-grid">
                 <button type="button" class="share-card-btn" onclick="window.shareToPlatform('x')" aria-label="Share on X (Twitter)">
@@ -719,7 +725,7 @@
 
             <div class="share-link-input-wrap mt-3">
                 <input type="text" id="share-url-input" value="http://localhost:8000/" readonly class="share-link-input" aria-label="Sanctuary share link">
-                <button type="button" id="copy-share-btn" class="btn-editorial-primary text-xs py-1.5 px-3" onclick="window.copyShareLink()">
+                <button type="button" id="copy-share-btn" class="btn-editorial-primary text-xs py-1.5 px-3" onclick="window.copyShareLink()" data-i18n="common.copyLink">
                     COPY LINK
                 </button>
             </div>
@@ -733,15 +739,15 @@
             <button type="button" class="search-clear-btn" onclick="window.dismissCookieBanner()" aria-label="Dismiss cookie banner">&times;</button>
         </div>
         <div>
-            <div class="cookie-title">BIOMETRIC SOVEREIGNTY &amp; COOKIES</div>
-            <p class="cookie-body mt-1">
+            <div class="cookie-title" data-i18n="notifications.cookieTitle">BIOMETRIC SOVEREIGNTY &amp; COOKIES</div>
+            <p class="cookie-body mt-1" data-i18n="notifications.cookieBody">
                 We enforce zero camera uploads and local WebAssembly telemetry. We use strictly essential cookies for secure token sessions and optional client telemetry to optimize frame smoothness. Read our <a href="/privacy" onclick="event.preventDefault(); window.nav ? window.nav('privacy') : window.location.href='/privacy';">Privacy Policy</a>.
             </p>
         </div>
         <div class="cookie-actions">
-            <button type="button" class="cookie-btn-primary" onclick="window.acceptAllCookies()">ACCEPT ALL</button>
-            <button type="button" class="cookie-btn-secondary" onclick="window.acceptEssentialCookies()">ESSENTIAL ONLY</button>
-            <button type="button" class="cookie-link-btn" onclick="window.openCookieSettings()">CUSTOMIZE</button>
+            <button type="button" class="cookie-btn-primary" onclick="window.acceptAllCookies()" data-i18n="notifications.acceptAll">ACCEPT ALL</button>
+            <button type="button" class="cookie-btn-secondary" onclick="window.acceptEssentialCookies()" data-i18n="notifications.essentialOnly">ESSENTIAL ONLY</button>
+            <button type="button" class="cookie-link-btn" onclick="window.openCookieSettings()" data-i18n="notifications.customize">CUSTOMIZE</button>
         </div>
     </aside>
 
@@ -753,36 +759,36 @@
                 <span class="cookie-tag">VAULT PREFERENCES</span>
                 <button type="button" class="search-clear-btn" onclick="window.closeCookieSettings()" aria-label="Close cookie settings">&times;</button>
             </div>
-            <h3 id="cookie-settings-title" class="text-xl font-display font-bold text-[var(--bone)]">Telemetry &amp; Storage Preferences</h3>
-            <p class="text-xs text-[var(--text-secondary)] font-mono mt-1">Configure your browser-side consent parameters below.</p>
+            <h3 id="cookie-settings-title" class="text-xl font-display font-bold text-[var(--bone)]" data-i18n="notifications.telemetryPreferences">Telemetry &amp; Storage Preferences</h3>
+            <p class="text-xs text-[var(--text-secondary)] font-mono mt-1" data-i18n="notifications.telemetryDescription">Configure your browser-side consent parameters below.</p>
 
             <div class="space-y-3 mt-4">
                 <div class="p-3 rounded bg-[rgba(255,255,255,0.02)] border border-[var(--border-subtle)] flex items-center justify-between">
                     <div>
-                        <div class="text-xs font-bold text-[var(--bone)]">Essential Authentication (JWT)</div>
-                        <div class="text-[10px] text-[var(--text-dim)] font-mono">Required for login sessions &amp; cryptographic token security.</div>
+                        <div class="text-xs font-bold text-[var(--bone)]" data-i18n="notifications.essentialAuth">Essential Authentication (JWT)</div>
+                        <div class="text-[10px] text-[var(--text-dim)] font-mono" data-i18n="notifications.essentialAuthDesc">Required for login sessions &amp; cryptographic token security.</div>
                     </div>
                     <input type="checkbox" checked disabled class="accent-[var(--vermilion)]">
                 </div>
                 <div class="p-3 rounded bg-[rgba(255,255,255,0.02)] border border-[var(--border-subtle)] flex items-center justify-between">
                     <div>
-                        <div class="text-xs font-bold text-[var(--bone)]">Client Telemetry &amp; Frame Analytics</div>
-                        <div class="text-[10px] text-[var(--text-dim)] font-mono">Measures 60 FPS performance, MediaPipe load times, and error telemetry.</div>
+                        <div class="text-xs font-bold text-[var(--bone)]" data-i18n="notifications.clientTelemetry">Client Telemetry &amp; Frame Analytics</div>
+                        <div class="text-[10px] text-[var(--text-dim)] font-mono" data-i18n="notifications.clientTelemetryDesc">Measures 60 FPS performance, MediaPipe load times, and error telemetry.</div>
                     </div>
                     <input type="checkbox" id="cookie-pref-analytics" checked class="accent-[var(--vermilion)]">
                 </div>
                 <div class="p-3 rounded bg-[rgba(255,255,255,0.02)] border border-[var(--border-subtle)] flex items-center justify-between">
                     <div>
-                        <div class="text-xs font-bold text-[var(--bone)]">Local Unit &amp; Theme Caching</div>
-                        <div class="text-[10px] text-[var(--text-dim)] font-mono">Persists dark/white mode and metric unit selections locally.</div>
+                        <div class="text-xs font-bold text-[var(--bone)]" data-i18n="notifications.localCaching">Local Unit &amp; Theme Caching</div>
+                        <div class="text-[10px] text-[var(--text-dim)] font-mono" data-i18n="notifications.localCachingDesc">Persists dark/white mode and metric unit selections locally.</div>
                     </div>
                     <input type="checkbox" id="cookie-pref-functional" checked class="accent-[var(--vermilion)]">
                 </div>
             </div>
 
             <div class="confirm-modal-actions mt-5">
-                <button type="button" class="btn-editorial-secondary text-xs py-2 px-4" onclick="window.closeCookieSettings()">CANCEL</button>
-                <button type="button" class="btn-editorial-primary text-xs py-2 px-4" onclick="window.saveCustomCookiePreferences()">SAVE PREFERENCES</button>
+                <button type="button" class="btn-editorial-secondary text-xs py-2 px-4" onclick="window.closeCookieSettings()" data-i18n="common.cancel">CANCEL</button>
+                <button type="button" class="btn-editorial-primary text-xs py-2 px-4" onclick="window.saveCustomCookiePreferences()" data-i18n="notifications.savePreferences">SAVE PREFERENCES</button>
             </div>
         </div>
     </div>
@@ -809,6 +815,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="/static/kage_scene.js?v=5.0"></script>
     <script src="/static/auth.js?v=5.0"></script>
+    <script src="/static/i18n.js?v=5.0"></script>
     <script src="/static/app.js?v=5.5"></script>
     <script src="/static/yoga.js?v=5.0"></script>
     <script src="/static/gym.js?v=5.0"></script>

@@ -1,0 +1,11 @@
+{
+  "notifications": {
+    "success": "成功",
+    "warning": "警告",
+    "error": "エラー",
+    "confirmAction": "操作を確認",
+    "areYouSure": "続行してもよろしいですか？",
+    "proceed": "続行",
+    "acceptAll": "すべて同意"
+  }
+}

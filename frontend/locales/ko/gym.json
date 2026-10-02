@@ -1,0 +1,14 @@
+{
+  "gym": {
+    "title": "적응형 헬스 엔진",
+    "workout": "운동",
+    "exercise": "운동",
+    "sets": "세트",
+    "reps": "반복",
+    "weight": "무게",
+    "rest": "휴식",
+    "startWorkout": "운동 시작",
+    "squats": "스쿼트",
+    "pushups": "팔굽혀펴기"
+  }
+}

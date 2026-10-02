@@ -1,0 +1,15 @@
+{
+  "nutrition": {
+    "title": "مصفوفة الأيض والتغذية",
+    "calories": "سعرات حرارية",
+    "protein": "بروتين",
+    "carbohydrates": "كربوهيدرات",
+    "fat": "دهون",
+    "water": "ماء",
+    "breakfast": "فطور",
+    "lunch": "غداء",
+    "dinner": "عشاء",
+    "calculate": "احسب",
+    "foodTracker": "متتبع الطعام"
+  }
+}

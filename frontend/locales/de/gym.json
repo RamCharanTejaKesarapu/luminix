@@ -1,0 +1,15 @@
+{
+  "gym": {
+    "title": "Adaptiver Fitness-Motor",
+    "workout": "Training",
+    "exercise": "Übung",
+    "sets": "Sätze",
+    "reps": "Wiederholungen",
+    "weight": "Gewicht",
+    "rest": "Pause",
+    "startWorkout": "Training starten",
+    "progress": "Fortschritt",
+    "squats": "Kniebeugen",
+    "pushups": "Liegestütze"
+  }
+}

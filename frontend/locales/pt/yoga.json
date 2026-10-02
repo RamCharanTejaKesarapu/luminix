@@ -1,0 +1,33 @@
+{
+  "yoga": {
+    "title": "17 Asanas Sagrados do Yoga",
+    "pageTitle": "17 Asanas Sagrados do Yoga — Orientação Cinemática | Luminix",
+    "moduleTag": "MÓDULO 03 // CINEMÁTICA DA POSTURA SAGRADA",
+    "pose": "Postura",
+    "breathing": "Respiração",
+    "duration": "Duração",
+    "difficulty": "Dificuldade",
+    "instructions": "Instruções",
+    "startSession": "Iniciar Sessão",
+    "endSession": "Encerrar Sessão",
+    "beginner": "Iniciante",
+    "intermediate": "Intermediário",
+    "advanced": "Avançado",
+    "safetyWarnings": "Avisos de Segurança",
+    "recommendations": "Recomendações",
+    "progress": "Progresso",
+    "holdTime": "Tempo de Permanência",
+    "holdDuration": "Duração da Postura",
+    "poseGuide": "Guia da Postura",
+    "alignmentTips": "Dicas de Alinhamento",
+    "benefits": "Benefícios",
+    "asanaLibrary": "Biblioteca de Asanas",
+    "selectedPose": "Postura Selecionada",
+    "formAccuracy": "Precisão da Postura",
+    "breathingPattern": "Padrão Respiratório",
+    "inhale": "Inspire",
+    "exhale": "Expire",
+    "hold": "Retenha",
+    "relax": "Relaxe"
+  }
+}

@@ -1,0 +1,15 @@
+{
+  "nutrition": {
+    "title": "Stoffwechselmatrix & Ernährung",
+    "calories": "Kalorien",
+    "protein": "Protein",
+    "carbohydrates": "Kohlenhydrate",
+    "fat": "Fett",
+    "water": "Wasser",
+    "breakfast": "Frühstück",
+    "lunch": "Mittagessen",
+    "dinner": "Abendessen",
+    "calculate": "Berechnen",
+    "foodTracker": "Ernährungstracker"
+  }
+}

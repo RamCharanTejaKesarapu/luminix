@@ -22,6 +22,19 @@
  */
 
 (function() {
+    // Localization helper with graceful English fallback
+    const _t = (key, fallback) => (typeof window.t === 'function' ? window.t(key) : null) || fallback;
+
+    // Listen for global language switch to re-render hub if visible
+    window.addEventListener('languageChanged', () => {
+        if (window.currentView === 'connect') {
+            const container = document.getElementById('main-content') || document.querySelector('.main-content');
+            if (container && window.renderWearableHub) {
+                window.renderWearableHub(container);
+            }
+        }
+    });
+
     // Wearable Device State — Starts in Clean Standby / Awaiting Link (NO DUMMY VALUES)
     const wearableState = {
         connected: false,
@@ -2618,10 +2631,10 @@
                 <div class="flex items-center justify-between flex-wrap gap-4 mb-6">
                     <div>
                         <div class="flex items-center gap-2 mb-1 flex-wrap">
-                            <span class="hero-category-tag">CHAMBER 07 // WEARABLE &amp; BLUETOOTH SYNC</span>
+                            <span class="hero-category-tag">${_t('dashboard.wearableSync', 'CHAMBER 07 // WEARABLE &amp; BLUETOOTH SYNC')}</span>
                             <span class="${isConnected ? 'wearable-live-badge' : 'wearable-standby-badge'}">
                                 <span class="${isConnected ? 'wearable-dot' : 'wearable-amber-dot'}"></span>
-                                ${isConnected ? 'LIVE TELEMETRY STREAM' : (isProcessing ? 'PROCESSING TELEMETRY…' : 'AWAITING HARDWARE LINK')}
+                                ${isConnected ? _t('dashboard.liveTelemetryStream', 'LIVE TELEMETRY STREAM') : (isProcessing ? _t('dashboard.processingTelemetry', 'PROCESSING TELEMETRY…') : _t('dashboard.awaitingHardwareLink', 'AWAITING HARDWARE LINK'))}
                             </span>
                             <!-- Dedicated Physical Bluetooth Radio Status Pill -->
                             <span id="chamber-header-bt-indicator" class="chamber-bt-indicator px-2.5 py-0.5 rounded-full font-mono text-[9px] font-bold flex items-center gap-1.5 ${_bluetoothPoweredOn === false ? 'bg-red-950/70 border border-red-500/80 text-red-400 animate-pulse' : 'bg-emerald-950/50 border border-emerald-500/70 text-emerald-400'}">
@@ -2629,10 +2642,10 @@
                             </span>
                         </div>
                         <h1 class="text-3xl font-display font-extrabold text-[var(--bone)] tracking-tight">
-                            CONNECT WITH <span class="text-vermilion">LUMI.</span>
+                            ${_t('dashboard.connectWithLumi', 'CONNECT WITH')} <span class="text-vermilion">${_t('dashboard.lumiWord', 'LUMI.')}</span>
                         </h1>
                         <p class="text-xs text-[var(--bone-dim)] mt-1 font-mono">
-                            Pair Authentic Health Hardware: Bluetooth BLE Smartwatch / Heart Rate Monitor, Dedicated Blood Pressure Cuff, or Mobile Companion.
+                            ${_t('dashboard.wearableSub', 'Pair Authentic Health Hardware: Bluetooth BLE Smartwatch / Heart Rate Monitor, Dedicated Blood Pressure Cuff, or Mobile Companion.')}
                         </p>
                     </div>
 
@@ -2643,7 +2656,7 @@
                             class="btn-editorial-primary flex items-center gap-2 text-xs py-2 px-3.5 bg-cyan-400 text-black font-black border border-cyan-300 shadow-[0_0_20px_rgba(0,242,254,0.35)] hover:bg-cyan-300 transition-all"
                             title="Fetch and synchronize latest health metrics across sensors">
                             <span>⚡</span>
-                            <span>FETCH LATEST DATA</span>
+                            <span>${_t('dashboard.fetchLatestData', 'FETCH LATEST DATA')}</span>
                         </button>
 
                         <!-- Primary Blueprint Action 2: START / STOP LIVE MONITORING -->
@@ -2651,21 +2664,21 @@
                             class="flex items-center gap-2 text-xs py-2 px-3.5 rounded-lg font-mono font-bold transition-all ${bridgeState.isLiveMonitoring ? 'bg-red-500/25 text-red-300 border border-red-500 animate-pulse' : 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/50 hover:bg-emerald-500/30'}"
                             title="Toggle real-time WebSocket live monitoring pipeline">
                             <span class="inline-block w-2 h-2 rounded-full ${bridgeState.isLiveMonitoring ? 'bg-red-400' : 'bg-emerald-400 animate-ping'}"></span>
-                            <span>${bridgeState.isLiveMonitoring ? 'STOP LIVE MONITORING' : 'START LIVE MONITORING'}</span>
+                            <span>${bridgeState.isLiveMonitoring ? _t('dashboard.stopLiveMonitoring', 'STOP LIVE MONITORING') : _t('dashboard.startLiveMonitoring', 'START LIVE MONITORING')}</span>
                         </button>
 
                         ${isConnected ? `
                             <button type="button" onclick="window.disconnectWearable()" class="btn-editorial-secondary text-xs py-2 px-3 text-red-400 hover:border-red-500">
-                                ✕ DISCONNECT
+                                ✕ ${_t('dashboard.disconnect', 'DISCONNECT')}
                             </button>
                         ` : ''}
                         <button type="button" onclick="window.openPhoneCompanionModal()" class="btn-editorial-secondary flex items-center gap-2 text-xs py-2 px-3.5">
                             <span>📱</span>
-                            <span>PAIR PHONE</span>
+                            <span>${_t('dashboard.pairPhone', 'PAIR PHONE')}</span>
                         </button>
                         <button type="button" onclick="window.connectNativeBluetooth()" class="btn-editorial-secondary flex items-center gap-2 text-xs py-2 px-3.5">
                             <span>⚡</span>
-                            <span>${isConnected ? 'SWITCH DEVICE' : 'SCAN BLE'}</span>
+                            <span>${isConnected ? _t('dashboard.switchDevice', 'SWITCH DEVICE') : _t('dashboard.scanBle', 'SCAN BLE')}</span>
                         </button>
                     </div>
                 </div>
@@ -2712,17 +2725,17 @@
                             <span class="w-2.5 h-2.5 rounded-full ${isConnected ? 'bg-emerald-400 animate-pulse' : 'bg-red-500'}"></span>
                             <span class="font-display font-bold text-sm text-[var(--bone)]">DATA SOURCE STATE</span>
                             <span class="px-2 py-0.5 rounded text-[9px] font-mono font-bold ${isConnected ? 'bg-emerald-950 text-emerald-400 border border-emerald-500/50' : 'bg-red-950/80 text-red-400 border border-red-500/50'}">
-                                ${isConnected ? 'REAL HARDWARE LINKED' : 'NO REAL DEVICE CONNECTED'}
+                                ${isConnected ? _t('dashboard.realHardwareLinked', 'REAL HARDWARE LINKED') : _t('dashboard.noRealDeviceConnected', 'NO REAL DEVICE CONNECTED')}
                             </span>
                         </div>
                         <div class="flex items-center gap-2">
                             ${isConnected ? `
                                 <button type="button" onclick="window.disconnectWearable()" class="px-3 py-1 rounded bg-red-950/60 hover:bg-red-900 border border-red-500/50 text-red-300 font-mono text-xs font-bold transition-all">
-                                    ✕ UNLINK REAL DEVICE
+                                    ✕ ${_t('dashboard.unlinkRealDevice', 'UNLINK REAL DEVICE')}
                                 </button>
                             ` : `
                                 <button type="button" onclick="window.connectNativeBluetooth()" class="px-3 py-1 rounded bg-cyan-400 hover:bg-cyan-300 text-black font-mono text-xs font-black shadow-[0_0_15px_rgba(0,242,254,0.3)] transition-all">
-                                    ⚡ PAIR REAL DEVICE
+                                    ⚡ ${_t('dashboard.pairRealDevice', 'PAIR REAL DEVICE')}
                                 </button>
                             `}
                         </div>
@@ -2810,7 +2823,7 @@
                             <div>
                                 <div class="flex items-center gap-2 flex-wrap">
                                     <span class="font-display font-bold text-base text-[var(--bone)]">
-                                        ${isConnected ? wearableState.deviceName : 'No Health Device Connected'}
+                                        ${isConnected ? wearableState.deviceName : _t('dashboard.noDeviceConnected', 'No Health Device Connected')}
                                     </span>
                                     <span class="connection-protocol-tag">
                                         ${isConnected ? wearableState.connectionType : 'STANDBY // DISCONNECTED'}
@@ -2949,7 +2962,7 @@
                     <!-- Metric 1: Blood Oxygen (SpO2) -->
                     <div class="wearable-metric-card ${isConnected && wearableState.spo2 && wearableState.spo2 < 92 ? 'metric-alert' : ''}" style="cursor:pointer;" onclick="window.openMetricHistoryModal('bp')" title="Click to view BP & SpO2 history">
                         <div class="metric-card-header">
-                            <span class="metric-label">BLOOD OXYGEN (SpO2)</span>
+                            <span class="metric-label">${_t('dashboard.bloodOxygen', 'BLOOD OXYGEN (SpO2)')}</span>
                             <span class="metric-icon text-cyan-400">🫁</span>
                         </div>
                         <div class="flex items-baseline gap-2 my-2">
@@ -2986,7 +2999,7 @@
                     <!-- Metric 2: Blood Pressure (Strict Blueprint Rule: Never Estimate or Fake) -->
                     <div class="wearable-metric-card ${bridgeState.bpStatus.hasRecent && (bridgeState.bpStatus.systolic >= 140 || bridgeState.bpStatus.diastolic >= 90) ? 'metric-alert' : ''}" style="cursor:pointer;" onclick="window.openMetricHistoryModal('bp')" title="Click to view BP history">
                         <div class="metric-card-header flex items-center justify-between">
-                            <span class="metric-label">LATEST AVAILABLE BP MEASUREMENT</span>
+                            <span class="metric-label">${_t('dashboard.bloodPressureMeasurement', 'LATEST AVAILABLE BP MEASUREMENT')}</span>
                             <button type="button" onclick="event.stopPropagation(); window.openLogCuffMeasurementModal();" class="font-mono text-[9px] text-cyan-400 hover:text-white underline cursor-pointer">
                                 + Log Cuff
                             </button>
@@ -3022,13 +3035,13 @@
 
                         <div class="grid grid-cols-2 gap-2 mt-2 pt-2 border-t border-[var(--border-subtle)] font-mono">
                             <div>
-                                <span class="text-[9px] text-[var(--text-dim)] block">RESTING PULSE</span>
+                                <span class="text-[9px] text-[var(--text-dim)] block">${_t('dashboard.restingPulse', 'RESTING PULSE')}</span>
                                 <span id="wearable-hr-val" class="font-display font-bold text-sm text-[var(--bone)]">
                                     ${wearableState.heartRate ? `${wearableState.heartRate} bpm` : (isConnected ? '<span class="text-xs italic text-[var(--bone-dim)]">No recent measurement</span>' : '<span class="text-xs italic text-[var(--bone-dim)]">No device connected</span>')}
                                 </span>
                             </div>
                             <div>
-                                <span class="text-[9px] text-[var(--text-dim)] block">HEART RATE VAR (HRV)</span>
+                                <span class="text-[9px] text-[var(--text-dim)] block">${_t('dashboard.hrv', 'HEART RATE VAR (HRV)')}</span>
                                 <span class="font-display font-bold text-sm text-emerald-400">
                                     ${wearableState.hrv ? `${wearableState.hrv} ms` : (isConnected ? '<span class="text-xs italic text-[var(--bone-dim)]">No recent measurement</span>' : '<span class="text-xs italic text-[var(--bone-dim)]">No device connected</span>')}
                                 </span>
@@ -3043,7 +3056,7 @@
                     <!-- Metric 3: Sleep Telemetry & Quality -->
                     <div class="wearable-metric-card" style="cursor:pointer;" onclick="window.openMetricHistoryModal('sleep')" title="Click to view sleep history">
                         <div class="metric-card-header">
-                            <span class="metric-label">SLEEP ARCHITECTURE</span>
+                            <span class="metric-label">${_t('dashboard.sleepArchitecture', 'SLEEP ARCHITECTURE')}</span>
                             <span class="metric-icon text-indigo-400">🌙</span>
                         </div>
                         <div class="flex items-baseline justify-between my-2">
@@ -3090,7 +3103,7 @@
                     <!-- Metric 4: Step Count & Calorie Burn Formula -->
                     <div class="wearable-metric-card" style="cursor:pointer;" onclick="window.openMetricHistoryModal('steps')" title="Click to view step history">
                         <div class="metric-card-header">
-                            <span class="metric-label">STEP GOAL &amp; CALORIES</span>
+                            <span class="metric-label">${_t('dashboard.stepGoalCalories', 'STEP GOAL &amp; CALORIES')}</span>
                             <span class="metric-icon text-gold">🔥</span>
                         </div>
                         <div class="flex items-baseline justify-between my-2">
@@ -3113,13 +3126,13 @@
                         </div>
                         <div class="grid grid-cols-2 gap-2 mt-2 pt-2 border-t border-[var(--border-subtle)] font-mono">
                             <div>
-                                <span class="text-[9px] text-[var(--text-dim)] block">BURNED CALORIES</span>
+                                <span class="text-[9px] text-[var(--text-dim)] block">${_t('dashboard.calories', 'BURNED CALORIES')}</span>
                                 <span class="font-display font-bold text-sm text-[var(--ember)] wearable-cal-live">
                                     ${isConnected && wearableState.caloriesBurned !== null ? `${wearableState.caloriesBurned.toLocaleString()} kcal` : (isConnected ? '<span class="text-xs italic text-[var(--bone-dim)]">No recent measurement</span>' : '<span class="text-xs italic text-[var(--bone-dim)]">No device connected</span>')}
                                 </span>
                             </div>
                             <div>
-                                <span class="text-[9px] text-[var(--text-dim)] block">STRIDE DISTANCE</span>
+                                <span class="text-[9px] text-[var(--text-dim)] block">${_t('dashboard.distance', 'STRIDE DISTANCE')}</span>
                                 <span class="font-display font-bold text-sm text-[var(--bone)] wearable-dist-live">
                                     ${isConnected && wearableState.distanceKm !== null ? `${wearableState.distanceKm} km` : (isConnected ? '<span class="text-xs italic text-[var(--bone-dim)]">No recent measurement</span>' : '<span class="text-xs italic text-[var(--bone-dim)]">No device connected</span>')}
                                 </span>
@@ -3144,38 +3157,38 @@
                         <div class="flex items-center gap-2">
                             <span class="hero-category-tag">PROFILE SYNCHRONIZATION</span>
                             <h3 class="font-display font-bold text-base text-[var(--bone)]">
-                                Synchronized Biometric Profile &amp; Metabolic Engine
+                                ${_t('dashboard.profileSyncTitle', 'Synchronized Biometric Profile &amp; Metabolic Engine')}
                             </h3>
                         </div>
                         <button type="button" onclick="window.openBiometricOnboardingModal()" class="btn-editorial-secondary py-1.5 px-3 text-xs flex items-center gap-1.5">
                             <span>✎</span>
-                            <span>EDIT BIOMETRIC PROFILE</span>
+                            <span>${_t('dashboard.editBiometricProfile', 'EDIT BIOMETRIC PROFILE')}</span>
                         </button>
                     </div>
 
                     <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3 font-mono text-xs">
                         <div class="p-3 rounded-lg bg-[rgba(255,255,255,0.02)] border border-[var(--border-subtle)]">
-                            <span class="text-[9px] text-[var(--text-dim)] uppercase block">REGISTERED AGE</span>
+                            <span class="text-[9px] text-[var(--text-dim)] uppercase block">${_t('dashboard.registeredAge', 'REGISTERED AGE')}</span>
                             <span class="text-base font-bold text-[var(--bone)] block mt-0.5">${profile.age} yrs</span>
                             <span class="text-[9px] text-[var(--text-dim)]">Max HR: ${profile.maxHeartRate} bpm</span>
                         </div>
                         <div class="p-3 rounded-lg bg-[rgba(255,255,255,0.02)] border border-[var(--border-subtle)]">
-                            <span class="text-[9px] text-[var(--text-dim)] uppercase block">BODY WEIGHT</span>
+                            <span class="text-[9px] text-[var(--text-dim)] uppercase block">${_t('dashboard.bodyWeight', 'BODY WEIGHT')}</span>
                             <span class="text-base font-bold text-[var(--bone)] block mt-0.5">${profile.weight} kg</span>
                             <span class="text-[9px] text-[var(--text-dim)]">Factor: ${(profile.weight / 70).toFixed(2)}x</span>
                         </div>
                         <div class="p-3 rounded-lg bg-[rgba(255,255,255,0.02)] border border-[var(--border-subtle)]">
-                            <span class="text-[9px] text-[var(--text-dim)] uppercase block">BODY HEIGHT</span>
+                            <span class="text-[9px] text-[var(--text-dim)] uppercase block">${_t('dashboard.bodyHeight', 'BODY HEIGHT')}</span>
                             <span class="text-base font-bold text-[var(--bone)] block mt-0.5">${profile.height} cm</span>
                             <span class="text-[9px] text-[var(--text-dim)]">Stride: ${profile.strideLengthCm} cm</span>
                         </div>
                         <div class="p-3 rounded-lg bg-[rgba(255,255,255,0.02)] border border-[var(--border-subtle)]">
-                            <span class="text-[9px] text-[var(--text-dim)] uppercase block">CALORIE INTAKE</span>
+                            <span class="text-[9px] text-[var(--text-dim)] uppercase block">${_t('dashboard.calorieIntake', 'CALORIE INTAKE')}</span>
                             <span class="text-base font-bold text-[var(--cyan-primary)] block mt-0.5">${profile.calorieIntake.toLocaleString()} kcal</span>
                             <span class="text-[9px] text-[var(--text-dim)]">Daily Target</span>
                         </div>
                         <div class="p-3 rounded-lg bg-[rgba(255,255,255,0.02)] border border-[var(--border-subtle)]">
-                            <span class="text-[9px] text-[var(--text-dim)] uppercase block">BASAL RATE (BMR)</span>
+                            <span class="text-[9px] text-[var(--text-dim)] uppercase block">${_t('dashboard.basalRate', 'BASAL RATE (BMR)')}</span>
                             <span class="text-base font-bold text-amber-400 block mt-0.5">${profile.bmr.toLocaleString()} kcal</span>
                             <span class="text-[9px] text-[var(--text-dim)]">Resting Burn</span>
                         </div>

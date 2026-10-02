@@ -1,0 +1,15 @@
+{
+  "nutrition": {
+    "title": "대사 매트릭스 & 영양",
+    "calories": "칼로리",
+    "protein": "단백질",
+    "carbohydrates": "탄수화물",
+    "fat": "지방",
+    "water": "물",
+    "breakfast": "아침",
+    "lunch": "점심",
+    "dinner": "저녁",
+    "calculate": "계산",
+    "foodTracker": "식단 추적기"
+  }
+}

@@ -6815,3 +6815,478 @@ body.light-theme .wearable-metric-card {
     border-color: rgba(0, 240, 255, 0.45);
     box-shadow: 0 12px 30px rgba(0, 0, 0, 0.7), 0 0 20px rgba(0, 240, 255, 0.15);
 }
+
+/* ═══════════════════════════════════════════════════════════════════
+   LUMINIX i18n — LANGUAGE SELECTOR & RTL SUPPORT
+   ═══════════════════════════════════════════════════════════════════ */
+
+/* ── Language Selector Container ───────────────────────────────── */
+.lang-selector-container {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    z-index: 9999;
+}
+
+.lang-selector-trigger {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 5px 10px;
+    border-radius: 6px;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid var(--border-subtle, rgba(223,231,224,0.12));
+    color: var(--bone, #dfe7e0);
+    cursor: pointer;
+    transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    font-size: 11px;
+    font-family: var(--font-mono, 'Fragment Mono', monospace);
+    letter-spacing: 0.03em;
+    white-space: nowrap;
+}
+.lang-selector-trigger:hover {
+    background: rgba(255, 255, 255, 0.09);
+    border-color: rgba(223, 231, 224, 0.3);
+}
+.lang-selector-trigger[aria-expanded="true"] {
+    background: rgba(224, 35, 28, 0.1);
+    border-color: rgba(224, 35, 28, 0.4);
+}
+
+.lang-globe-icon {
+    flex-shrink: 0;
+    opacity: 0.8;
+}
+
+.lang-selector-name {
+    font-weight: 600;
+    max-width: 100px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.lang-chevron {
+    opacity: 0.5;
+    transition: transform 0.25s ease;
+    flex-shrink: 0;
+}
+.lang-selector-trigger[aria-expanded="true"] .lang-chevron {
+    transform: rotate(180deg);
+}
+
+/* ── Language Dropdown Panel ───────────────────────────────────── */
+.lang-selector-dropdown {
+    position: absolute;
+    top: calc(100% + 8px);
+    right: 0;
+    width: 280px;
+    max-height: 460px;
+    background: rgba(10, 14, 20, 0.97);
+    backdrop-filter: blur(24px) saturate(1.3);
+    -webkit-backdrop-filter: blur(24px) saturate(1.3);
+    border: 1px solid rgba(223, 231, 224, 0.15);
+    border-radius: 12px;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.6), 0 0 40px rgba(0,0,0,0.3), 0 0 1px rgba(223,231,224,0.15);
+    overflow: hidden;
+    z-index: 99999;
+    opacity: 0;
+    transform: translateY(-8px) scale(0.97);
+    transition: opacity 0.2s ease, transform 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    pointer-events: none;
+}
+.lang-selector-dropdown.lang-dropdown-open {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+    pointer-events: all;
+}
+.lang-selector-dropdown.hidden {
+    display: none;
+}
+
+.lang-dropdown-header {
+    padding: 14px 16px 8px;
+    border-bottom: 1px solid rgba(223, 231, 224, 0.08);
+}
+.lang-dropdown-title {
+    font-family: var(--font-mono, 'Fragment Mono', monospace);
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--bone-dim, #aab4ad);
+    display: flex;
+    align-items: center;
+}
+
+/* ── Search Field ──────────────────────────────────────────────── */
+.lang-search-wrap {
+    position: relative;
+    padding: 8px 12px;
+    border-bottom: 1px solid rgba(223, 231, 224, 0.08);
+}
+.lang-search-icon {
+    position: absolute;
+    left: 22px;
+    top: 50%;
+    transform: translateY(-50%);
+    opacity: 0.4;
+    pointer-events: none;
+}
+.lang-search-input {
+    width: 100%;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(223, 231, 224, 0.1);
+    border-radius: 8px;
+    padding: 8px 12px 8px 32px;
+    color: var(--bone, #dfe7e0);
+    font-size: 12px;
+    font-family: var(--font-body, 'Inter', sans-serif);
+    outline: none;
+    transition: border-color 0.2s ease, background 0.2s ease;
+}
+.lang-search-input::placeholder {
+    color: var(--muted, #78837c);
+    font-size: 11px;
+}
+.lang-search-input:focus {
+    border-color: rgba(224, 35, 28, 0.5);
+    background: rgba(255, 255, 255, 0.07);
+}
+
+/* ── Language Options List ─────────────────────────────────────── */
+.lang-options-list {
+    list-style: none;
+    margin: 0;
+    padding: 6px;
+    max-height: 340px;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+}
+.lang-options-list::-webkit-scrollbar { width: 4px; }
+.lang-options-list::-webkit-scrollbar-track { background: transparent; }
+.lang-options-list::-webkit-scrollbar-thumb { background: rgba(223, 231, 224, 0.15); border-radius: 4px; }
+
+.lang-option {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 12px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background 0.15s ease, transform 0.1s ease;
+    position: relative;
+}
+.lang-option:hover,
+.lang-option.lang-option-focused {
+    background: rgba(255, 255, 255, 0.07);
+}
+.lang-option:active {
+    transform: scale(0.98);
+}
+
+.lang-option-active {
+    background: rgba(224, 35, 28, 0.1);
+    border: 1px solid rgba(224, 35, 28, 0.25);
+}
+.lang-option-active:hover {
+    background: rgba(224, 35, 28, 0.15);
+}
+
+.lang-option-flag {
+    font-size: 18px;
+    flex-shrink: 0;
+    width: 24px;
+    text-align: center;
+    line-height: 1;
+}
+
+.lang-option-names {
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+    flex: 1;
+    min-width: 0;
+}
+.lang-option-native {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--bone, #dfe7e0);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.lang-option-english {
+    font-size: 10px;
+    font-family: var(--font-mono, 'Fragment Mono', monospace);
+    color: var(--muted, #78837c);
+    letter-spacing: 0.03em;
+}
+
+.lang-option-check {
+    color: var(--vermilion, #e0231c);
+    font-weight: 800;
+    font-size: 14px;
+    flex-shrink: 0;
+    text-shadow: 0 0 8px rgba(224, 35, 28, 0.5);
+}
+
+.lang-option-empty {
+    padding: 16px;
+    text-align: center;
+    font-size: 12px;
+    color: var(--muted, #78837c);
+    font-family: var(--font-mono, 'Fragment Mono', monospace);
+}
+
+/* ── Language Switch Transition Overlay ─────────────────────────── */
+.lang-switch-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 999999;
+    background: rgba(5, 7, 10, 0.7);
+    backdrop-filter: blur(8px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    animation: langOverlayIn 0.2s ease forwards;
+}
+@keyframes langOverlayIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+.lang-switch-overlay.lang-switch-fade-out {
+    animation: langOverlayOut 0.3s ease forwards;
+}
+@keyframes langOverlayOut {
+    from { opacity: 1; }
+    to { opacity: 0; }
+}
+
+.lang-switch-spinner {
+    width: 32px;
+    height: 32px;
+    border: 3px solid rgba(224, 35, 28, 0.2);
+    border-top-color: var(--vermilion, #e0231c);
+    border-radius: 50%;
+    animation: langSpin 0.6s linear infinite;
+}
+@keyframes langSpin {
+    to { transform: rotate(360deg); }
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   RTL SUPPORT — Arabic & Urdu Layout Overrides
+   ═══════════════════════════════════════════════════════════════════ */
+
+/* Global RTL text direction */
+[dir="rtl"] body,
+.luminix-rtl {
+    direction: rtl;
+    text-align: right;
+}
+
+/* Header layout reversal */
+[dir="rtl"] #main-nav {
+    flex-direction: row-reverse;
+}
+[dir="rtl"] .header-left {
+    order: 3;
+}
+[dir="rtl"] .header-center {
+    order: 2;
+}
+[dir="rtl"] .header-right {
+    order: 1;
+    flex-direction: row-reverse;
+}
+[dir="rtl"] #nav-menu {
+    flex-direction: row-reverse;
+}
+
+/* Mobile drawer RTL */
+[dir="rtl"] .mobile-drawer-panel {
+    left: auto;
+    right: 0;
+    transform: translateX(100%);
+}
+[dir="rtl"] .mobile-drawer.open .mobile-drawer-panel {
+    transform: translateX(0);
+}
+[dir="rtl"] .drawer-close-btn {
+    left: 16px;
+    right: auto;
+}
+
+/* Breadcrumb separators */
+[dir="rtl"] .breadcrumb-sep {
+    transform: scaleX(-1);
+}
+
+/* Flex containers and gaps */
+[dir="rtl"] .flex { direction: rtl; }
+[dir="rtl"] .hero-actions-bar { flex-direction: row-reverse; }
+
+/* Cards and grid */
+[dir="rtl"] .module-card { text-align: right; }
+[dir="rtl"] .form-group-editorial { text-align: right; }
+
+/* Chat bubbles */
+[dir="rtl"] .flex.items-start.gap-3.justify-end {
+    flex-direction: row-reverse;
+    justify-content: flex-start;
+}
+[dir="rtl"] .flex.items-start.gap-3:not(.justify-end) {
+    flex-direction: row-reverse;
+}
+
+/* Input fields */
+[dir="rtl"] input,
+[dir="rtl"] textarea,
+[dir="rtl"] select {
+    text-align: right;
+}
+[dir="rtl"] .luna-chat input[type="text"] {
+    direction: rtl;
+}
+
+/* Buttons with arrows */
+[dir="rtl"] .btn-editorial-primary,
+[dir="rtl"] .btn-editorial-secondary {
+    direction: rtl;
+}
+
+/* Language selector RTL positioning */
+[dir="rtl"] .lang-selector-dropdown {
+    right: auto;
+    left: 0;
+}
+[dir="rtl"] .lang-search-icon {
+    left: auto;
+    right: 22px;
+}
+[dir="rtl"] .lang-search-input {
+    padding: 8px 32px 8px 12px;
+}
+
+/* Mobile bottom nav RTL */
+[dir="rtl"] .mobile-bottom-nav {
+    flex-direction: row-reverse;
+}
+
+/* Scrollbar on left for RTL */
+[dir="rtl"] .lang-options-list {
+    direction: rtl;
+}
+
+/* Tables RTL */
+[dir="rtl"] table { direction: rtl; }
+[dir="rtl"] th, [dir="rtl"] td { text-align: right; }
+
+/* Tooltips RTL */
+[dir="rtl"] [title]::after { left: auto; right: 0; }
+
+/* Back-to-top button RTL */
+[dir="rtl"] .back-to-top-btn {
+    right: auto;
+    left: 24px;
+}
+
+/* Floating contact widget RTL */
+[dir="rtl"] #floating-contact-widget {
+    right: auto;
+    left: 24px;
+}
+
+/* Cookie banner RTL */
+[dir="rtl"] .cookie-banner { direction: rtl; text-align: right; }
+
+/* Modal RTL adjustments */
+[dir="rtl"] .confirm-modal-card { text-align: right; }
+[dir="rtl"] .confirm-modal-actions { flex-direction: row-reverse; }
+
+/* ── Light Theme Language Selector ─────────────────────────────── */
+[data-theme="white"] .lang-selector-trigger,
+.white-mode .lang-selector-trigger {
+    background: rgba(0, 0, 0, 0.04);
+    border-color: rgba(0, 0, 0, 0.12);
+    color: #1a1a1a;
+}
+[data-theme="white"] .lang-selector-trigger:hover,
+.white-mode .lang-selector-trigger:hover {
+    background: rgba(0, 0, 0, 0.08);
+}
+[data-theme="white"] .lang-selector-dropdown,
+.white-mode .lang-selector-dropdown {
+    background: rgba(255, 255, 255, 0.97);
+    border-color: rgba(0, 0, 0, 0.12);
+    box-shadow: 0 20px 60px rgba(0,0,0,0.15), 0 0 1px rgba(0,0,0,0.1);
+}
+[data-theme="white"] .lang-search-input,
+.white-mode .lang-search-input {
+    background: rgba(0, 0, 0, 0.03);
+    border-color: rgba(0, 0, 0, 0.1);
+    color: #1a1a1a;
+}
+[data-theme="white"] .lang-option:hover,
+.white-mode .lang-option:hover {
+    background: rgba(0, 0, 0, 0.04);
+}
+[data-theme="white"] .lang-option-native,
+.white-mode .lang-option-native {
+    color: #1a1a1a;
+}
+[data-theme="white"] .lang-option-active,
+.white-mode .lang-option-active {
+    background: rgba(224, 35, 28, 0.06);
+    border-color: rgba(224, 35, 28, 0.2);
+}
+
+/* ── Mobile Responsiveness ─────────────────────────────────────── */
+@media (max-width: 768px) {
+    .lang-selector-name {
+        display: none;
+    }
+    .lang-selector-trigger {
+        padding: 6px 8px;
+    }
+    .lang-selector-dropdown {
+        position: fixed;
+        top: auto;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        width: 100%;
+        max-height: 70vh;
+        border-radius: 16px 16px 0 0;
+        transform: translateY(100%);
+    }
+    .lang-selector-dropdown.lang-dropdown-open {
+        transform: translateY(0);
+    }
+    .lang-chevron {
+        display: none;
+    }
+}
+
+@media (max-width: 480px) {
+    .lang-selector-dropdown {
+        max-height: 80vh;
+    }
+}
+
+/* ── Critical LTR Preservation in RTL Mode ───────────────────────── */
+/* Preserve strict LTR directionality on camera feeds, WebGL canvases, */
+/* MediaPipe overlays, charts, waveforms, and numeric/code telemetry */
+[dir="rtl"] canvas,
+[dir="rtl"] video,
+[dir="rtl"] #gl,
+[dir="rtl"] .camera-feed,
+[dir="rtl"] .pose-canvas,
+[dir="rtl"] .chartjs-render-monitor,
+[dir="rtl"] .spo2-waveform-svg,
+[dir="rtl"] code,
+[dir="rtl"] pre,
+[dir="rtl"] kbd {
+    direction: ltr !important;
+}
+

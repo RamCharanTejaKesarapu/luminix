@@ -44,12 +44,13 @@ const GYM_CATEGORIES = [
 
 window.renderGymView = function(container) {
     stopGymCamera();
+    const _t = typeof t === 'function' ? t : (k) => k;
     container.innerHTML = `
         <div class="module-header flex flex-wrap justify-between items-end gap-4">
             <div>
-                <div class="hero-category-tag"><span class="w-2 h-2 rounded-full bg-[var(--vermilion)] inline-block shadow-[0_0_8px_var(--vermilion)] mr-1.5"></span> MODULE 02 // PERFORMANCE & STRENGTH</div>
-                <h1 class="module-title-large">GYM <span class="text-vermilion font-display font-extrabold">REP TRACKER.</span></h1>
-                <p class="text-secondary text-sm mt-1">Camera-driven real-time rep counting, joint velocity tracking, target sets, and automated rest intervals.</p>
+                <div class="hero-category-tag"><span class="w-2 h-2 rounded-full bg-[var(--vermilion)] inline-block shadow-[0_0_8px_var(--vermilion)] mr-1.5"></span> ${_t('gym.moduleTag', 'MODULE 02 // PERFORMANCE & STRENGTH')}</div>
+                <h1 class="module-title-large">GYM <span class="text-vermilion font-display font-extrabold">${_t('gym.repCounter', 'REP TRACKER.')}</span></h1>
+                <p class="text-secondary text-sm mt-1">${_t('gym.pageSubtitle', 'Camera-driven real-time rep counting, joint velocity tracking, target sets, and automated rest intervals.')}</p>
             </div>
         </div>
 
@@ -58,7 +59,7 @@ window.renderGymView = function(container) {
             ${GYM_CATEGORIES.map(c => `
                 <button onclick="selectCategory('${c.id}')" data-cat="${c.id}"
                     class="nav-btn ${c.id === currentCategory ? 'nav-active' : ''} text-xs font-mono">
-                    ${c.icon} ${c.name.toUpperCase()}
+                    ${c.icon} ${_t('gym.' + c.id, c.name).toUpperCase()}
                 </button>
             `).join('')}
         </div>
@@ -67,11 +68,11 @@ window.renderGymView = function(container) {
             <!-- Exercise Selection List (4 cols) -->
             <div class="lg:col-span-4 flex flex-col gap-4">
                 <div class="module-card p-5">
-                    <p class="font-mono text-xs text-secondary font-bold uppercase tracking-wider mb-3">EXERCISE LIBRARY</p>
+                    <p class="font-mono text-xs text-secondary font-bold uppercase tracking-wider mb-3">${_t('gym.exerciseLibrary', 'EXERCISE LIBRARY')}</p>
                     <div id="exercise-list" class="space-y-2.5 max-h-[560px] overflow-y-auto pr-1">
                         <div class="p-6 rounded-xl text-center">
                             <div class="loading-spinner mx-auto mb-2"></div>
-                            <p class="text-secondary text-xs">Loading exercises...</p>
+                            <p class="text-secondary text-xs">${_t('common.loading', 'Loading exercises...')}</p>
                         </div>
                     </div>
                 </div>
@@ -79,8 +80,8 @@ window.renderGymView = function(container) {
                 <!-- Rest Timer Panel -->
                 <div id="rest-timer-panel" class="module-card p-5 hidden border border-amber-300 bg-amber-50/40">
                     <div class="flex justify-between items-center mb-2">
-                        <span class="font-mono text-xs font-bold text-amber-700 uppercase tracking-wider">⏱ REST INTERVAL</span>
-                        <button onclick="stopRestTimer()" class="btn-ghost-editorial text-xs py-0.5 px-2">Skip Rest</button>
+                        <span class="font-mono text-xs font-bold text-amber-700 uppercase tracking-wider">⏱ ${_t('gym.rest', 'REST INTERVAL')}</span>
+                        <button onclick="stopRestTimer()" class="btn-ghost-editorial text-xs py-0.5 px-2">${_t('gym.skipRest', 'Skip Rest')}</button>
                     </div>
                     <div id="rest-timer-value" class="font-display text-4xl font-extrabold text-center text-primary my-1">60s</div>
                     <div class="w-full bg-amber-200/50 h-2 rounded-full overflow-hidden mt-2">
@@ -161,6 +162,7 @@ function getFallbackGymExercises(cat) {
 function renderExerciseList() {
     const list = document.getElementById('exercise-list');
     if (!list) return;
+    const _t = typeof t === 'function' ? t : (k) => k;
 
     list.innerHTML = gymExercises.map((ex, i) => {
         const isSelected = i === currentExerciseIndex;
@@ -171,11 +173,11 @@ function renderExerciseList() {
             <div class="flex justify-between items-center">
                 <div>
                     <h4 class="font-display font-bold text-sm text-[var(--bone)]">${ex.name}</h4>
-                    <p class="font-mono text-xs text-[var(--bone-dim)] mt-0.5">${ex.sets || 3} sets × ${targetRepsNum} reps</p>
+                    <p class="font-mono text-xs text-[var(--bone-dim)] mt-0.5">${ex.sets || 3} ${_t('gym.sets', 'sets')} × ${targetRepsNum} ${_t('gym.reps', 'reps')}</p>
                 </div>
                 <div class="text-right">
                     <span class="font-mono text-[10px] px-2 py-0.5 rounded-full border ${isSelected ? 'bg-[rgba(224,35,28,0.2)] text-[var(--vermilion)] border-[rgba(224,35,28,0.4)]' : 'bg-[rgba(223,231,224,0.06)] text-[var(--bone-dim)] border-[var(--border-subtle)]'} font-semibold">
-                        ${ex.rest_seconds || 60}s rest
+                        ${ex.rest_seconds || 60}s ${_t('gym.rest', 'rest')}
                     </span>
                 </div>
             </div>
@@ -204,6 +206,7 @@ window.selectExercise = function(index) {
 function renderGymWorkspace(ex) {
     const area = document.getElementById('gym-workspace-area');
     if (!area) return;
+    const _t = typeof t === 'function' ? t : (k) => k;
 
     area.innerHTML = `
         <!-- Workspace Header & Mode Switcher -->
@@ -211,16 +214,16 @@ function renderGymWorkspace(ex) {
             <div>
                 <h3 class="font-display text-xl font-bold text-primary flex items-center gap-2">
                     <span>${ex.name}</span>
-                    <span class="font-mono text-[10px] px-2 py-0.5 rounded-full bg-blue-50 text-blue-600 border border-blue-200 font-semibold">${currentCategory.toUpperCase()} TARGET</span>
+                    <span class="font-mono text-[10px] px-2 py-0.5 rounded-full bg-blue-50 text-blue-600 border border-blue-200 font-semibold">${_t('gym.' + currentCategory, currentCategory).toUpperCase()} ${_t('gym.target', 'TARGET')}</span>
                 </h3>
-                <p class="text-xs text-secondary mt-1">${ex.instructions ? ex.instructions.slice(0, 100) + '...' : 'Follow proper form for maximum muscle recruitment.'}</p>
+                <p class="text-xs text-secondary mt-1">${ex.instructions ? ex.instructions.slice(0, 100) + '...' : _t('gym.exerciseInstructions', 'Follow proper form for maximum muscle recruitment.')}</p>
             </div>
             <div class="flex items-center gap-2">
                 <button onclick="setGymWorkspaceMode('camera')" id="mode-cam-btn" class="${gymViewMode === 'camera' ? 'btn-editorial-primary' : 'btn-secondary-editorial'} text-xs py-1.5 px-3 flex items-center gap-1.5">
-                    <span>📷</span> CAMERA REPS
+                    <span>📷</span> ${_t('gym.cameraReps', 'CAMERA REPS')}
                 </button>
                 <button onclick="setGymWorkspaceMode('guide')" id="mode-guide-btn" class="${gymViewMode === 'guide' ? 'btn-editorial-primary' : 'btn-secondary-editorial'} text-xs py-1.5 px-3 flex items-center gap-1.5">
-                    <span>📋</span> GUIDE
+                    <span>📋</span> ${_t('gym.guide', 'GUIDE')}
                 </button>
             </div>
         </div>
@@ -257,6 +260,7 @@ window.setGymWorkspaceMode = function(mode) {
 };
 
 function renderCameraWorkoutUI(ex) {
+    const _t = typeof t === 'function' ? t : (k) => k;
     return `
         <div class="grid grid-cols-1 lg:grid-cols-12 gap-5 items-start">
             <!-- Camera Viewport (7 Cols) -->
@@ -267,9 +271,9 @@ function renderCameraWorkoutUI(ex) {
                 <!-- Top Camera HUD -->
                 <div class="absolute top-3 left-3 right-3 z-20 flex justify-between items-center pointer-events-none">
                     <span class="hud-pill-mono">
-                        ${ex.name.toUpperCase()} // REP SENSOR
+                        ${ex.name.toUpperCase()} // ${_t('gym.repCounter', 'REP SENSOR')}
                     </span>
-                    <div id="gym-rep-flash-badge" class="risk-badge risk-safe">● TRACKING</div>
+                    <div id="gym-rep-flash-badge" class="risk-badge risk-safe">● ${_t('pose.bodyTracking', 'TRACKING')}</div>
                 </div>
 
                 <!-- Posture & Camera Angle Pop-up Alert Toast -->
@@ -277,12 +281,12 @@ function renderCameraWorkoutUI(ex) {
                     <div class="posture-alert-header">
                         <div class="flex items-center gap-1.5">
                             <span class="posture-alert-icon">⚠️</span>
-                            <div class="posture-alert-title">POSTURE & CAMERA ANGLE ALERT</div>
+                            <div class="posture-alert-title">${_t('pose.riskAlert', 'POSTURE & CAMERA ANGLE ALERT')}</div>
                         </div>
-                        <button type="button" onclick="dismissPostureAlert(this)" class="posture-alert-close" title="Dismiss Alert">✕</button>
+                        <button type="button" onclick="dismissPostureAlert(this)" class="posture-alert-close" title="${_t('common.close', 'Dismiss')}">✕</button>
                     </div>
                     <div class="posture-alert-content">
-                        <div class="posture-alert-msg">Adjust posture & camera angle</div>
+                        <div class="posture-alert-msg">${_t('pose.alignment', 'Adjust posture & camera angle')}</div>
                         <div class="posture-alert-tips"></div>
                     </div>
                 </div>
@@ -290,19 +294,19 @@ function renderCameraWorkoutUI(ex) {
                 <!-- Camera Loading Indicator -->
                 <div id="gym-camera-loading" class="camera-loading" style="display:none">
                     <div class="loading-spinner mb-3"></div>
-                    <p class="text-white font-bold text-sm">Connecting Exercise Tracker...</p>
-                    <p class="text-gray-400 font-mono text-xs mt-1">Calibrating joint angles</p>
+                    <p class="text-white font-bold text-sm">${_t('gym.connectingTracker', 'Connecting Exercise Tracker...')}</p>
+                    <p class="text-gray-400 font-mono text-xs mt-1">${_t('gym.calibratingAngles', 'Calibrating joint angles')}</p>
                 </div>
 
                 <!-- Bottom Camera Bar -->
                 <div class="absolute bottom-3 left-3 right-3 z-20 flex items-center justify-between pointer-events-auto bg-black/80 backdrop-blur-md p-3 rounded-xl border border-white/10 text-white">
                     <div class="flex items-center gap-2">
-                        <span class="font-mono text-[10px] text-gray-400 font-bold uppercase">Joint Angle:</span>
+                        <span class="font-mono text-[10px] text-gray-400 font-bold uppercase">${_t('gym.jointAngle', 'Joint Angle')}:</span>
                         <span id="gym-active-angle" class="font-mono text-sm font-bold text-blue-400">0°</span>
                     </div>
                     <div class="flex items-center gap-2">
-                        <button onclick="switchGymCameraFacing()" id="gym-flip-cam-btn" class="bg-white/10 hover:bg-white/20 text-white text-xs px-3 py-1.5 rounded-lg font-mono font-bold transition" title="Switch Front/Rear Camera">🔄 FLIP</button>
-                        <button onclick="toggleGymCameraStream()" id="gym-camera-toggle-btn" class="bg-blue-600 hover:bg-blue-500 text-white text-xs px-4 py-1.5 rounded-lg font-mono font-bold transition">Stop Camera</button>
+                        <button onclick="switchGymCameraFacing()" id="gym-flip-cam-btn" class="bg-white/10 hover:bg-white/20 text-white text-xs px-3 py-1.5 rounded-lg font-mono font-bold transition" title="Switch Front/Rear Camera">🔄 ${_t('common.flip', 'FLIP')}</button>
+                        <button onclick="toggleGymCameraStream()" id="gym-camera-toggle-btn" class="bg-blue-600 hover:bg-blue-500 text-white text-xs px-4 py-1.5 rounded-lg font-mono font-bold transition">${_t('gym.stopCamera', 'Stop Camera')}</button>
                     </div>
                 </div>
             </div>
@@ -313,7 +317,7 @@ function renderCameraWorkoutUI(ex) {
                 <div class="module-card p-5 text-center relative overflow-hidden">
                     <div class="flex justify-around items-center">
                         <div>
-                            <p class="font-mono text-[10px] text-secondary font-bold uppercase tracking-wider">Completed Reps</p>
+                            <p class="font-mono text-[10px] text-secondary font-bold uppercase tracking-wider">${_t('gym.completedReps', 'Completed Reps')}</p>
                             <div class="flex items-baseline justify-center gap-1 mt-1">
                                 <span class="font-display text-5xl font-black text-primary" id="gym-rep-display">${gymCurrentReps}</span>
                                 <span class="font-mono text-sm text-secondary font-bold">/ <span id="gym-target-reps-lbl">${gymTargetReps}</span></span>
@@ -325,42 +329,42 @@ function renderCameraWorkoutUI(ex) {
                         </div>
 
                         <div class="border-l border-[var(--border-subtle)] pl-5 text-left">
-                            <p class="font-mono text-[10px] text-secondary font-bold uppercase tracking-wider">Current Set</p>
+                            <p class="font-mono text-[10px] text-secondary font-bold uppercase tracking-wider">${_t('gym.currentSet', 'Current Set')}</p>
                             <div class="font-display text-2xl font-bold text-primary mt-1">
-                                Set <span id="gym-set-display" class="text-blue-primary">${gymCurrentSet}</span> / ${gymTargetSets}
+                                ${_t('gym.sets', 'Set')} <span id="gym-set-display" class="text-blue-primary">${gymCurrentSet}</span> / ${gymTargetSets}
                             </div>
-                            <button onclick="finishGymSet()" class="btn-editorial-primary text-xs px-3 py-1.5 mt-3 w-full">Complete Set</button>
+                            <button onclick="finishGymSet()" class="btn-editorial-primary text-xs px-3 py-1.5 mt-3 w-full">${_t('gym.finishSet', 'Complete Set')}</button>
                         </div>
                     </div>
 
                     <!-- Rep Form Indicator -->
                     <div class="mt-4 pt-3 border-t border-[var(--border-subtle)] flex items-center justify-between text-xs">
-                        <span class="text-secondary font-mono">Form Status:</span>
-                        <span id="gym-form-status" class="font-mono font-bold text-blue-primary">Ready for Rep 1</span>
+                        <span class="text-secondary font-mono">${_t('gym.formScore', 'Form Status')}:</span>
+                        <span id="gym-form-status" class="font-mono font-bold text-blue-primary">${_t('gym.readyForRep', 'Ready for Rep 1')}</span>
                     </div>
                 </div>
 
                 <!-- Target Configuration -->
                 <div class="module-card p-5 flex flex-col justify-between">
                     <div>
-                        <p class="font-mono text-xs text-secondary font-bold uppercase tracking-wider mb-3">WORKOUT SETUP</p>
+                        <p class="font-mono text-xs text-secondary font-bold uppercase tracking-wider mb-3">${_t('gym.workoutSetup', 'WORKOUT SETUP')}</p>
                         <div class="grid grid-cols-2 gap-3 text-xs">
                             <div>
-                                <label class="font-mono text-[10px] text-secondary block mb-1">Target Reps</label>
+                                <label class="font-mono text-[10px] text-secondary block mb-1">${_t('gym.targetReps', 'Target Reps')}</label>
                                 <select onchange="setGymTargetReps(this.value)" class="form-input-editorial text-xs py-1.5 px-2 w-full">
-                                    <option value="8" ${gymTargetReps === 8 ? 'selected' : ''}>8 Reps</option>
-                                    <option value="10" ${gymTargetReps === 10 ? 'selected' : ''}>10 Reps</option>
-                                    <option value="12" ${gymTargetReps === 12 ? 'selected' : ''}>12 Reps</option>
-                                    <option value="15" ${gymTargetReps === 15 ? 'selected' : ''}>15 Reps</option>
-                                    <option value="20" ${gymTargetReps === 20 ? 'selected' : ''}>20 Reps</option>
+                                    <option value="8" ${gymTargetReps === 8 ? 'selected' : ''}>8 ${_t('gym.reps', 'Reps')}</option>
+                                    <option value="10" ${gymTargetReps === 10 ? 'selected' : ''}>10 ${_t('gym.reps', 'Reps')}</option>
+                                    <option value="12" ${gymTargetReps === 12 ? 'selected' : ''}>12 ${_t('gym.reps', 'Reps')}</option>
+                                    <option value="15" ${gymTargetReps === 15 ? 'selected' : ''}>15 ${_t('gym.reps', 'Reps')}</option>
+                                    <option value="20" ${gymTargetReps === 20 ? 'selected' : ''}>20 ${_t('gym.reps', 'Reps')}</option>
                                 </select>
                             </div>
                             <div>
-                                <label class="font-mono text-[10px] text-secondary block mb-1">Target Sets</label>
+                                <label class="font-mono text-[10px] text-secondary block mb-1">${_t('gym.targetSets', 'Target Sets')}</label>
                                 <select onchange="setGymTargetSets(this.value)" class="form-input-editorial text-xs py-1.5 px-2 w-full">
-                                    <option value="3" ${gymTargetSets === 3 ? 'selected' : ''}>3 Sets</option>
-                                    <option value="4" ${gymTargetSets === 4 ? 'selected' : ''}>4 Sets</option>
-                                    <option value="5" ${gymTargetSets === 5 ? 'selected' : ''}>5 Sets</option>
+                                    <option value="3" ${gymTargetSets === 3 ? 'selected' : ''}>3 ${_t('gym.sets', 'Sets')}</option>
+                                    <option value="4" ${gymTargetSets === 4 ? 'selected' : ''}>4 ${_t('gym.sets', 'Sets')}</option>
+                                    <option value="5" ${gymTargetSets === 5 ? 'selected' : ''}>5 ${_t('gym.sets', 'Sets')}</option>
                                 </select>
                             </div>
                         </div>
@@ -368,11 +372,11 @@ function renderCameraWorkoutUI(ex) {
 
                     <div class="mt-4 pt-3 border-t border-[var(--border-subtle)] flex gap-2">
                         <button onclick="startRestTimer(${ex.rest_seconds || 60})" class="btn-secondary-editorial text-xs flex-1">
-                            ⏱ Rest (${ex.rest_seconds || 60}s)
+                            ⏱ ${_t('gym.rest', 'Rest')} (${ex.rest_seconds || 60}s)
                         </button>
                         ${currentExerciseIndex < gymExercises.length - 1 ? `
                             <button onclick="selectExercise(${currentExerciseIndex + 1})" class="btn-editorial-primary text-xs flex-1">
-                                Next Exercise →
+                                ${_t('common.next', 'Next Exercise')} &rarr;
                             </button>
                         ` : ''}
                     </div>
@@ -392,6 +396,7 @@ const CATEGORY_ASSETS = {
 };
 
 function renderGuideUI(ex) {
+    const _t = typeof t === 'function' ? t : (k) => k;
     const steps = ex.instructions ? (typeof ex.instructions === 'string' ? ex.instructions.split('.').filter(s => s.trim()) : ex.instructions) : [];
     const catImage = CATEGORY_ASSETS[currentCategory] || '/assets/Toji Fushiguro Hitting Gym.jpeg';
 
@@ -401,25 +406,25 @@ function renderGuideUI(ex) {
                 <img src="${catImage}" alt="Biomechanics technique guide for ${ex.name}" class="w-full h-full object-cover object-center" />
                 <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent"></div>
                 <div class="absolute bottom-4 left-4 right-4 text-white">
-                    <span class="font-mono text-[10px] px-2 py-0.5 rounded-full bg-blue-500 text-white font-bold mb-1 inline-block">${currentCategory.toUpperCase()} TARGET</span>
+                    <span class="font-mono text-[10px] px-2 py-0.5 rounded-full bg-blue-500 text-white font-bold mb-1 inline-block">${_t('gym.' + currentCategory, currentCategory).toUpperCase()} ${_t('gym.target', 'TARGET')}</span>
                     <h3 class="font-display text-2xl font-bold leading-tight">${ex.name}</h3>
                 </div>
             </div>
 
-            <h4 class="font-display text-base font-bold mb-3 text-primary">Exercise Technique & Biomechanics</h4>
+            <h4 class="font-display text-base font-bold mb-3 text-primary">${_t('gym.techniqueBiomechanics', 'Exercise Technique & Biomechanics')}</h4>
             <div class="grid grid-cols-3 gap-3 mb-6">
-                <div class="p-3 rounded-xl bg-[rgba(14,19,26,0.85)] border border-[var(--border-subtle)] text-center"><div class="font-mono text-[10px] text-[var(--bone-dim)] font-bold uppercase">TARGET SETS</div><div class="font-display text-xl font-bold text-[var(--bone)] mt-0.5">${ex.sets || 3}</div></div>
-                <div class="p-3 rounded-xl bg-[rgba(14,19,26,0.85)] border border-[var(--border-subtle)] text-center"><div class="font-mono text-[10px] text-[var(--bone-dim)] font-bold uppercase">TARGET REPS</div><div class="font-display text-xl font-bold text-[var(--bone)] mt-0.5">${ex.reps || 10}</div></div>
-                <div class="p-3 rounded-xl bg-[rgba(14,19,26,0.85)] border border-[var(--border-subtle)] text-center"><div class="font-mono text-[10px] text-[var(--bone-dim)] font-bold uppercase">REST INTERVAL</div><div class="font-display text-xl font-bold text-[var(--bone)] mt-0.5">${ex.rest_seconds || 60}s</div></div>
+                <div class="p-3 rounded-xl bg-[rgba(14,19,26,0.85)] border border-[var(--border-subtle)] text-center"><div class="font-mono text-[10px] text-[var(--bone-dim)] font-bold uppercase">${_t('gym.targetSets', 'TARGET SETS')}</div><div class="font-display text-xl font-bold text-[var(--bone)] mt-0.5">${ex.sets || 3}</div></div>
+                <div class="p-3 rounded-xl bg-[rgba(14,19,26,0.85)] border border-[var(--border-subtle)] text-center"><div class="font-mono text-[10px] text-[var(--bone-dim)] font-bold uppercase">${_t('gym.targetReps', 'TARGET REPS')}</div><div class="font-display text-xl font-bold text-[var(--bone)] mt-0.5">${ex.reps || 10}</div></div>
+                <div class="p-3 rounded-xl bg-[rgba(14,19,26,0.85)] border border-[var(--border-subtle)] text-center"><div class="font-mono text-[10px] text-[var(--bone-dim)] font-bold uppercase">${_t('gym.rest', 'REST INTERVAL')}</div><div class="font-display text-xl font-bold text-[var(--bone)] mt-0.5">${ex.rest_seconds || 60}s</div></div>
             </div>
 
-            <p class="font-mono text-xs font-bold text-secondary uppercase tracking-wider mb-2">Step-by-Step Instructions</p>
+            <p class="font-mono text-xs font-bold text-secondary uppercase tracking-wider mb-2">${_t('gym.instructions', 'Step-by-Step Instructions')}</p>
             <ol class="space-y-2 text-xs text-primary list-decimal pl-4 leading-relaxed mb-6">
                 ${steps.map(s => `<li>${s.trim()}</li>`).join('')}
             </ol>
 
             <button onclick="setGymWorkspaceMode('camera')" class="btn-editorial-primary text-sm px-6 py-2.5">
-                📷 OPEN CAMERA & TRACK REPS NOW
+                📷 ${_t('gym.openCamera', 'OPEN CAMERA & TRACK REPS NOW')}
             </button>
         </div>
     `;

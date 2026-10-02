@@ -1,0 +1,15 @@
+{
+  "nutrition": {
+    "title": "Matrice Métabolique & Nutrition",
+    "calories": "Calories",
+    "protein": "Protéines",
+    "carbohydrates": "Glucides",
+    "fat": "Lipides",
+    "water": "Eau",
+    "breakfast": "Petit-déjeuner",
+    "lunch": "Déjeuner",
+    "dinner": "Dîner",
+    "calculate": "Calculer",
+    "foodTracker": "Suivi Alimentaire"
+  }
+}

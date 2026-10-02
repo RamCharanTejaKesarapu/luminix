@@ -1,0 +1,15 @@
+{
+  "nutrition": {
+    "title": "代謝マトリクス & 栄養",
+    "calories": "カロリー",
+    "protein": "タンパク質",
+    "carbohydrates": "炭水化物",
+    "fat": "脂質",
+    "water": "水",
+    "breakfast": "朝食",
+    "lunch": "昼食",
+    "dinner": "夕食",
+    "calculate": "計算",
+    "foodTracker": "食事トラッカー"
+  }
+}

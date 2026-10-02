@@ -1,0 +1,14 @@
+{
+  "settings": {
+    "title": "Настройки",
+    "profile": "Профиль",
+    "language": "Язык",
+    "theme": "Тема",
+    "notifications": "Уведомления",
+    "privacy": "Конфиденциальность",
+    "security": "Безопасность",
+    "logout": "Выйти",
+    "deleteAccount": "Удалить аккаунт",
+    "saveChanges": "Сохранить изменения"
+  }
+}

@@ -1,0 +1,15 @@
+{
+  "gym": {
+    "title": "自适应健身引擎",
+    "workout": "锻炼",
+    "exercise": "运动",
+    "sets": "组数",
+    "reps": "次数",
+    "weight": "重量",
+    "rest": "休息",
+    "startWorkout": "开始锻炼",
+    "progress": "进度",
+    "squats": "深蹲",
+    "pushups": "俯卧撑"
+  }
+}

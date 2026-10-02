@@ -1,0 +1,16 @@
+{
+  "luna": {
+    "title": "Luna AI & క్లినికల్ స్టూడియో",
+    "downloadPDF": "క్లినికల్ PDF డౌన్‌లోడ్ ↓",
+    "connectWearables": "వేరబుల్స్ కనెక్ట్ →",
+    "apiKeySettings": "🔑 API కీ సెట్టింగ్స్",
+    "saveKey": "కీ భద్రపరచు",
+    "resetKey": "రీసెట్",
+    "greeting": "నమస్కారం! నేను Luna, మీ Luminix ఆరోగ్య & పోషణ తెలివి సహాయకురాలిని. మీరు ఏదైనా అడగవచ్చు:",
+    "inputPlaceholder": "Luna ను ఏదైనా పోషణ, ఆహారం లేదా వర్కౌట్ ప్రశ్నలు అడగండి...",
+    "send": "పంపించు",
+    "thinking": "Luna AI Google Gemini తో ప్రతిస్పందన సంశ్లేషిస్తోంది...",
+    "automatedReport": "స్వయంచాలక బయోమెట్రిక్ నివేదిక",
+    "downloadReport": "PDF నివేదిక డౌన్‌లోడ్ ↓"
+  }
+}

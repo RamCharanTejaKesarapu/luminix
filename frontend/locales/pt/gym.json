@@ -1,0 +1,14 @@
+{
+  "gym": {
+    "title": "Motor Adaptativo de Academia",
+    "workout": "Treino",
+    "exercise": "Exercício",
+    "sets": "Séries",
+    "reps": "Repetições",
+    "weight": "Peso",
+    "rest": "Descanso",
+    "startWorkout": "Iniciar Treino",
+    "squats": "Agachamentos",
+    "pushups": "Flexões"
+  }
+}

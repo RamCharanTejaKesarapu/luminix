@@ -1,0 +1,14 @@
+{
+  "settings": {
+    "title": "Paramètres",
+    "profile": "Profil",
+    "language": "Langue",
+    "theme": "Thème",
+    "notifications": "Notifications",
+    "privacy": "Confidentialité",
+    "security": "Sécurité",
+    "logout": "Déconnexion",
+    "deleteAccount": "Supprimer le compte",
+    "saveChanges": "Enregistrer les modifications"
+  }
+}

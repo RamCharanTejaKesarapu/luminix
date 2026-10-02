@@ -1,0 +1,11 @@
+{
+  "notifications": {
+    "success": "सफल",
+    "warning": "चेतावनी",
+    "error": "त्रुटि",
+    "confirmAction": "कार्रवाई की पुष्टि करें",
+    "areYouSure": "क्या आप निश्चित हैं?",
+    "proceed": "आगे बढ़ें",
+    "acceptAll": "सभी स्वीकार करें"
+  }
+}

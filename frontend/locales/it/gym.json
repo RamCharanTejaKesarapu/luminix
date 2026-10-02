@@ -1,0 +1,14 @@
+{
+  "gym": {
+    "title": "Motore Palestra Adattivo",
+    "workout": "Allenamento",
+    "exercise": "Esercizio",
+    "sets": "Serie",
+    "reps": "Ripetizioni",
+    "weight": "Peso",
+    "rest": "Riposo",
+    "startWorkout": "Inizia Allenamento",
+    "squats": "Squat",
+    "pushups": "Flessioni"
+  }
+}

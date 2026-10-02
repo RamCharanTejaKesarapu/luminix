@@ -1,0 +1,11 @@
+{
+  "notifications": {
+    "success": "성공",
+    "warning": "경고",
+    "error": "오류",
+    "confirmAction": "작업 확인",
+    "areYouSure": "계속하시겠습니까?",
+    "proceed": "진행",
+    "acceptAll": "모두 수락"
+  }
+}

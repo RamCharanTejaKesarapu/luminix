@@ -1,0 +1,11 @@
+{
+  "notifications": {
+    "success": "Başarılı",
+    "warning": "Uyarı",
+    "error": "Hata",
+    "confirmAction": "Eylemi Onayla",
+    "areYouSure": "Devam etmek istediğinizden emin misiniz?",
+    "proceed": "Devam Et",
+    "acceptAll": "HEPSİNİ KABUL ET"
+  }
+}

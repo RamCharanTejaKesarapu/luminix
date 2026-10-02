@@ -1,0 +1,11 @@
+{
+  "notifications": {
+    "success": "کامیاب",
+    "warning": "انتباہ",
+    "error": "خرابی",
+    "confirmAction": "عمل کی تصدیق",
+    "areYouSure": "کیا آپ واقعی جاری رکھنا چاہتے ہیں؟",
+    "proceed": "جاری رکھیں",
+    "acceptAll": "سب قبول کریں"
+  }
+}

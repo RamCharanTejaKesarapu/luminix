@@ -1,0 +1,22 @@
+{
+  "yoga": {
+    "title": "17 పవిత్ర యోగాసనాలు",
+    "pose": "ఆసనం",
+    "breathing": "శ్వాసక్రియ",
+    "duration": "వ్యవధి",
+    "difficulty": "కష్టతరం",
+    "instructions": "సూచనలు",
+    "startSession": "సెషన్ ప్రారంభించు",
+    "endSession": "సెషన్ ముగించు",
+    "beginner": "ప్రారంభకుడు",
+    "intermediate": "మధ్యస్థం",
+    "advanced": "అధునాతనం",
+    "safetyWarnings": "భద్రత హెచ్చరికలు",
+    "holdTime": "పట్టు సమయం",
+    "benefits": "ప్రయోజనాలు",
+    "inhale": "పీల్చు",
+    "exhale": "వదిలివేయి",
+    "hold": "పట్టు",
+    "relax": "విశ్రాంతి"
+  }
+}

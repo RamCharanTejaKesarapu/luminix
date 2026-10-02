@@ -1,0 +1,11 @@
+{
+  "pose": {
+    "title": "Motor de Pose en Vivo 60 FPS",
+    "poseAnalysis": "Análisis de Pose",
+    "startAnalysis": "Iniciar Análisis",
+    "posture": "Postura",
+    "alignment": "Alineación",
+    "riskDetection": "Detección de Riesgo",
+    "warnings": "Advertencias"
+  }
+}

@@ -1,0 +1,14 @@
+{
+  "gym": {
+    "title": "Uyarlanabilir Spor Salonu Motoru",
+    "workout": "Antrenman",
+    "exercise": "Egzersiz",
+    "sets": "Set",
+    "reps": "Tekrar",
+    "weight": "Ağırlık",
+    "rest": "Dinlenme",
+    "startWorkout": "Antrenmana Başla",
+    "squats": "Squatlar",
+    "pushups": "Şınav"
+  }
+}

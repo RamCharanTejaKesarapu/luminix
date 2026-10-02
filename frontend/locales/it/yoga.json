@@ -1,0 +1,33 @@
+{
+  "yoga": {
+    "title": "17 Asana Sacri dello Yoga",
+    "pageTitle": "17 Asana Sacri dello Yoga — Guida Cinematica | Luminix",
+    "moduleTag": "MODULO 03 // CINEMATICA DELLA POSTURA SACRA",
+    "pose": "Posizione",
+    "breathing": "Respirazione",
+    "duration": "Durata",
+    "difficulty": "Difficoltà",
+    "instructions": "Istruzioni",
+    "startSession": "Inizia Sessione",
+    "endSession": "Termina Sessione",
+    "beginner": "Principiante",
+    "intermediate": "Intermedio",
+    "advanced": "Avanzato",
+    "safetyWarnings": "Avvertenze di Sicurezza",
+    "recommendations": "Raccomandazioni",
+    "progress": "Progresso",
+    "holdTime": "Tempo di Tenuta",
+    "holdDuration": "Durata della Tenuta",
+    "poseGuide": "Guida alla Posizione",
+    "alignmentTips": "Consigli di Allineamento",
+    "benefits": "Benefici",
+    "asanaLibrary": "Libreria Asana",
+    "selectedPose": "Posizione Selezionata",
+    "formAccuracy": "Precisione Forma",
+    "breathingPattern": "Ritmo Respiratorio",
+    "inhale": "Inspira",
+    "exhale": "Espira",
+    "hold": "Trattieni",
+    "relax": "Rilassati"
+  }
+}
