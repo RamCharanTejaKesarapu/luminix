@@ -37,7 +37,7 @@ const _i18nState = {
 
 // Translation file namespaces per language
 const I18N_NAMESPACES = [
-    'common', 'auth', 'dashboard', 'pose', 'gym', 'yoga',
+    'common', 'auth', 'dashboard', 'nav', 'pose', 'gym', 'yoga',
     'nutrition', 'luna', 'settings', 'notifications'
 ];
 
@@ -182,6 +182,10 @@ function _applyDirection(direction) {
     html.setAttribute('dir', direction);
     html.setAttribute('lang', _i18nState.currentLang);
 
+    // Remove any previous luminix-lang-* classes
+    html.className = html.className.replace(/\bluminix-lang-\w+\b/g, '').trim();
+    html.classList.add(`luminix-lang-${_i18nState.currentLang}`);
+
     // Toggle RTL class for CSS styling hooks
     if (direction === 'rtl') {
         document.body.classList.add('luminix-rtl');
@@ -208,6 +212,9 @@ function _updateStaticTranslations() {
             el.textContent = t(key);
         }
     });
+
+    // Update user profile pill in header
+    try { window.updateUserProfileUI?.(); } catch (_) {}
 
     // Elements with data-i18n-placeholder get placeholder replaced
     document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
@@ -670,19 +677,16 @@ async function initI18n() {
     // 1. Always load English as the fallback base
     await _loadLanguageTranslations('en');
 
-    // 2. Determine language: Saved preference → Browser detection → English
+    // 2. Determine language: Saved preference → English (strict default)
     let targetLang = 'en';
 
-    // Check authenticated user preference first (handled via Firebase callback later)
+    // Check user preference if explicitly saved previously
     const savedPref = _getSavedLanguagePreference();
     if (savedPref && savedPref.language) {
         const config = getLangConfig(savedPref.language);
         if (config) targetLang = config.code;
-    } else {
-        // Try browser language detection
-        const browserLang = _detectBrowserLanguage();
-        if (browserLang) targetLang = browserLang;
     }
+    // Default is strictly English ('en') unless user explicitly chooses another language
 
     // 3. Load target language if not English
     if (targetLang !== 'en') {

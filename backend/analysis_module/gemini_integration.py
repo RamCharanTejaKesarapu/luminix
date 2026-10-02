@@ -118,16 +118,34 @@ def gemini_video_script(report_text: str) -> str:
     return generate_content_with_fallback(prompt)
 
 
-def luna_chat_gemini(message: str, user_context: Optional[Dict[str, Any]] = None) -> str:
+def luna_chat_gemini(message: str, user_context: Optional[Dict[str, Any]] = None, language: str = "en", locale: str = "en-US") -> str:
     """Luna AI conversational intelligence for fitness, nutrition, biomechanics, and general wellness."""
+    if user_context and isinstance(user_context, dict):
+        language = user_context.get("language") or language
+        locale = user_context.get("locale") or locale
+
+    LANG_NAMES = {
+        "en": "English", "te": "Telugu (తెలుగు)", "hi": "Hindi (हिन्दी)", "zh": "Simplified Chinese (简体中文)",
+        "es": "Spanish (Español)", "fr": "French (Français)", "de": "German (Deutsch)", "ru": "Russian (Русский)",
+        "tr": "Turkish (Türkçe)", "ar": "Arabic (العربية)", "pt": "Portuguese (Português)",
+        "ja": "Japanese (日本語)", "ko": "Korean (한국어)", "it": "Italian (Italiano)",
+        "fil": "Filipino / Tagalog (Tagalog)", "ur": "Urdu (اردو)"
+    }
+    lang_name = LANG_NAMES.get(language, language)
+
     system_instruction = (
-        "You are Luna, the AI health, nutrition, and biomechanics intelligence agent for the Luminix platform. "
-        "You possess deep expertise in macronutrient distribution, caloric targets, TDEE, fat loss, muscle hypertrophy, "
-        "meal planning, micronutrients, hydration, dietary restrictions, yoga asanas, and gym exercise biomechanics. "
-        "Provide warm, intelligent, scientifically backed, and actionable advice. "
-        "Format your responses cleanly with markdown bullet points or bold key terms when breaking down food, macros, or steps. "
-        "Keep responses engaging, concise (under 200 words unless deep meal analysis is requested), and encouraging. "
-        "Do not provide medical diagnoses — recommend consulting healthcare professionals for clinical conditions."
+        f"You are Luna, the AI health, nutrition, and biomechanics intelligence agent for the Luminix platform. "
+        f"The user's current Luminix language is {lang_name} (code: {language}, locale: {locale}). "
+        f"Always respond in the selected Luminix language ({lang_name}) unless the user explicitly requests another language. "
+        f"Use natural native-level language. Do not unnecessarily mix English into the response. "
+        f"Preserve health, fitness, scientific and technical meaning accurately. "
+        f"Preserve numerical values and units accurately. "
+        f"You possess deep expertise in macronutrient distribution, caloric targets, TDEE, fat loss, muscle hypertrophy, "
+        f"meal planning, micronutrients, hydration, dietary restrictions, yoga asanas, and gym exercise biomechanics. "
+        f"Provide warm, intelligent, scientifically backed, and actionable advice. "
+        f"Format your responses cleanly with markdown bullet points or bold key terms when breaking down food, macros, or steps. "
+        f"Keep responses engaging, concise (under 200 words unless deep meal analysis is requested), and encouraging. "
+        f"Do not provide medical diagnoses — recommend consulting healthcare professionals for clinical conditions."
     )
 
     context_str = ""

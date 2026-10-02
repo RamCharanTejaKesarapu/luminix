@@ -705,6 +705,8 @@ def nutrition_ai_food_analysis(req: FoodAnalysisRequest) -> Dict[str, Any]:
 class LunaChatRequest(BaseModel):
     message: str
     apiKey: Optional[str] = None
+    language: Optional[str] = "en"
+    locale: Optional[str] = "en-US"
     user_context: Optional[Dict[str, Any]] = None
 
 @app.post("/v1/luna/chat")
@@ -718,19 +720,40 @@ def luna_chat(req: LunaChatRequest) -> Dict[str, Any]:
         try:
             from analysis_module.gemini_integration import luna_chat_gemini
             os.environ["GEMINI_API_KEY"] = key
-            reply = luna_chat_gemini(msg, req.user_context)
+            reply = luna_chat_gemini(msg, req.user_context, language=req.language or "en", locale=req.locale or "en-US")
             if reply:
                 return {"reply": reply, "source": "gemini", "model": os.getenv("GEMINI_MODEL", "gemini-3.6-flash")}
         except Exception:
             pass
 
     # Rule-based fallback
-    reply = _luna_fallback(msg.lower())
+    reply = _luna_fallback(msg.lower(), req.language or "en")
     return {"reply": reply, "source": "built-in"}
 
 
-def _luna_fallback(msg: str) -> str:
-    """Rule-based Luna responses for common health questions."""
+def _luna_fallback(msg: str, language: str = "en") -> str:
+    """Rule-based Luna responses for common health questions with multi-language fallback."""
+    LUNA_FALLBACKS = {
+        "te": "నమస్కారం! నేను లూనా, మీ ఆర్టిఫిషియల్ ఇంటెలిజెన్స్ ఆరోగ్య మరియు బయోమెకానిక్స్ సహాయకురాలిని. ఫిట్‌నెస్, న్యూట్రిషన్, యోగా మరియు భంగిమ విశ్లేషణలో నేను మీకు సహాయం చేయగలను.",
+        "hi": "नमस्ते! मैं लूना हूँ, आपकी एआई स्वास्थ्य एवं बायोमैकेनिक्स मार्गदर्शिका। मैं फिटनेस, पोषण, योग और लाइव मुद्रा विश्लेषण में आपकी सहायता कर सकती हूँ।",
+        "zh": "你好！我是 Luna，你的自适应AI健康与生物力学助手。我可以协助你制定健身计划、分析营养摄入、校准瑜伽体式及实时姿态检测！",
+        "es": "¡Hola! Soy Luna, tu asistente de inteligencia artificial para salud y biomecánica en Luminix. Puedo ayudarte con entrenamiento, nutrición, yoga y corrección postural en vivo.",
+        "fr": "Bonjour ! Je suis Luna, votre assistante IA en santé et biomécanique pour Luminix. Je peux vous guider pour l'entraînement, la nutrition, le yoga et l'analyse posturale en direct.",
+        "de": "Hallo! Ich bin Luna, Ihre KI-Assistentin für Gesundheit und Biomechanik bei Luminix. Ich unterstütze Sie bei Fitnessplänen, Ernährung, Yoga und 60 FPS Posen-Tracking.",
+        "ru": "Здравствуйте! Я Luna, ваш ИИ-ассистент по здоровью и биомеханике в Luminix. Я помогу с планом тренировок, питанием, асанами йоги и живым анализом позы.",
+        "tr": "Merhaba! Ben Luna, Luminix sağlık ve biyomekanik yapay zekâ asistanınızım. Egzersiz, beslenme, yoga duruşları ve 60 FPS canlı duruş analizi konularında size yardımcı olabilirim.",
+        "ar": "مرحباً! أنا لونا، مساعدتك الذكية للصحة والميكانيكا الحيوية في منصة Luminix. يمكنني مساعدتك في خطط اللياقة والتغذية واليوغا وتحليل القوام اللحظي.",
+        "pt": "Olá! Eu sou a Luna, sua assistente de IA para saúde e biomecânica no Luminix. Posso ajudar com rotinas de treino, nutrição, yoga e análise postural em tempo real.",
+        "ja": "こんにちは！私はLuminixの自律型AI健康・生体力学指南役、Lunaです。筋力鍛錬、栄養管理、ヨガの整軸、60 FPS姿勢判定など何でもお尋ねください。",
+        "ko": "안녕하세요! 저는 Luminix의 AI 건강 및 생체역학 동반자 Luna입니다. 운동 루틴, 영양 계획, 요가 아사나 정렬, 60 FPS 실시간 자세 교정에 대해 무엇이든 물어보세요.",
+        "it": "Ciao! Sono Luna, la tua assistente AI di salute e biomeccanica per Luminix. Posso aiutarti con programmi di allenamento, nutrizione, yoga e postura a 60 FPS.",
+        "fil": "Kumusta! Ako si Luna, ang iyong AI health at biomechanics assistant sa Luminix. Matutulungan kita sa pag-eehersisyo, nutrisyon, yoga, at real-time pose tracking.",
+        "ur": "ہیلو! میں لونا ہوں، لیومينکس پر آپ کی اے آئی ہیلتھ اور بائیو مکینکس معاون۔ میں فٹنس، غذائیت، یوگا اور ریئل ٹائم باڈی پوسچر اینالیسس میں آپ کی مدد کر سکتی ہوں۔"
+    }
+
+    if language != "en" and language in LUNA_FALLBACKS:
+        return LUNA_FALLBACKS[language]
+
     if any(w in msg for w in ["bmi", "body mass"]):
         return "BMI (Body Mass Index) is calculated as weight(kg) / height(m)². A healthy BMI is 18.5-24.9. Use our BMI Calculator on the Dashboard for your personalized results with BMR, TDEE, and macro targets!"
     if any(w in msg for w in ["calor", "tdee", "bmr"]):

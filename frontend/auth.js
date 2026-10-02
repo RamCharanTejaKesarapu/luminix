@@ -1437,19 +1437,25 @@ window.updateUserProfileUI = function() {
         profile_data: guest
     } : null);
 
+    const _t = typeof window.t === 'function' ? window.t : (k) => k;
+
     if (activeUser && isAuth) {
         if (profileEl) {
             profileEl.classList.remove('hidden');
-            const initials = (activeUser.name || 'U').substring(0, 2).toUpperCase();
+            let displayName = activeUser.name || '';
+            if (!displayName || displayName === 'Sanctuary Member' || displayName === 'Member' || displayName === 'Guest') {
+                displayName = _t('auth.sanctuaryMember');
+            }
+            const initials = displayName.substring(0, 2).toUpperCase() || 'SA';
             const avatarHtml = activeUser.avatar_url
                 ? `<img src="${activeUser.avatar_url}" alt="User authenticated profile avatar" class="profile-avatar" onerror="this.outerHTML='<div class=\\'profile-avatar\\'>${initials}</div>'">`
                 : `<div class="profile-avatar">${initials}</div>`;
 
             profileEl.innerHTML = `
-                <button class="profile-pill" onclick="window.openUserProfileModal()" title="View profile, biometrics & Firebase security">
+                <button class="profile-pill" onclick="window.openUserProfileModal()" title="${_t('auth.viewProfileTitle')}">
                     ${avatarHtml}
-                    <span id="profile-name" class="font-semibold">${activeUser.name}</span>
-                    <span class="profile-provider-badge">${activeUser.provider || 'USER'}</span>
+                    <span id="profile-name" class="font-semibold">${displayName}</span>
+                    <span class="profile-provider-badge">${activeUser.provider || _t('auth.user')}</span>
                     <span class="logout-tag">▾</span>
                 </button>
             `;
@@ -1459,9 +1465,9 @@ window.updateUserProfileUI = function() {
     } else {
         if (profileEl) {
             profileEl.innerHTML = `
-                <button class="profile-pill" onclick="window.renderAuthView ? window.renderAuthView() : (window.location.href='/auth')" title="Sign In to Sanctuary">
+                <button class="profile-pill" onclick="window.renderAuthView ? window.renderAuthView() : (window.location.href='/auth')" title="${_t('auth.enterSanctuary')}">
                     <span class="profile-avatar-ph">👤</span>
-                    <span id="profile-name">SIGN IN</span>
+                    <span id="profile-name">${_t('auth.signIn')}</span>
                     <span class="logout-tag">→</span>
                 </button>
             `;

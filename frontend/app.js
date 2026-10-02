@@ -929,9 +929,6 @@ window.toggleFaq = function(id) {
     if (!item) return;
     const isOpen = item.classList.contains('open');
     // Close other FAQs for clean single-expand accordion
-    document.querySelectorAll('.faq-item').forEach(el => {
-        if (el !== item) el.classList.remove('open');
-    });
     item.classList.toggle('open', !isOpen);
 };
 
@@ -982,10 +979,8 @@ async function renderDashboard(container) {
                 <div class="eyebrow">
                     <span class="dot"></span> ${_t('dashboard.chapterZero')}
                 </div>
-                <h1 class="display h-hero">
-                    <span class="mask-line"><span>${_t('dashboard.heroLine1')}</span></span>
-                    <span class="mask-line"><span>${_t('dashboard.heroLine2')}</span></span>
-                    <span class="mask-line"><span>${_t('dashboard.heroLine3')}</span></span>
+                <h1 class="display h-hero hero-title-fluid">
+                    ${_t('dashboard.heroTitle')}
                 </h1>
                 <p class="hero-sub body">
                     ${_t('dashboard.heroSub')}
@@ -1052,7 +1047,7 @@ async function renderDashboard(container) {
                 </span>
                 <span class="peek-cap">
                     <b class="jp">山門</b>
-                    <i>SANMON — 60 FPS Vision Studio</i>
+                    <i>${_t('dashboard.peekSanmonStudio')}</i>
                 </span>
             </a>
 
@@ -1066,21 +1061,21 @@ async function renderDashboard(container) {
         <!-- ── CHAPTER I: THE SANMON (60 FPS COMPUTER VISION) ── -->
         <section class="sec" id="gate" data-cam="1">
             <div class="sec-head">
-                <span class="k"><b>01</b> — The Sanmon</span>
+                <span class="k"><b>01</b> — ${_t('dashboard.sanmonTitle')}</span>
                 <span class="rule"></span>
-                <span class="k jp">山門 // BIOMECHANICAL VISION</span>
+                <span class="k jp">山門 // ${_t('dashboard.sanmonSubtitle')}</span>
             </div>
             <div class="gate-grid">
-                <h2 class="display h-sec">Charred cypress, worn stone, 60 FPS vision tracking.</h2>
+                <h2 class="display h-sec">${_t('dashboard.sanmonHeading')}</h2>
                 <div class="gate-copy">
                     <p class="lead">
-                        Luminix begins where the physical body meets algorithmic precision: 33 skeletal landmarks tracked at 60 frames per second directly in the browser with zero cloud latency. Biomechanical vector geometry measures joint flexion, spinal deviation, and lateral shoulder tilt in real-time.
+                        ${_t('dashboard.sanmonLead')}
                     </p>
                     <p class="body">
-                        Move through squats, overhead presses, or lunges with immediate audible and visual risk indicators. Nothing is hidden. Every kinematic degree is rendered live.
+                        ${_t('dashboard.sanmonBody')}
                     </p>
                     <a class="arrowlink" onclick="nav('live-pose')">
-                        <span>Cross the threshold (Launch Live Pose)</span>
+                        <span>${_t('dashboard.sanmonCta')}</span>
                         <span class="ar">
                             <svg viewBox="0 0 14 14" fill="none"><path d="M3 11 11 3M5 3h6v6" stroke="#dfe7e0" stroke-width="1.3"/></svg>
                         </span>
@@ -1088,19 +1083,19 @@ async function renderDashboard(container) {
                 </div>
             </div>
             <div class="gate-stats">
-                <div><b>06</b><span>Modules</span></div>
-                <div><b>60</b><span>FPS Vision</span></div>
-                <div><b>${yogaCount}</b><span>Yoga Asanas</span></div>
-                <div><b>∞</b><span>Intelligence</span></div>
+                <div><b>06</b><span>${_t('dashboard.sanmonStatModules')}</span></div>
+                <div><b>60</b><span>${_t('dashboard.sanmonStatFps')}</span></div>
+                <div><b>${yogaCount}</b><span>${_t('dashboard.sanmonStatAsanas')}</span></div>
+                <div><b>∞</b><span>${_t('dashboard.sanmonStatIntel')}</span></div>
             </div>
         </section>
 
         <!-- ── CHAPTER II: STILL GARDENS (PERFORMANCE CHAMBERS) ── -->
         <section class="sec" id="pathways" data-cam="2">
             <div class="sec-head">
-                <span class="k"><b>02</b> — Still Gardens</span>
+                <span class="k"><b>02</b> — ${_t('dashboard.gardensTitle')}</span>
                 <span class="rule"></span>
-                <span class="k jp">庭園 // PERFORMANCE CHAMBERS</span>
+                <span class="k jp">庭園 // ${_t('dashboard.gardensSubtitle')}</span>
             </div>
             <div class="cards" id="cards">
                 <article class="card" onclick="nav('gym')">
@@ -1109,10 +1104,10 @@ async function renderDashboard(container) {
                         <div style="position:absolute; inset:0; background:linear-gradient(180deg, rgba(3,6,9,0.15) 20%, rgba(3,6,9,0.88) 100%); pointer-events:none;"></div>
                         <span class="card-ar"><svg viewBox="0 0 14 14" fill="none"><path d="M3 11 11 3M5 3h6v6" stroke="#dfe7e0" stroke-width="1.3"/></svg></span>
                         <i class="glow" style="--gx:80.2%; --gy:23.9%; --gr:22%; --gt:6.1s; --gt2:9.7s; --gc1:rgba(255,142,108,.50); --gc2:rgba(212,56,38,.24)"></i>
-                        <div class="card-lab"><b>Approach</b><span class="jp">参道</span></div>
+                        <div class="card-lab"><b>${_t('dashboard.cardApproach')}</b><span class="jp">参道</span></div>
                     </div>
-                    <div class="card-meta"><span>Adaptive Gym Splits • Auto Reps</span><span>01 / 03</span></div>
-                    <p class="text-xs text-[#8f9a93] mt-2">Biomechanical 5-phase rep state machine, automated 60s rest intervals, and muscle splits.</p>
+                    <div class="card-meta"><span>${_t('dashboard.cardApproachSub')}</span><span>01 / 03</span></div>
+                    <p class="text-xs text-[#8f9a93] mt-2">${_t('dashboard.cardApproachDesc')}</p>
                 </article>
 
                 <article class="card" onclick="nav('yoga')">
@@ -1121,10 +1116,10 @@ async function renderDashboard(container) {
                         <div style="position:absolute; inset:0; background:linear-gradient(180deg, rgba(3,6,9,0.15) 20%, rgba(3,6,9,0.88) 100%); pointer-events:none;"></div>
                         <span class="card-ar"><svg viewBox="0 0 14 14" fill="none"><path d="M3 11 11 3M5 3h6v6" stroke="#dfe7e0" stroke-width="1.3"/></svg></span>
                         <i class="glow glow--flame" style="--gx:70.5%; --gy:47.2%; --gr:14%; --gt:3.7s; --gt2:5.3s; --gc1:rgba(255,198,124,.62); --gc2:rgba(226,118,40,.30)"></i>
-                        <div class="card-lab"><b>Lanterns</b><span class="jp">灯籠</span></div>
+                        <div class="card-lab"><b>${_t('dashboard.cardLanterns')}</b><span class="jp">灯籠</span></div>
                     </div>
-                    <div class="card-meta"><span>17 Guided Asanas • Hold Timer</span><span>02 / 03</span></div>
-                    <p class="text-xs text-[#8f9a93] mt-2">Real-time posture validation, target muscle highlights, and countdown hold verification.</p>
+                    <div class="card-meta"><span>${_t('dashboard.cardLanternsSub')}</span><span>02 / 03</span></div>
+                    <p class="text-xs text-[#8f9a93] mt-2">${_t('dashboard.cardLanternsDesc')}</p>
                 </article>
 
                 <article class="card" onclick="nav('bmi')">
@@ -1133,10 +1128,10 @@ async function renderDashboard(container) {
                         <div style="position:absolute; inset:0; background:linear-gradient(180deg, rgba(3,6,9,0.15) 20%, rgba(3,6,9,0.88) 100%); pointer-events:none;"></div>
                         <span class="card-ar"><svg viewBox="0 0 14 14" fill="none"><path d="M3 11 11 3M5 3h6v6" stroke="#dfe7e0" stroke-width="1.3"/></svg></span>
                         <i class="glow" style="--gx:48.0%; --gy:16.8%; --gr:20%; --gt:7.3s; --gt2:11.2s; --gc1:rgba(255,138,104,.52); --gc2:rgba(208,54,36,.24)"></i>
-                        <div class="card-lab"><b>Moonwater</b><span class="jp">月影</span></div>
+                        <div class="card-lab"><b>${_t('dashboard.cardMoonwater')}</b><span class="jp">月影</span></div>
                     </div>
-                    <div class="card-meta"><span>Metabolic Matrix • Food Engine</span><span>03 / 03</span></div>
-                    <p class="text-xs text-[#8f9a93] mt-2">Dual BMR formulas, TDEE, macro target ratios, and Gemini AI natural language food scanning.</p>
+                    <div class="card-meta"><span>${_t('dashboard.cardMoonwaterSub')}</span><span>03 / 03</span></div>
+                    <p class="text-xs text-[#8f9a93] mt-2">${_t('dashboard.cardMoonwaterDesc')}</p>
                 </article>
             </div>
         </section>
@@ -1144,56 +1139,56 @@ async function renderDashboard(container) {
         <!-- ── CHAPTER III: SACRED CRAFT (SYSTEM CURRICULUM) ── -->
         <section class="sec" id="lessons" data-cam="3">
             <div class="sec-head">
-                <span class="k"><b>03</b> — Sacred Craft</span>
+                <span class="k"><b>03</b> — ${_t('dashboard.craftTitle')}</span>
                 <span class="rule"></span>
-                <span class="k jp">手業 // SYSTEM CURRICULUM</span>
+                <span class="k jp">手業 // ${_t('dashboard.craftSubtitle')}</span>
             </div>
             <div class="cur-head">
-                <h2 class="display h-sec">Six disciplines. One connected health intelligence.</h2>
+                <h2 class="display h-sec">${_t('dashboard.craftHeading')}</h2>
                 <p class="body-lg">
-                    Each module functions as an autonomous engineering discipline, connected by unified biometric event telemetry and clinical precision.
+                    ${_t('dashboard.craftLead')}
                 </p>
             </div>
             <div class="cur" id="cur">
                 <div class="les" onclick="nav('live-pose')">
                     <span class="k">01</span>
-                    <h3>Biomechanical Vision<em class="jp">山門</em></h3>
-                    <p>Real-time 33-joint skeleton tracking, spine inclination telemetry & risk alarms.</p>
+                    <h3>${_t('dashboard.disciplineVision')}<em class="jp">山門</em></h3>
+                    <p>${_t('dashboard.disciplineVisionDesc')}</p>
                     <span class="t">60 FPS</span>
                     <i class="bar"></i>
                 </div>
                 <div class="les" onclick="nav('gym')">
                     <span class="k">02</span>
-                    <h3>Adaptive Strength<em class="jp">筋力</em></h3>
-                    <p>Categorized muscle group splits, automated camera rep counter, and rest timer.</p>
+                    <h3>${_t('dashboard.disciplineStrength')}<em class="jp">筋力</em></h3>
+                    <p>${_t('dashboard.disciplineStrengthDesc')}</p>
                     <span class="t">${gymCount} Splits</span>
                     <i class="bar"></i>
                 </div>
                 <div class="les" onclick="nav('yoga')">
                     <span class="k">03</span>
-                    <h3>Asana Equilibrium<em class="jp">調和</em></h3>
-                    <p>17 structured yoga poses with joint angle validation and posture hold check.</p>
+                    <h3>${_t('dashboard.disciplineEquilibrium')}<em class="jp">調和</em></h3>
+                    <p>${_t('dashboard.disciplineEquilibriumDesc')}</p>
                     <span class="t">${yogaCount} Poses</span>
                     <i class="bar"></i>
                 </div>
                 <div class="les" onclick="nav('bmi')">
                     <span class="k">04</span>
-                    <h3>Metabolic Alchemy<em class="jp">代謝</em></h3>
-                    <p>Precision Mifflin-St Jeor and Harris-Benedict BMR, TDEE, and macro targets.</p>
+                    <h3>${_t('dashboard.disciplineAlchemy')}<em class="jp">代謝</em></h3>
+                    <p>${_t('dashboard.disciplineAlchemyDesc')}</p>
                     <span class="t">Clinical BMR</span>
                     <i class="bar"></i>
                 </div>
                 <div class="les" onclick="nav('food-tracker')">
                     <span class="k">05</span>
-                    <h3>Daily Sustenance<em class="jp">養生</em></h3>
-                    <p>Daily meal logging, hydration water tracker, and Gemini AI natural language food analysis.</p>
+                    <h3>${_t('dashboard.disciplineSustenance')}<em class="jp">養生</em></h3>
+                    <p>${_t('dashboard.disciplineSustenanceDesc')}</p>
                     <span class="t">Gemini AI</span>
                     <i class="bar"></i>
                 </div>
                 <div class="les" onclick="nav('luna')">
                     <span class="k">06</span>
-                    <h3>The Oracle<em class="jp">知性</em></h3>
-                    <p>Luna AI conversational coaching, injury recovery advice, and custom fitness regimens.</p>
+                    <h3>${_t('dashboard.disciplineOracle')}<em class="jp">知性</em></h3>
+                    <p>${_t('dashboard.disciplineOracleDesc')}</p>
                     <span class="t">24/7 AI</span>
                     <i class="bar"></i>
                 </div>
@@ -1203,50 +1198,50 @@ async function renderDashboard(container) {
         <!-- ── CHAPTER IV: THE ORACLE (LUNA AI INTERACTION) ── -->
         <section class="sec" id="oracle" data-cam="4">
             <div class="sec-head">
-                <span class="k"><b>04</b> — The Oracle</span>
+                <span class="k"><b>04</b> — ${_t('dashboard.oracleTitle')}</span>
                 <span class="rule"></span>
-                <span class="k jp">知性 // CONVERSATIONAL REASONING</span>
+                <span class="k jp">知性 // ${_t('dashboard.oracleSubtitle')}</span>
             </div>
             <div class="cur-head">
-                <h2 class="display h-sec">Ask Luna anything about training, biomechanics or diet.</h2>
+                <h2 class="display h-sec">${_t('dashboard.oracleHeading')}</h2>
                 <p class="body-lg">
-                    Powered by multi-model Gemini fallbacks, Luna provides conversational coaching, kinematic posture analysis, and personalized metabolic strategies.
+                    ${_t('dashboard.oracleLead')}
                 </p>
             </div>
             <div class="oracle-preview-box">
                 <div class="prompt-chip" onclick="askLunaPrompt('Calculate my ideal hypertrophy calorie and macro split for muscle gain')">
                     <div class="text-xs font-mono text-[var(--vermilion)] mb-1">PROMPT 01</div>
-                    <div class="font-medium text-sm text-[var(--bone)]">Hypertrophy Macro Split</div>
-                    <p class="text-xs text-[var(--text-dim)] mt-1">Calculate protein, carb and fat targets tailored to progressive overload.</p>
+                    <div class="font-medium text-sm text-[var(--bone)]">${_t('dashboard.oraclePrompt1Label')}</div>
+                    <p class="text-xs text-[var(--text-dim)] mt-1">${_t('dashboard.oraclePrompt1Desc')}</p>
                 </div>
                 <div class="prompt-chip" onclick="askLunaPrompt('How can I improve my squat knee flexion angle and fix forward torso lean?')">
                     <div class="text-xs font-mono text-[var(--vermilion)] mb-1">PROMPT 02</div>
-                    <div class="font-medium text-sm text-[var(--bone)]">Squat Kinematics Fix</div>
-                    <p class="text-xs text-[var(--text-dim)] mt-1">Biomechanical advice for knee flexion and maintaining neutral spine.</p>
+                    <div class="font-medium text-sm text-[var(--bone)]">${_t('dashboard.oraclePrompt2Label')}</div>
+                    <p class="text-xs text-[var(--text-dim)] mt-1">${_t('dashboard.oraclePrompt2Desc')}</p>
                 </div>
                 <div class="prompt-chip" onclick="askLunaPrompt('Give me a 7-day anti-inflammatory recovery meal plan')">
                     <div class="text-xs font-mono text-[var(--vermilion)] mb-1">PROMPT 03</div>
-                    <div class="font-medium text-sm text-[var(--bone)]">7-Day Recovery Diet</div>
-                    <p class="text-xs text-[var(--text-dim)] mt-1">Nutrient-dense recipes to accelerate tissue repair and joint mobility.</p>
+                    <div class="font-medium text-sm text-[var(--bone)]">${_t('dashboard.oraclePrompt3Label')}</div>
+                    <p class="text-xs text-[var(--text-dim)] mt-1">${_t('dashboard.oraclePrompt3Desc')}</p>
                 </div>
             </div>
             <div class="mt-8">
                 <button onclick="nav('luna')" class="btn-editorial-primary">
-                    OPEN LUNA AI CONVERSATION →
+                    ${_t('dashboard.oracleCta')}
                 </button>
             </div>
         </section>
 
         <!-- ── CHAPTER V: AFTERLIGHT (DOSSIER & EXPORT) ── -->
         <section class="sec fin" id="eternity" data-cam="4">
-            <div class="eyebrow"><span class="dot"></span> Chapter 05 — Afterlight // Clinical Dossier</div>
-            <h2 class="display">Afterlight</h2>
+            <div class="eyebrow"><span class="dot"></span> ${_t('dashboard.afterlightEyebrow')}</div>
+            <h2 class="display">${_t('dashboard.afterlightTitle')}</h2>
             <p class="body-lg">
-                The gate does not close behind you. Take your health intelligence wherever you go: export clinical PDF reports, dispatch email dossiers, or generate HD explainer video briefings.
+                ${_t('dashboard.afterlightLead')}
             </p>
             <div class="hero-actions-bar mt-6">
                 <a class="cta" onclick="nav('export')">
-                    <i></i><span>Open Export Studio</span>
+                    <i></i><span>${_t('dashboard.afterlightCta')}</span>
                     <svg viewBox="0 0 14 14" fill="none" width="13" height="13"><path d="M3 11 11 3M5 3h6v6" stroke="#dfe7e0" stroke-width="1.3"/></svg>
                 </a>
             </div>
@@ -1255,14 +1250,14 @@ async function renderDashboard(container) {
         <!-- ── CHAPTER 05.5: FREQUENT INQUIRIES & CLINICAL ARCHITECTURE (FAQ) ── -->
         <section class="sec faq-sec" id="faq" data-cam="4">
             <div class="sec-head">
-                <span class="k"><b>05.5</b> — Inquiries</span>
+                <span class="k"><b>05.5</b> — ${_t('dashboard.faqTitle')}</span>
                 <span class="rule"></span>
-                <span class="k jp">質疑 // CLINICAL & BIOMECHANICAL FAQS</span>
+                <span class="k jp">質疑 // ${_t('dashboard.faqSubtitle')}</span>
             </div>
             <div class="cur-head">
-                <h2 class="display h-sec">Biomechanical Precision & System Architecture.</h2>
+                <h2 class="display h-sec">${_t('dashboard.faqHeading')}</h2>
                 <p class="body-lg">
-                    Everything you need to know about zero-server privacy, 60 FPS vision telemetry, kinematic joints, and clinical exports.
+                    ${_t('dashboard.faqLead')}
                 </p>
             </div>
 
@@ -1270,65 +1265,55 @@ async function renderDashboard(container) {
                 <div class="faq-item" id="faq-item-1">
                     <button type="button" class="faq-question" onclick="window.toggleFaq(1)" aria-expanded="false">
                         <span class="faq-number">01</span>
-                        <span class="faq-title">How does Luminix maintain 60 FPS computer vision without sending camera feeds to servers?</span>
+                        <span class="faq-title">${_t('dashboard.faqQ1')}</span>
                         <span class="faq-icon">+</span>
                     </button>
                     <div class="faq-answer">
-                        <p>
-                            Luminix executes 100% of its MediaPipe machine learning inference client-side inside your browser via WebAssembly (WASM) and WebGL hardware acceleration. Not a single pixel or video stream is ever uploaded to external servers. Only anonymous mathematical joint angles and repetition counters can be optionally synchronized with your encrypted vault.
-                        </p>
+                        <p>${_t('dashboard.faqA1')}</p>
                     </div>
                 </div>
 
                 <div class="faq-item" id="faq-item-2">
                     <button type="button" class="faq-question" onclick="window.toggleFaq(2)" aria-expanded="false">
                         <span class="faq-number">02</span>
-                        <span class="faq-title">What camera hardware is required for 33-point biomechanics?</span>
+                        <span class="faq-title">${_t('dashboard.faqQ2')}</span>
                         <span class="faq-icon">+</span>
                     </button>
                     <div class="faq-answer">
-                        <p>
-                            Any standard 720p or 1080p webcam, laptop integrated camera, or smartphone mobile browser camera works natively. Luminix's adaptive smoothing algorithms normalize frame jitter and lighting variations in real time, delivering consistent 60 FPS pose estimation.
-                        </p>
+                        <p>${_t('dashboard.faqA2')}</p>
                     </div>
                 </div>
 
                 <div class="faq-item" id="faq-item-3">
                     <button type="button" class="faq-question" onclick="window.toggleFaq(3)" aria-expanded="false">
                         <span class="faq-number">03</span>
-                        <span class="faq-title">How does the Adaptive Gym Engine detect discrete rep states?</span>
+                        <span class="faq-title">${_t('dashboard.faqQ3')}</span>
                         <span class="faq-icon">+</span>
                     </button>
                     <div class="faq-answer">
-                        <p>
-                            Rather than simple peak-detection, our engine uses deterministic finite state machines (FSM) measuring vector dot-products between proximal and distal limbs (e.g. hip-knee-ankle for squats, shoulder-elbow-wrist for push-ups and bicep curls). Reps are only incremented when complete eccentric depth and concentric lockout are achieved.
-                        </p>
+                        <p>${_t('dashboard.faqA3')}</p>
                     </div>
                 </div>
 
                 <div class="faq-item" id="faq-item-4">
                     <button type="button" class="faq-question" onclick="window.toggleFaq(4)" aria-expanded="false">
                         <span class="faq-number">04</span>
-                        <span class="faq-title">How are Basal Metabolic Rate (BMR) and macro splits calculated?</span>
+                        <span class="faq-title">${_t('dashboard.faqQ4')}</span>
                         <span class="faq-icon">+</span>
                     </button>
                     <div class="faq-answer">
-                        <p>
-                            We apply the clinically validated Revised Harris-Benedict and Mifflin-St Jeor metabolic equations, scaled by your physical activity multiplier (PAL) to derive Total Daily Energy Expenditure (TDEE). Protein, carbohydrate, and fat targets are then dynamically balanced to match your progressive overload goals.
-                        </p>
+                        <p>${_t('dashboard.faqA4')}</p>
                     </div>
                 </div>
 
                 <div class="faq-item" id="faq-item-5">
                     <button type="button" class="faq-question" onclick="window.toggleFaq(5)" aria-expanded="false">
                         <span class="faq-number">05</span>
-                        <span class="faq-title">Are clinical PDF reports and health exports secure?</span>
+                        <span class="faq-title">${_t('dashboard.faqQ5')}</span>
                         <span class="faq-icon">+</span>
                     </button>
                     <div class="faq-answer">
-                        <p>
-                            All exported PDF dossiers adhere to institutional health summary guidelines. Client data is protected by Argon2 password hashing, JWT HS256 authentication tokens, and our backend Web Application Firewall (WAF) threat shield with rate-limiting.
-                        </p>
+                        <p>${_t('dashboard.faqA5')}</p>
                     </div>
                 </div>
             </div>
@@ -1337,14 +1322,14 @@ async function renderDashboard(container) {
         <!-- ── CHAPTER VI: THE ARCHITECT (CREATOR & SUPPORT) ── -->
         <section class="sec creator-sec" id="creator" data-cam="4">
             <div class="cur-tag">
-                <span class="k"><b>06</b> — The Architect</span>
+                <span class="k"><b>06</b> — ${_t('dashboard.architectTitle')}</span>
                 <span class="rule"></span>
-                <span class="k jp">創造主 // SYSTEM CREATOR & CRAFT</span>
+                <span class="k jp">創造主 // ${_t('dashboard.architectSubtitle')}</span>
             </div>
             <div class="cur-head">
-                <h2 class="display h-sec">Crafted by Ram Charan Teja with Uncompromising Vision.</h2>
+                <h2 class="display h-sec">${_t('dashboard.architectHeading')}</h2>
                 <p class="body-lg">
-                    Behind Luminix is an obsession with merging high-frequency client-side computer vision, clinical biomechanics, and a bespoke Kyoto cyber aesthetic into an autonomous health intelligence platform.
+                    ${_t('dashboard.architectLead')}
                 </p>
             </div>
 
@@ -1353,7 +1338,7 @@ async function renderDashboard(container) {
                     <div class="creator-card-inner">
                         <div class="creator-avatar-wrap">
                             <img src="/assets/togi pfp.jpeg" alt="Creator - Ram Charan Teja (@LUNO895)" class="creator-avatar-img" />
-                            <span class="creator-verified-badge">⚡ ARCHITECT</span>
+                            <span class="creator-verified-badge">⚡ ${_t('dashboard.architectTitle')}</span>
                         </div>
                         <div class="creator-info-main">
                             <div class="flex items-center gap-3 flex-wrap">
@@ -1365,7 +1350,7 @@ async function renderDashboard(container) {
                                 </button>
                             </div>
                             <p class="creator-tagline">
-                                Full-Stack AI Systems Architect, Computer Vision Engineer & Creative Technologist. Sole creator and builder of the Luminix ecosystem.
+                                ${_t('dashboard.architectRole')}
                             </p>
                             <div class="creator-tags-list">
                                 <span class="c-tag">MediaPipe Vision</span>
@@ -1380,12 +1365,12 @@ async function renderDashboard(container) {
 
                     <div class="creator-actions-row">
                         <button type="button" onclick="event.stopPropagation(); openCreatorModal('story');" class="creator-explore-btn">
-                            <span>View Full Creator Dossier & Tech Arsenal</span>
+                            <span>${_t('dashboard.architectViewDossier')}</span>
                             <svg viewBox="0 0 14 14" fill="none" width="12" height="12"><path d="M3 11 11 3M5 3h6v6" stroke="currentColor" stroke-width="1.3"/></svg>
                         </button>
                         <button type="button" onclick="event.stopPropagation(); openCreatorModal('donate');" class="creator-donate-small-btn">
                             <span>❤️</span>
-                            <span>Donate to Creator</span>
+                            <span>${_t('dashboard.architectDonate')}</span>
                         </button>
                     </div>
                 </div>
@@ -1401,62 +1386,62 @@ async function renderDashboard(container) {
                         <path d="M6 13h32M10 18h24M22 9v26" stroke="#dfe7e0" stroke-width="1.4"/>
                     </svg>
                     <p>
-                        A night walk through Kyoto biomechanics. Charred cypress, lantern light, and a vermilion moon, rendered live in WebGL. Connected to full-stack health intelligence.
+                        ${_t('common.footerTagline')}
                     </p>
                 </div>
                 <div>
-                    <h4>Chapters</h4>
+                    <h4>${_t('common.footerChapters')}</h4>
                     <ul>
-                        <li><a onclick="document.getElementById('hero')?.scrollIntoView({behavior:'smooth'})">The Threshold</a></li>
-                        <li><a onclick="document.getElementById('gate')?.scrollIntoView({behavior:'smooth'})">The Sanmon</a></li>
-                        <li><a onclick="document.getElementById('pathways')?.scrollIntoView({behavior:'smooth'})">Still Gardens</a></li>
-                        <li><a onclick="document.getElementById('lessons')?.scrollIntoView({behavior:'smooth'})">Sacred Craft</a></li>
-                        <li><a onclick="document.getElementById('eternity')?.scrollIntoView({behavior:'smooth'})">Afterlight</a></li>
-                        <li><a onclick="document.getElementById('faq')?.scrollIntoView({behavior:'smooth'})">Frequent Inquiries</a></li>
-                        <li><a onclick="document.getElementById('creator')?.scrollIntoView({behavior:'smooth'})">The Architect</a></li>
+                        <li><a onclick="document.getElementById('hero')?.scrollIntoView({behavior:'smooth'})">${_t('common.footerHeroLink')}</a></li>
+                        <li><a onclick="document.getElementById('gate')?.scrollIntoView({behavior:'smooth'})">${_t('common.footerGateLink')}</a></li>
+                        <li><a onclick="document.getElementById('pathways')?.scrollIntoView({behavior:'smooth'})">${_t('common.footerPathwaysLink')}</a></li>
+                        <li><a onclick="document.getElementById('lessons')?.scrollIntoView({behavior:'smooth'})">${_t('common.footerLessonsLink')}</a></li>
+                        <li><a onclick="document.getElementById('eternity')?.scrollIntoView({behavior:'smooth'})">${_t('common.footerEternityLink')}</a></li>
+                        <li><a onclick="document.getElementById('faq')?.scrollIntoView({behavior:'smooth'})">${_t('common.footerFaqLink')}</a></li>
+                        <li><a onclick="document.getElementById('creator')?.scrollIntoView({behavior:'smooth'})">${_t('common.footerCreatorLink')}</a></li>
                     </ul>
                 </div>
                 <div>
-                    <h4>Disciplines</h4>
+                    <h4>${_t('common.footerDisciplines')}</h4>
                     <ul>
-                        <li><a onclick="nav('live-pose')">60 FPS Live Pose</a></li>
-                        <li><a onclick="nav('gym')">Adaptive Gym Engine</a></li>
-                        <li><a onclick="nav('yoga')">17 Yoga Asanas</a></li>
-                        <li><a onclick="nav('bmi')">Metabolic Matrix</a></li>
-                        <li><a onclick="nav('food-tracker')">Food & Hydration</a></li>
+                        <li><a onclick="nav('live-pose')">${_t('common.footerLivePoseLink')}</a></li>
+                        <li><a onclick="nav('gym')">${_t('common.footerGymLink')}</a></li>
+                        <li><a onclick="nav('yoga')">${_t('common.footerYogaLink')}</a></li>
+                        <li><a onclick="nav('bmi')">${_t('common.footerBmiLink')}</a></li>
+                        <li><a onclick="nav('food-tracker')">${_t('common.footerFoodLink')}</a></li>
                     </ul>
                 </div>
                 <div>
-                    <h4>Intelligence</h4>
+                    <h4>${_t('common.footerIntelligence')}</h4>
                     <ul>
-                        <li><a onclick="nav('luna')">Luna AI Assistant</a></li>
-                        <li><a onclick="nav('export')">Clinical PDF Export</a></li>
-                        <li><a href="/docs" target="_blank">FastAPI Swagger Docs</a></li>
-                        <li><a href="/health" target="_blank">Firewall Status</a></li>
-                        <li><a onclick="window.openShareModal()" style="cursor:pointer; color:var(--vermilion);">📢 Share Platform</a></li>
+                        <li><a onclick="nav('luna')">${_t('common.footerLunaLink')}</a></li>
+                        <li><a onclick="nav('export')">${_t('common.footerExportLink')}</a></li>
+                        <li><a href="/docs" target="_blank">${_t('common.footerDocsLink')}</a></li>
+                        <li><a href="/health" target="_blank">${_t('common.footerHealthLink')}</a></li>
+                        <li><a onclick="window.openShareModal()" style="cursor:pointer; color:var(--vermilion);">${_t('common.footerShareLink')}</a></li>
                     </ul>
                 </div>
                 <div>
-                    <h4>Sovereignty</h4>
+                    <h4>${_t('common.footerSovereignty')}</h4>
                     <ul>
-                        <li><a onclick="nav('privacy')" style="cursor:pointer;">Zero-Leak Privacy</a></li>
-                        <li><a onclick="nav('terms')" style="cursor:pointer;">Terms of Service</a></li>
-                        <li><a onclick="nav('accessibility')" style="cursor:pointer;">Accessibility Statement</a></li>
-                        <li><a onclick="window.openCookieSettings()" style="cursor:pointer;">Cookie Preferences</a></li>
-                        <li><a href="/robots.txt" target="_blank">Robots Index</a></li>
+                        <li><a onclick="nav('privacy')" style="cursor:pointer;">${_t('common.footerZeroLeakLink')}</a></li>
+                        <li><a onclick="nav('terms')" style="cursor:pointer;">${_t('common.footerTermsLink')}</a></li>
+                        <li><a onclick="nav('accessibility')" style="cursor:pointer;">${_t('common.footerAccessibilityLink')}</a></li>
+                        <li><a onclick="window.openCookieSettings()" style="cursor:pointer;">${_t('common.footerCookieSettingsLink')}</a></li>
+                        <li><a href="/robots.txt" target="_blank">${_t('common.footerRobotsLink')}</a></li>
                     </ul>
                 </div>
             </div>
             <div class="foot-base">
-                <span>© 2026 LUMINIX — KYOTO EDITORIAL ENGINEERING</span>
-                <span class="last-updated-badge font-mono">LAST UPDATED: SEPTEMBER 6, 2026 // BUILD 4.3-PROD</span>
-                <span class="jp">静けさは一つの技である • 身体知性</span>
+                <span>${_t('common.footerCopyright')}</span>
+                <span class="last-updated-badge font-mono">${_t('common.footerBuildInfo')}</span>
+                <span class="jp">${_t('common.footerPhilosophy')}</span>
                 <span class="flex items-center gap-2">
-                    <a onclick="nav('privacy')" style="cursor:pointer; text-decoration:underline;">PRIVACY</a>
+                    <a onclick="nav('privacy')" style="cursor:pointer; text-decoration:underline;">${_t('common.privacy')}</a>
                     <span>•</span>
-                    <a onclick="nav('terms')" style="cursor:pointer; text-decoration:underline;">TERMS</a>
+                    <a onclick="nav('terms')" style="cursor:pointer; text-decoration:underline;">${_t('common.terms')}</a>
                     <span>•</span>
-                    <a onclick="nav('accessibility')" style="cursor:pointer; text-decoration:underline;">ACCESSIBILITY</a>
+                    <a onclick="nav('accessibility')" style="cursor:pointer; text-decoration:underline;">${_t('common.accessibility')}</a>
                 </span>
             </div>
             <div class="foot-a11y-statement font-mono text-[10px] text-[var(--text-dim)] border-t border-[var(--border-subtle)] pt-3 mt-4 text-center">

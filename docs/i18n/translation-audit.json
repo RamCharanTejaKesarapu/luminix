@@ -1,0 +1,118 @@
+{
+  "total_english_keys": 658,
+  "supported_languages_count": 16,
+  "languages": {
+    "en": {
+      "total_keys": 658,
+      "missing_keys_count": 0,
+      "empty_keys_count": 0,
+      "coverage_percentage": 100.0,
+      "status": "PASS"
+    },
+    "te": {
+      "total_keys": 676,
+      "missing_keys_count": 0,
+      "empty_keys_count": 0,
+      "coverage_percentage": 100.0,
+      "status": "PASS"
+    },
+    "hi": {
+      "total_keys": 676,
+      "missing_keys_count": 0,
+      "empty_keys_count": 0,
+      "coverage_percentage": 100.0,
+      "status": "PASS"
+    },
+    "zh": {
+      "total_keys": 676,
+      "missing_keys_count": 0,
+      "empty_keys_count": 0,
+      "coverage_percentage": 100.0,
+      "status": "PASS"
+    },
+    "es": {
+      "total_keys": 676,
+      "missing_keys_count": 0,
+      "empty_keys_count": 0,
+      "coverage_percentage": 100.0,
+      "status": "PASS"
+    },
+    "fr": {
+      "total_keys": 789,
+      "missing_keys_count": 0,
+      "empty_keys_count": 0,
+      "coverage_percentage": 100.0,
+      "status": "PASS"
+    },
+    "de": {
+      "total_keys": 789,
+      "missing_keys_count": 0,
+      "empty_keys_count": 0,
+      "coverage_percentage": 100.0,
+      "status": "PASS"
+    },
+    "ru": {
+      "total_keys": 789,
+      "missing_keys_count": 0,
+      "empty_keys_count": 0,
+      "coverage_percentage": 100.0,
+      "status": "PASS"
+    },
+    "tr": {
+      "total_keys": 676,
+      "missing_keys_count": 0,
+      "empty_keys_count": 0,
+      "coverage_percentage": 100.0,
+      "status": "PASS"
+    },
+    "ar": {
+      "total_keys": 676,
+      "missing_keys_count": 0,
+      "empty_keys_count": 0,
+      "coverage_percentage": 100.0,
+      "status": "PASS"
+    },
+    "pt": {
+      "total_keys": 789,
+      "missing_keys_count": 0,
+      "empty_keys_count": 0,
+      "coverage_percentage": 100.0,
+      "status": "PASS"
+    },
+    "ja": {
+      "total_keys": 789,
+      "missing_keys_count": 0,
+      "empty_keys_count": 0,
+      "coverage_percentage": 100.0,
+      "status": "PASS"
+    },
+    "ko": {
+      "total_keys": 789,
+      "missing_keys_count": 0,
+      "empty_keys_count": 0,
+      "coverage_percentage": 100.0,
+      "status": "PASS"
+    },
+    "it": {
+      "total_keys": 789,
+      "missing_keys_count": 0,
+      "empty_keys_count": 0,
+      "coverage_percentage": 100.0,
+      "status": "PASS"
+    },
+    "fil": {
+      "total_keys": 789,
+      "missing_keys_count": 0,
+      "empty_keys_count": 0,
+      "coverage_percentage": 100.0,
+      "status": "PASS"
+    },
+    "ur": {
+      "total_keys": 676,
+      "missing_keys_count": 0,
+      "empty_keys_count": 0,
+      "coverage_percentage": 100.0,
+      "status": "PASS"
+    }
+  }
+}
