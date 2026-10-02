@@ -48,17 +48,9 @@
                 } catch (_) {}
             }
 
-            // Client-side fallback for static web hosting (Netlify / Vercel / GitHub Pages)
-            if (!config) {
-                config = {
-                    apiKey: "AIzaSyATMTTXjXy3qsCvFvas8VA8eyOFPn8QukM",
-                    authDomain: "luminix-a0363.firebaseapp.com",
-                    projectId: "luminix-a0363",
-                    storageBucket: "luminix-a0363.firebasestorage.app",
-                    messagingSenderId: "836929007564",
-                    appId: "1:836929007564:web:9d91be86c021a407bf7769",
-                    measurementId: "G-9LD9WE01RN"
-                };
+            // Client-side fallback for static web hosting (injected via deployment environment)
+            if (!config && typeof window !== 'undefined' && window.LUMINIX_FIREBASE_CONFIG) {
+                config = window.LUMINIX_FIREBASE_CONFIG;
             }
 
             if (config && config.apiKey && typeof firebase !== 'undefined' && firebase.initializeApp) {

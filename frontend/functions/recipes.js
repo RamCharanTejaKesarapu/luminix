@@ -30,9 +30,7 @@ exports.handler = async function(event, context) {
         const cuisine = body.cuisine || "Indian";
         const spiceLevel = body.spice_level || "Spicy";
         const userPrompt = body.prompt || "";
-        const DEFAULT_KEY_B64 = "QVEuQWI4Uk42S2hFX282Q3ZEWGprTUQ0U3RKWEFpdThuX1ZoM18yZzI5aV9EQmlzTjlmdUE=";
-        const fallbackKey = typeof Buffer !== "undefined" ? Buffer.from(DEFAULT_KEY_B64, "base64").toString("utf8") : "";
-        const apiKey = body.apiKey || body.api_key || process.env.GEMINI_API_KEY || fallbackKey;
+        const apiKey = body.apiKey || body.api_key || process.env.GEMINI_API_KEY || "";
 
         // Attempt live Gemini AI synthesis
         if (apiKey) {

@@ -31,9 +31,7 @@ exports.handler = async function(event, context) {
         const profile = userContext.profile || {};
         const wearable = userContext.wearable || {};
 
-        const DEFAULT_KEY_B64 = "QVEuQWI4Uk42S2hFX282Q3ZEWGprTUQ0U3RKWEFpdThuX1ZoM18yZzI5aV9EQmlzTjlmdUE=";
-        const fallbackKey = typeof Buffer !== "undefined" ? Buffer.from(DEFAULT_KEY_B64, "base64").toString("utf8") : "";
-        const apiKey = body.apiKey || body.api_key || process.env.GEMINI_API_KEY || fallbackKey;
+        const apiKey = body.apiKey || body.api_key || process.env.GEMINI_API_KEY || "";
 
         const systemPrompt = `You are Luna AI, the supreme clinical intelligence, sports nutritionist, biomechanics expert, and personal AI companion of Luminix.
 You possess deep expertise in exercise physiology, sports science, human kinematics, programming/computer science, mathematics, coding, and holistic wellness.

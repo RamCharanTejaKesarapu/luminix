@@ -1,5 +1,21 @@
 /**
  * LUMINIX — Real Hardware Wearable, System Bluetooth & Mobile Telemetry Engine ("Connect with Lumi")
+ */
+
+/**
+ * Security: HTML-escape helper — prevents XSS when inserting server-supplied
+ * strings into innerHTML. Uses a temporary DOM text node so no regex edge cases.
+ * @param {string} str
+ * @returns {string} HTML-encoded string safe for innerHTML insertion
+ */
+function escapeHtml(str) {
+    if (str === null || str === undefined) return '';
+    const el = document.createElement('span');
+    el.textContent = String(str);
+    return el.innerHTML;
+}
+
+/**
  * 
  * Features:
  * 1. Zero Dummy Values at Start: Initial state is clean STANDBY (`--` placeholders, awaiting link).
@@ -1792,7 +1808,8 @@
                 if (data && data.is_live && data.steps !== null) {
                     const statusEl = document.getElementById('companion-poll-status');
                     if (statusEl) {
-                        statusEl.innerHTML = `<span class="text-emerald-400 font-bold">✓ Phone Active:</span> ${data.device_name} (${data.steps} steps logged)`;
+                        // Security: escape server-supplied device_name before injecting into innerHTML
+                        statusEl.innerHTML = `<span class="text-emerald-400 font-bold">✓ Phone Active:</span> ${escapeHtml(data.device_name)} (${escapeHtml(data.steps)} steps logged)`;
                     }
 
                     if (!wearableState.connected) {

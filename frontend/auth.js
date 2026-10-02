@@ -7,6 +7,19 @@ const AUTH_TOKEN_KEY = 'luminix_token';
 const AUTH_USER_KEY = 'luminix_user';
 const VAULT_USERS_KEY = 'luminix_vault_users';
 
+/**
+ * Security: HTML-escape helper — prevents XSS when inserting server-supplied
+ * strings into innerHTML. Uses a temporary DOM text node so no regex edge cases.
+ * @param {string} str
+ * @returns {string} HTML-encoded string safe for innerHTML insertion
+ */
+function escapeHtml(str) {
+    if (str === null || str === undefined) return '';
+    const el = document.createElement('span');
+    el.textContent = String(str);
+    return el.innerHTML;
+}
+
 async function _hashPassword(password) {
     try {
         const enc = new TextEncoder();
@@ -388,11 +401,25 @@ window.luminixAuth = {
 
     handleTokenFromUrl() {
         const params = new URLSearchParams(window.location.search);
+        let handled = false;
+        if (params.get('auth_success')) {
+            handled = true;
+            this.fetchMe().then(user => {
+                if (user && typeof window.updateUserProfileUI === 'function') {
+                    window.updateUserProfileUI();
+                }
+            });
+        }
         const token = params.get('token');
-        if (!token) return false;
-        localStorage.setItem(AUTH_TOKEN_KEY, token);
-        window.history.replaceState({}, document.title, window.location.pathname);
-        return true;
+        if (token) {
+            localStorage.setItem(AUTH_TOKEN_KEY, token);
+            handled = true;
+        }
+        if (handled) {
+            window.history.replaceState({}, document.title, window.location.pathname);
+            return true;
+        }
+        return false;
     }
 };
 
@@ -817,10 +844,9 @@ window.submitAuthForgot = async function(e) {
             body: JSON.stringify({ email })
         });
         const data = await res.json();
-        status.innerHTML = `<span class="text-emerald-500 font-mono font-semibold">${data.message || 'If an account exists, a password reset link has been dispatched.'}</span>`;
-        if (data.dev_reset_token) {
-            status.innerHTML += `<div class="mt-2 p-2 bg-yellow-900/20 border border-yellow-700/50 rounded text-[10px] text-yellow-300"><strong>Dev Token:</strong> ${data.dev_reset_token} <button type="button" onclick="switchAuthTab('reset', '${data.dev_reset_token}')" class="underline ml-1 text-white font-bold">Use Now &rarr;</button></div>`;
-        }
+        // Security: escape server-supplied message before injecting into innerHTML
+        status.innerHTML = `<span class="text-emerald-500 font-mono font-semibold">${escapeHtml(data.message) || 'If an account exists, a password reset link has been dispatched.'}</span>`;
+        // Note: dev_reset_token handling removed — backend never sends this field in production
     } catch (err) {
         status.innerHTML = `<span class="text-red-500 font-mono">Unable to process password reset request.</span>`;
     } finally {

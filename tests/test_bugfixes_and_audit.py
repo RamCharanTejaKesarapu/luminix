@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import math
+import uuid
 from datetime import datetime, timezone
 import pytest
 
@@ -23,7 +24,7 @@ from pose_module.video_analyzer import _issues_from_angles, _score_frame
 def test_dpdp_account_deletion_erases_health_samples():
     """Verify that deleting a user account erases all associated HealthSample telemetry under DPDP Act."""
     user = create_user(
-        email="dpdp_audit_test@luminix.sanctuary",
+        email=f"dpdp_audit_test_{uuid.uuid4().hex[:8]}@luminix.sanctuary",
         name="DPDP Test User",
         password_hash="argon2id_mock_hash",
     )

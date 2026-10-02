@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import json
 import os
+import re
 import sys
 import uuid
 from pathlib import Path
@@ -34,7 +35,7 @@ from database.firebase_admin_service import (  # noqa: E402
     save_donation_to_firestore,
     save_telemetry_to_firestore,
 )
-from api.auth_routes import get_optional_user, router as auth_router  # noqa: E402
+from api.auth_routes import get_current_user, get_optional_user, router as auth_router  # noqa: E402
 from api.health_routes import router as health_router  # noqa: E402
 from auth.firewall import SecurityFirewallMiddleware, firewall  # noqa: E402
 from auth.oauth import google_configured, github_configured  # noqa: E402
@@ -133,9 +134,27 @@ class PoseAnalysisRequest(BaseModel):
 
 
 app = FastAPI(title="Luminix", description="Advanced Health Intelligence Platform & Security Firewall", version="2.0.0")
+
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:8000",
+    "http://127.0.0.1:8000",
+    "http://localhost:3000",
+    "http://127.0.0.1:3000",
+    "http://localhost:5173",
+    "http://127.0.0.1:5173",
+]
+env_origins = os.getenv("CORS_ALLOWED_ORIGINS", "")
+if env_origins:
+    CORS_ALLOWED_ORIGINS.extend([o.strip() for o in env_origins.split(",") if o.strip()])
+frontend_url = os.getenv("FRONTEND_URL", "")
+if frontend_url and frontend_url not in CORS_ALLOWED_ORIGINS:
+    CORS_ALLOWED_ORIGINS.append(frontend_url)
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=CORS_ALLOWED_ORIGINS,
+    allow_origin_regex=r"^https?://(localhost|127\.0\.0\.1)(:[0-9]+)?$",
+    allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
@@ -274,16 +293,17 @@ def health() -> Dict[str, Any]:
         "google_oauth_configured": google_configured(),
         "github_oauth_configured": github_configured(),
         "security_stats": get_security_stats(),
-        "output_dir": str(OUTPUT),
+        "output_dir_ready": OUTPUT.exists(),
     }
 
 
 @app.get("/v1/config/ai-key")
 def config_ai_key() -> Dict[str, Any]:
+    # Redact raw API key to prevent client-side secret exposure
     key = os.getenv("GEMINI_API_KEY", "")
     return {
         "configured": bool(key),
-        "key": key if key else "",
+        "provider": "google-gemini",
     }
 
 
@@ -420,7 +440,10 @@ async def pose_analyze_video(
         rep = analyze_video_file(dest, stride=stride, max_frames=max_frames, output_dir=OUTPUT / "pose_previews")
         return report_to_dict(rep)
     except Exception as exc:  # noqa: BLE001
-        raise HTTPException(status_code=400, detail=str(exc)) from exc
+        # Security: do not expose internal exception detail to client (error disclosure)
+        import logging as _logging
+        _logging.getLogger("luminix.api").error("Pose analysis error: %s", exc, exc_info=True)
+        raise HTTPException(status_code=400, detail="Video pose analysis failed. Please verify the video format and try again.") from exc
     finally:
         # Ephemeral cleanup — delete biometric video bytes immediately after kinematic extraction
         if dest.exists():
@@ -479,22 +502,57 @@ async def combined_with_upload(
     profile_json: str = Form(...),
     use_gemini: bool = Form(True),
 ) -> Dict[str, Any]:
-    profile = UserHealthProfile.model_validate(json.loads(profile_json))
-    suffix = Path(file.filename or "upload.mp4").suffix or ".mp4"
-    dest = OUTPUT / f"upload_full{suffix}"
-    dest.write_bytes(await file.read())
+    try:
+        profile = UserHealthProfile.model_validate(json.loads(profile_json))
+    except Exception as exc:
+        # Security: do not expose internal pydantic/validation exception text to client
+        import logging as _logging
+        _logging.getLogger("luminix.api").warning("Invalid profile data in upload: %s", exc)
+        raise HTTPException(status_code=400, detail="Invalid profile data. Please check the required fields and formats.") from exc
+
+    raw_name = file.filename or "upload.mp4"
+    ext = Path(raw_name).suffix.lower()
+    if ext not in ALLOWED_VIDEO_EXTENSIONS:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Unsupported file format '{ext}'. Allowed video formats: {', '.join(sorted(ALLOWED_VIDEO_EXTENSIONS))}",
+        )
+
+    content = await file.read()
+    if len(content) == 0:
+        raise HTTPException(status_code=400, detail="Uploaded video file is empty.")
+    if len(content) > 15 * 1024 * 1024:
+        raise HTTPException(status_code=413, detail="File size exceeds maximum allowed upload limit of 15MB.")
+
+    if not _verify_video_magic_bytes(content[:64], ext):
+        raise HTTPException(status_code=400, detail="Invalid video header: file content does not match declared video format.")
+
+    unique_id = uuid.uuid4().hex
+    safe_filename = f"combined_upload_{unique_id}{ext}"
+    dest = OUTPUT / safe_filename
+    dest.write_bytes(content)
+
     try:
         pose_rep = analyze_video_file(dest, output_dir=OUTPUT / "pose_previews")
         pose_dict = report_to_dict(pose_rep)
     except Exception as exc:  # noqa: BLE001
-        raise HTTPException(status_code=400, detail=f"Pose analysis failed: {exc}") from exc
+        # Security: do not expose internal exception detail to client
+        import logging as _logging
+        _logging.getLogger("luminix.api").error("Pose analysis failed in combined upload: %s", exc, exc_info=True)
+        raise HTTPException(status_code=400, detail="Video analysis failed. Please verify the video format and try again.") from exc
+    finally:
+        if dest.exists():
+            try:
+                dest.unlink()
+            except Exception:
+                pass
 
     report = build_combined_report(profile, pose_rep, use_gemini=use_gemini)
     log_event(
         user_label="api_upload",
         bmi=report.nutrition_analysis.get("anthropometrics", {}).get("bmi"),
         pose_score=pose_dict.get("mean_pose_score"),
-        payload={"video": str(dest)},
+        payload={"has_gemini": bool(report.gemini)},
     )
     return {
         "report_json": report.to_dict(),
@@ -507,13 +565,28 @@ async def combined_with_upload(
 @app.post("/v1/video/generate")
 def generate_video(req: VideoRenderRequest) -> Dict[str, Any]:
     script = build_explainer_script(req.human_text, prefer_gemini=req.prefer_gemini_script)
+    pose_preview_path = req.pose_preview_path
+    if pose_preview_path:
+        # Prevent path traversal and arbitrary local file reads
+        if ".." in pose_preview_path or "\x00" in pose_preview_path:
+            raise HTTPException(status_code=400, detail="Invalid pose_preview_path: path traversal disallowed")
+        p_path = Path(pose_preview_path).resolve()
+        allowed_dirs = [OUTPUT.resolve(), ASSETS_DIR.resolve(), STATIC_DIR.resolve()]
+        if not any(p_path.is_relative_to(allowed_dir) for allowed_dir in allowed_dirs):
+            raise HTTPException(status_code=400, detail="Invalid pose_preview_path: file must reside within approved system directories")
+        if p_path.suffix.lower() not in {".png", ".jpg", ".jpeg", ".webp"}:
+            raise HTTPException(status_code=400, detail="Invalid pose_preview_path: only image formats allowed")
+        if not p_path.is_file():
+            raise HTTPException(status_code=404, detail="Pose preview image not found")
+        pose_preview_path = str(p_path)
+
     try:
         path = render_health_video(
             report_dict=req.report,
             human_text=req.human_text,
             script=script,
             out_dir=OUTPUT,
-            pose_preview_path=req.pose_preview_path,
+            pose_preview_path=pose_preview_path,
             filename="luminix_explainer.mp4",
         )
     except Exception as exc:  # noqa: BLE001
@@ -556,7 +629,8 @@ def _normalize_report(report: Optional[Dict[str, Any]]) -> Dict[str, Any]:
 
 def _export_pdf_file(report: Optional[Dict[str, Any]]) -> FileResponse:
     data = _normalize_report(report)
-    out = OUTPUT / "latest_report.pdf"
+    unique_id = uuid.uuid4().hex
+    out = OUTPUT / f"report_{unique_id}.pdf"
     try:
         export_combined_pdf(data, out)
     except Exception as exc:  # noqa: BLE001
@@ -570,7 +644,8 @@ def send_email_endpoint(
     user: Optional[Dict[str, Any]] = Depends(get_optional_user),
 ) -> Dict[str, str]:
     data = _normalize_report(req.report)
-    out = OUTPUT / "email_report.pdf"
+    unique_id = uuid.uuid4().hex
+    out = OUTPUT / f"email_report_{unique_id}.pdf"
     try:
         export_combined_pdf(data, out)
         recipient = req.email or (user.get("email") if user else "")
@@ -584,6 +659,12 @@ def send_email_endpoint(
         raise
     except Exception as exc:  # noqa: BLE001
         raise HTTPException(status_code=400, detail=f"Failed to send email: {exc}") from exc
+    finally:
+        if out.exists():
+            try:
+                out.unlink()
+            except Exception:
+                pass
 
 
 # ── Gym ──────────────────────────────────────────────────────────────────────
@@ -667,7 +748,7 @@ def nutrition_metrics_simple(req: NutritionOnlyRequest) -> Dict[str, Any]:
 # ── Nutrition AI Food Analysis ────────────────────────────────────────────────
 
 class FoodAnalysisRequest(BaseModel):
-    food_query: str
+    food_query: str = Field(..., min_length=1, max_length=1000)
 
 @app.post("/v1/nutrition/ai-food-analysis")
 def nutrition_ai_food_analysis(req: FoodAnalysisRequest) -> Dict[str, Any]:
@@ -703,10 +784,10 @@ def nutrition_ai_food_analysis(req: FoodAnalysisRequest) -> Dict[str, Any]:
 # ── Luna AI Chat ─────────────────────────────────────────────────────────────
 
 class LunaChatRequest(BaseModel):
-    message: str
-    apiKey: Optional[str] = None
-    language: Optional[str] = "en"
-    locale: Optional[str] = "en-US"
+    message: str = Field(..., min_length=1, max_length=4000)
+    apiKey: Optional[str] = Field(None, max_length=256)
+    language: Optional[str] = Field("en", max_length=10)
+    locale: Optional[str] = Field("en-US", max_length=20)
     user_context: Optional[Dict[str, Any]] = None
 
 @app.post("/v1/luna/chat")
@@ -719,8 +800,13 @@ def luna_chat(req: LunaChatRequest) -> Dict[str, Any]:
     if key:
         try:
             from analysis_module.gemini_integration import luna_chat_gemini
-            os.environ["GEMINI_API_KEY"] = key
-            reply = luna_chat_gemini(msg, req.user_context, language=req.language or "en", locale=req.locale or "en-US")
+            reply = luna_chat_gemini(
+                msg,
+                req.user_context,
+                language=req.language or "en",
+                locale=req.locale or "en-US",
+                api_key=key,
+            )
             if reply:
                 return {"reply": reply, "source": "gemini", "model": os.getenv("GEMINI_MODEL", "gemini-3.6-flash")}
         except Exception:
@@ -856,12 +942,12 @@ class TelemetryPayload(BaseModel):
     timestamp: Optional[float] = None
 
 class BluetoothConnectPayload(BaseModel):
-    device_name: str
-    device_address: Optional[str] = None
-    device_type: Optional[str] = "smartwatch"
-    connection_type: Optional[str] = "System Bluetooth (BCM_4387 Controller)"
-    steps: Optional[int] = None
-    battery: Optional[int] = None
+    device_name: str = Field(..., min_length=1, max_length=100)
+    device_address: Optional[str] = Field(None, max_length=100)
+    device_type: Optional[str] = Field("smartwatch", max_length=50)
+    connection_type: Optional[str] = Field("System Bluetooth (BCM_4387 Controller)", max_length=100)
+    steps: Optional[int] = Field(None, ge=0, le=1000000)
+    battery: Optional[int] = Field(None, ge=0, le=100)
 
 # In-memory live telemetry state
 _live_telemetry: Dict[str, Any] = {
@@ -1161,16 +1247,16 @@ async def scan_bluetooth_devices() -> Dict[str, Any]:
     }
 
 class RegisterDevicePayload(BaseModel):
-    name: str
-    type: Optional[str] = "smartwatch"
-    address: Optional[str] = ""
-    battery: Optional[int] = None
+    name: str = Field(..., min_length=1, max_length=100)
+    type: Optional[str] = Field("smartwatch", max_length=50)
+    address: Optional[str] = Field("", max_length=100)
+    battery: Optional[int] = Field(None, ge=0, le=100)
 
 @app.post("/v1/bluetooth/devices")
 def register_bluetooth_device(payload: RegisterDevicePayload) -> Dict[str, Any]:
     """Registers a new Bluetooth/BLE device (smartwatch, band, phone) into the known devices registry."""
     global _known_system_devices
-    clean_name = payload.name.strip()
+    clean_name = re.sub(r"[^\w\s\-\.:]", "", payload.name).strip()[:100]
     if not clean_name:
         return {"status": "error", "message": "Device name required"}
     existing = next((d for d in _known_system_devices if d.get("name", "").lower() == clean_name.lower()), None)
@@ -1195,8 +1281,9 @@ def register_bluetooth_device(payload: RegisterDevicePayload) -> Dict[str, Any]:
 def forget_bluetooth_device(device_name: str) -> Dict[str, Any]:
     """Removes a device from the known devices registry."""
     global _known_system_devices
-    _known_system_devices = [d for d in _known_system_devices if d.get("name", "").lower() != device_name.lower()]
-    return {"status": "ok", "message": f"Forgot {device_name}"}
+    clean_name = re.sub(r"[^\w\s\-\.:]", "", device_name).strip()[:100]
+    _known_system_devices = [d for d in _known_system_devices if d.get("name", "").lower() != clean_name.lower()]
+    return {"status": "ok", "message": f"Forgot {clean_name}"}
 
 @app.post("/v1/bluetooth/connect")
 def connect_bluetooth_device(payload: BluetoothConnectPayload) -> Dict[str, Any]:
@@ -1616,12 +1703,10 @@ def submit_creator_donation(
     Sends an immediate email notification to luno97802@gmail.com
     and records the record into local SQLite and Cloud Firestore.
     """
-    client_ip = "127.0.0.1"
-    if request.client and request.client.host:
-        client_ip = request.client.host
-    forwarded = request.headers.get("x-forwarded-for")
-    if forwarded:
-        client_ip = forwarded.split(",")[0].strip()
+    # Security: use the firewall's robust IP resolver to prevent rate-limit bypass via
+    # spoofed X-Forwarded-For headers. resolve_client_ip() validates Cloudflare > X-Real-IP > XFF order.
+    from auth.firewall import resolve_client_ip
+    client_ip = resolve_client_ip(request)
 
     email_val = str(req.email).strip().lower() if req.email else None
 

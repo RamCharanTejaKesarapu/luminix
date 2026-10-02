@@ -688,8 +688,10 @@ def oauth_sync(req: OAuthSyncRequest, request: Request, response: Response) -> A
 # ── Security Firewall Monitoring Endpoints ────────────────────────────────────
 
 @router.get("/firewall/status")
-def firewall_status() -> Dict[str, Any]:
-    """Returns real-time security firewall metrics and active protection layers."""
+def firewall_status(
+    _user: Dict[str, Any] = Depends(get_current_user),
+) -> Dict[str, Any]:
+    """Returns real-time security firewall metrics and active protection layers. Requires authentication."""
     stats = firewall.get_stats()
     db_stats = get_security_stats()
     stats.update(db_stats)
@@ -699,6 +701,9 @@ def firewall_status() -> Dict[str, Any]:
 
 
 @router.get("/firewall/logs")
-def firewall_logs(limit: int = 50) -> List[Dict[str, Any]]:
-    """Returns recent security firewall logs and blocked threat events."""
+def firewall_logs(
+    limit: int = 50,
+    _user: Dict[str, Any] = Depends(get_current_user),
+) -> List[Dict[str, Any]]:
+    """Returns recent security firewall logs and blocked threat events. Requires authentication."""
     return get_recent_security_logs(limit=min(100, max(1, limit)))

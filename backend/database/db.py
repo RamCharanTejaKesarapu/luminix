@@ -615,7 +615,7 @@ def save_health_samples(samples: List[Dict[str, Any]], user_id: str = "default")
                 continue
 
             sample = HealthSample(
-                user_id=str(item.get("userId") or user_id),
+                user_id=str(user_id) if user_id != "default" else str(item.get("userId") or "default"),
                 metric=metric,
                 value=float(item["value"]) if item.get("value") is not None else None,
                 unit=item.get("unit"),

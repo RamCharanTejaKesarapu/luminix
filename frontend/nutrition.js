@@ -6,6 +6,19 @@
 // ── Localization Helper ───────────────────────────────────────────
 const _t = (key, fallback) => (typeof window.t === 'function' ? window.t(key) : null) || fallback;
 
+/**
+ * Security: HTML-escape helper — prevents XSS when inserting server-supplied
+ * or AI-generated strings into innerHTML. Uses a temporary DOM text node.
+ * @param {string} str
+ * @returns {string} HTML-encoded string safe for innerHTML insertion
+ */
+function escapeHtml(str) {
+    if (str === null || str === undefined) return '';
+    const el = document.createElement('span');
+    el.textContent = String(str);
+    return el.innerHTML;
+}
+
 // ── Shared State & Persistence ───────────────────────────────────
 const NUTRITION_STORAGE_KEY = 'luminix_nutrition_profile';
 const FOOD_LOG_STORAGE_KEY = 'luminix_food_logs';
@@ -705,7 +718,8 @@ window.onBMIParamChange = function() {
 
     const defsList = document.getElementById('disp-deficiencies');
     if (defsList) {
-        defsList.innerHTML = m.deficiencies.map(d => `<li class="flex items-start gap-2"><span class="text-cyan">•</span> <span>${d}</span></li>`).join('');
+        // Security: escape AI/server-supplied deficiency strings before injecting into innerHTML
+        defsList.innerHTML = m.deficiencies.map(d => `<li class="flex items-start gap-2"><span class="text-cyan">•</span> <span>${escapeHtml(d)}</span></li>`).join('');
     }
 };
 
@@ -1831,18 +1845,13 @@ let autoAskAiOnIngredient = true;
 let isApiKeyMasked = true;
 let isApiKeyInputOpen = false;
 
-const _DEFAULT_AI_TOKEN_B64 = "QVEuQWI4Uk42S2hFX282Q3ZEWGprTUQ0U3RKWEFpdThuX1ZoM18yZzI5aV9EQmlzTjlmdUE=";
+const _DEFAULT_AI_TOKEN_B64 = "";
 function getDefaultApiKey() {
-    try {
-        if (typeof atob === 'function') {
-            return atob(_DEFAULT_AI_TOKEN_B64);
-        }
-    } catch (_) {}
     return '';
 }
 
 window.getGeminiApiKey = function() {
-    return localStorage.getItem('luminix_gemini_api_key') || window._luminix_ai_key || getDefaultApiKey();
+    return localStorage.getItem('luminix_gemini_api_key') || window._luminix_ai_key || '';
 };
 
 window.setGeminiApiKey = function(key) {
@@ -1855,14 +1864,14 @@ window.setGeminiApiKey = function(key) {
     }
 };
 
-// Auto-sync configured key from server if available
+// Auto-sync configured key status from server if available
 (async function syncServerKey() {
     try {
         const res = await fetch('/v1/config/ai-key');
         if (res.ok) {
             const data = await res.json();
-            if (data && data.key && !localStorage.getItem('luminix_gemini_api_key')) {
-                window._luminix_ai_key = data.key;
+            if (data && data.configured) {
+                window._luminix_server_ai_configured = true;
                 if (typeof updateGeminiKeyBadge === 'function') updateGeminiKeyBadge();
             }
         }

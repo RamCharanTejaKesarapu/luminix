@@ -23,17 +23,17 @@ def _model_name() -> str:
     return os.getenv("GEMINI_MODEL", "gemini-flash-lite-latest")
 
 
-def configure_gemini() -> None:
+def configure_gemini(api_key: Optional[str] = None) -> None:
     if genai is None:
         raise RuntimeError("google-generativeai is not installed.")
-    key = os.getenv("GEMINI_API_KEY")
+    key = api_key or os.getenv("GEMINI_API_KEY")
     if not key:
         raise RuntimeError("GEMINI_API_KEY is not set.")
     genai.configure(api_key=key)
 
 
-def get_generative_model(model_name: Optional[str] = None):
-    configure_gemini()
+def get_generative_model(model_name: Optional[str] = None, api_key: Optional[str] = None):
+    configure_gemini(api_key=api_key)
     target = model_name or _model_name()
     try:
         return genai.GenerativeModel(target)
@@ -47,8 +47,8 @@ def get_generative_model(model_name: Optional[str] = None):
         return genai.GenerativeModel("gemini-3.6-flash")
 
 
-def generate_content_with_fallback(prompt: str, system_instruction: Optional[str] = None) -> str:
-    configure_gemini()
+def generate_content_with_fallback(prompt: str, system_instruction: Optional[str] = None, api_key: Optional[str] = None) -> str:
+    configure_gemini(api_key=api_key)
     models_to_try = [_model_name()] + [m for m in MODEL_FALLBACKS if m != _model_name()]
 
     last_err = None
@@ -118,7 +118,7 @@ def gemini_video_script(report_text: str) -> str:
     return generate_content_with_fallback(prompt)
 
 
-def luna_chat_gemini(message: str, user_context: Optional[Dict[str, Any]] = None, language: str = "en", locale: str = "en-US") -> str:
+def luna_chat_gemini(message: str, user_context: Optional[Dict[str, Any]] = None, language: str = "en", locale: str = "en-US", api_key: Optional[str] = None) -> str:
     """Luna AI conversational intelligence for fitness, nutrition, biomechanics, and general wellness."""
     if user_context and isinstance(user_context, dict):
         language = user_context.get("language") or language
@@ -150,10 +150,23 @@ def luna_chat_gemini(message: str, user_context: Optional[Dict[str, Any]] = None
 
     context_str = ""
     if user_context:
-        context_str = f"\n[User Context: {json.dumps(user_context, ensure_ascii=False)}]\n"
+        # Security: sanitize user_context before embedding in prompt to prevent prompt injection.
+        # Only allow safe scalar values; drop any keys that look like instructions.
+        BLOCKED_KEYS = frozenset({"system", "instruction", "role", "prompt", "ignore", "override", "jailbreak"})
+        sanitized: dict = {}
+        for k, v in user_context.items():
+            if not isinstance(k, str):
+                continue
+            if any(blocked in k.lower() for blocked in BLOCKED_KEYS):
+                continue
+            # Only embed safe scalar types; drop dicts/lists that could be deeply nested injection payloads
+            if isinstance(v, (str, int, float, bool, type(None))):
+                sanitized[k] = v if not isinstance(v, str) else v[:200]  # cap string values at 200 chars
+        if sanitized:
+            context_str = f"\n[User Context: {json.dumps(sanitized, ensure_ascii=False)}]\n"
 
     prompt = f"{context_str}User Question: {message}\nLuna:"
-    return generate_content_with_fallback(prompt, system_instruction=system_instruction)
+    return generate_content_with_fallback(prompt, system_instruction=system_instruction, api_key=api_key)
 
 
 def analyze_food_nutrition_gemini(food_query: str) -> Dict[str, Any]:
@@ -237,9 +250,10 @@ def safe_gemini_call(fn, fallback: Dict[str, Any]) -> Dict[str, Any]:
             return fallback
         return fn()
     except Exception as exc:  # noqa: BLE001
-        fb = dict(fallback)
-        fb["gemini_error"] = str(exc)
-        return fb
+        # Security: do not expose internal AI exception text to API callers — log server-side only
+        import logging as _logging
+        _logging.getLogger("luminix.gemini").warning("Gemini call failed: %s", exc)
+        return dict(fallback)
 
 
 def optional_insights(

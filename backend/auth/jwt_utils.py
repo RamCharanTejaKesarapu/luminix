@@ -1,19 +1,22 @@
-"""JWT token creation and verification."""
+"""JWT token creation and verification.
+
+Security note: migrated from python-jose (CVE-vulnerable ecdsa transitive dep)
+to PyJWT 2.15.1+ (zero known CVEs as of Oct 2026). Public API is unchanged.
+"""
 
 from __future__ import annotations
 
+import logging
 import os
+import secrets
 from datetime import datetime, timedelta, timezone
 from typing import Any, Dict, Optional
 
-from jose import JWTError, jwt
+import jwt
+from jwt.exceptions import PyJWTError
 
 ALGORITHM = "HS256"
 DEFAULT_EXPIRE_HOURS = 72
-
-
-import logging
-import secrets
 
 logger = logging.getLogger("luminix.jwt")
 _ephemeral_key: Optional[str] = None
@@ -48,5 +51,5 @@ def create_access_token(data: Dict[str, Any], expires_hours: Optional[int] = Non
 def decode_access_token(token: str) -> Optional[Dict[str, Any]]:
     try:
         return jwt.decode(token, _secret(), algorithms=[ALGORITHM])
-    except JWTError:
+    except PyJWTError:
         return None

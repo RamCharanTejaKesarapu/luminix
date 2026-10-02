@@ -50,7 +50,41 @@ except ImportError:
         save_health_samples,
     )
 
+from collections import defaultdict
+
+try:
+    from api.auth_routes import get_optional_user
+    from auth.jwt_utils import decode_access_token
+except ImportError:
+    from backend.api.auth_routes import get_optional_user
+    from backend.auth.jwt_utils import decode_access_token
+
 router = APIRouter(prefix="/api/v1/health", tags=["health_bridge"])
+
+
+def _resolve_authorized_user_id(
+    requested_user_id: Optional[str],
+    current_user: Optional[Dict[str, Any]],
+) -> str:
+    """Enforces strict multi-tenant authorization scoping:
+    - If caller is authenticated: bind to current_user['id']. Reject attempts to access other users.
+    - If caller is unauthenticated: only 'default' (guest demo) is permitted. Reject user-specific requests.
+    """
+    if current_user:
+        auth_id = str(current_user["id"])
+        if requested_user_id and requested_user_id not in (auth_id, "default"):
+            raise HTTPException(
+                status_code=403,
+                detail="Access denied: You are not authorized to access another user's health telemetry."
+            )
+        return auth_id
+    else:
+        if requested_user_id and requested_user_id not in ("default", ""):
+            raise HTTPException(
+                status_code=401,
+                detail="Authentication required to access user-specific health telemetry."
+            )
+        return "default"
 
 
 # ── Pydantic Request & Response Schemas ─────────────────────────────────────
@@ -145,15 +179,40 @@ _active_live_sessions: Dict[str, Dict[str, Any]] = {}
 class LiveConnectionManager:
     def __init__(self):
         self.active_connections: Set[WebSocket] = set()
+        self.user_connections: Dict[str, Set[WebSocket]] = defaultdict(set)
+        self.socket_user_map: Dict[WebSocket, str] = {}
 
-    async def connect(self, websocket: WebSocket):
+    async def connect(self, websocket: WebSocket, user_id: str = "default"):
         await websocket.accept()
         self.active_connections.add(websocket)
+        self.user_connections[user_id].add(websocket)
+        self.socket_user_map[websocket] = user_id
 
     def disconnect(self, websocket: WebSocket):
         self.active_connections.discard(websocket)
+        user_id = self.socket_user_map.pop(websocket, None)
+        if user_id and user_id in self.user_connections:
+            self.user_connections[user_id].discard(websocket)
+            if not self.user_connections[user_id]:
+                del self.user_connections[user_id]
+
+    async def broadcast_to_user(self, user_id: str, data: Dict[str, Any]):
+        """Broadcasts live packet strictly to sockets authorized for this user_id."""
+        targets = list(self.user_connections.get(user_id, set()))
+        dead = []
+        for connection in targets:
+            try:
+                await connection.send_text(json.dumps(data))
+            except Exception:
+                dead.append(connection)
+        for d in dead:
+            self.disconnect(d)
 
     async def broadcast(self, data: Dict[str, Any]):
+        target_user = data.get("user_id")
+        if target_user and target_user in self.user_connections:
+            await self.broadcast_to_user(target_user, data)
+            return
         dead = []
         for connection in list(self.active_connections):
             try:
@@ -230,12 +289,15 @@ def get_supported_health_permissions() -> Dict[str, Any]:
 
 
 @router.post("/sync")
-def sync_health_records(payload: HealthSyncRequest) -> Dict[str, Any]:
+def sync_health_records(
+    payload: HealthSyncRequest,
+    current_user: Optional[Dict[str, Any]] = Depends(get_optional_user),
+) -> Dict[str, Any]:
     """
     Incremental synchronization from mobile local DB to Luminix backend.
     Architectural Pipeline: FETCH → Sync → Validate → Risk Engine → Return updated risk
     """
-    user_id = payload.userId or "default"
+    user_id = _resolve_authorized_user_id(payload.userId, current_user)
     saved = 0
     if payload.samples:
         sample_dicts = []
@@ -289,28 +351,32 @@ def sync_health_records(payload: HealthSyncRequest) -> Dict[str, Any]:
 
 
 @router.post("/samples")
-def ingest_health_sample(sample: HealthSampleItem) -> Dict[str, Any]:
+def ingest_health_sample(
+    sample: HealthSampleItem,
+    current_user: Optional[Dict[str, Any]] = Depends(get_optional_user),
+) -> Dict[str, Any]:
     """Ingests a single normalized health sample."""
-    user_id = sample.userId or "default"
+    user_id = _resolve_authorized_user_id(sample.userId, current_user)
     d = sample.model_dump()
-    if not d.get("userId"):
-        d["userId"] = user_id
+    d["userId"] = user_id
     save_health_samples([d], user_id=user_id)
     return {"status": "saved", "metric": sample.metric, "timestamp": sample.timestamp}
 
 
 @router.post("/batch")
-def ingest_health_batch(batch: HealthBatchRequest) -> Dict[str, Any]:
+def ingest_health_batch(
+    batch: HealthBatchRequest,
+    current_user: Optional[Dict[str, Any]] = Depends(get_optional_user),
+) -> Dict[str, Any]:
     """Ingests a batch of normalized health samples from Luminix Mobile Bridge."""
-    user_id = batch.userId or "default"
+    user_id = _resolve_authorized_user_id(batch.userId, current_user)
     if not batch.samples:
         return {"status": "empty", "saved_count": 0}
 
     sample_dicts = []
     for s in batch.samples:
         d = s.model_dump()
-        if not d.get("userId"):
-            d["userId"] = user_id
+        d["userId"] = user_id
         sample_dicts.append(d)
     saved = save_health_samples(sample_dicts, user_id=user_id)
 
@@ -329,12 +395,14 @@ def get_latest_health_metrics(
     user_id: str = Query("default"),
     ambient_temp: float = Query(28.0),
     humidity: float = Query(55.0),
+    current_user: Optional[Dict[str, Any]] = Depends(get_optional_user),
 ) -> Dict[str, Any]:
     """
     Returns the latest available snapshot for each vital and executes the Heat Risk Engine.
     Strictly displays genuine Blood Pressure age/timestamp (no estimated or fake BP).
     """
-    latest = get_latest_health_samples(user_id=user_id)
+    effective_user_id = _resolve_authorized_user_id(user_id, current_user)
+    latest = get_latest_health_samples(user_id=effective_user_id)
 
     # Extract vitals for risk engine
     hr = latest.get("heart_rate", {}).get("value")
@@ -403,7 +471,7 @@ def get_latest_health_metrics(
         }
 
     return {
-        "user_id": user_id,
+        "user_id": effective_user_id,
         "is_device_connected": len(_registered_devices) > 0,
         "connected_devices": list(_registered_devices.values()),
         "metrics": latest,
@@ -417,11 +485,13 @@ def get_metric_history(
     user_id: str = Query("default"),
     metric: str = Query("heart_rate"),
     limit: int = Query(50, le=200),
+    current_user: Optional[Dict[str, Any]] = Depends(get_optional_user),
 ) -> Dict[str, Any]:
     """Returns time-series historical records for dashboard charts."""
-    history = get_health_sample_history(user_id=user_id, metric=metric, limit=limit)
+    effective_user_id = _resolve_authorized_user_id(user_id, current_user)
+    history = get_health_sample_history(user_id=effective_user_id, metric=metric, limit=limit)
     return {
-        "user_id": user_id,
+        "user_id": effective_user_id,
         "metric": metric,
         "count": len(history),
         "history": history,
@@ -429,9 +499,13 @@ def get_metric_history(
 
 
 @router.get("/summary")
-def get_health_summary(user_id: str = Query("default")) -> Dict[str, Any]:
+def get_health_summary(
+    user_id: str = Query("default"),
+    current_user: Optional[Dict[str, Any]] = Depends(get_optional_user),
+) -> Dict[str, Any]:
     """Returns aggregated day summary for activity, sleep, and cardiovascular metrics."""
-    latest = get_latest_health_samples(user_id=user_id)
+    effective_user_id = _resolve_authorized_user_id(user_id, current_user)
+    latest = get_latest_health_samples(user_id=effective_user_id)
 
     steps = latest.get("steps", {}).get("value")
     dist = latest.get("distance", {}).get("value")
@@ -442,7 +516,7 @@ def get_health_summary(user_id: str = Query("default")) -> Dict[str, Any]:
     bp = latest.get("blood_pressure")
 
     return {
-        "user_id": user_id,
+        "user_id": effective_user_id,
         "activity": {
             "steps": int(steps) if steps is not None else None,
             "step_goal": 10000,
@@ -483,9 +557,12 @@ def get_available_sources() -> Dict[str, Any]:
 
 
 @router.post("/live/start")
-def start_live_monitoring(payload: LiveSessionRequest) -> Dict[str, Any]:
+def start_live_monitoring(
+    payload: LiveSessionRequest,
+    current_user: Optional[Dict[str, Any]] = Depends(get_optional_user),
+) -> Dict[str, Any]:
     """Initializes a live telemetry monitoring session."""
-    user_id = payload.userId or "default"
+    user_id = _resolve_authorized_user_id(payload.userId, current_user)
     # STRICT REAL DEVICE REQUIREMENT: Cannot start live session if no real device is connected
     if len(_registered_devices) == 0:
         raise HTTPException(
@@ -511,12 +588,16 @@ def start_live_monitoring(payload: LiveSessionRequest) -> Dict[str, Any]:
 
 
 @router.post("/live/stop")
-def stop_live_monitoring(user_id: str = Query("default")) -> Dict[str, Any]:
+def stop_live_monitoring(
+    user_id: str = Query("default"),
+    current_user: Optional[Dict[str, Any]] = Depends(get_optional_user),
+) -> Dict[str, Any]:
     """Concludes an active live telemetry session."""
-    if user_id in _active_live_sessions:
-        _active_live_sessions[user_id]["status"] = "concluded"
-        _active_live_sessions[user_id]["ended_at"] = datetime.now(timezone.utc).isoformat()
-    return {"status": "stopped", "user_id": user_id}
+    effective_user_id = _resolve_authorized_user_id(user_id, current_user)
+    if effective_user_id in _active_live_sessions:
+        _active_live_sessions[effective_user_id]["status"] = "concluded"
+        _active_live_sessions[effective_user_id]["ended_at"] = datetime.now(timezone.utc).isoformat()
+    return {"status": "stopped", "user_id": effective_user_id}
 
 
 @router.get("/risk-analysis")
@@ -524,9 +605,11 @@ def run_heat_risk_analysis(
     user_id: str = Query("default"),
     ambient_temp: float = Query(28.0),
     humidity: float = Query(55.0),
+    current_user: Optional[Dict[str, Any]] = Depends(get_optional_user),
 ) -> Dict[str, Any]:
     """Runs the Multi-Signal Heart Risk Engine on active vitals and environmental metrics."""
-    latest = get_latest_health_samples(user_id=user_id)
+    effective_user_id = _resolve_authorized_user_id(user_id, current_user)
+    latest = get_latest_health_samples(user_id=effective_user_id)
 
     hr = latest.get("heart_rate", {}).get("value")
     hrv = latest.get("hrv", {}).get("value")
@@ -556,13 +639,16 @@ def run_heat_risk_analysis(
 
 
 @router.post("/risk-analysis")
-def post_heat_risk_analysis(payload: Optional[HeartRiskAnalysisRequest] = None) -> Dict[str, Any]:
+def post_heat_risk_analysis(
+    payload: Optional[HeartRiskAnalysisRequest] = None,
+    current_user: Optional[Dict[str, Any]] = Depends(get_optional_user),
+) -> Dict[str, Any]:
     """
     Runs the Multi-Signal Heart Risk Engine with specified inputs or latest user vitals.
     Architectural Primary Route: POST /api/v1/health/risk-analysis
     """
     req = payload or HeartRiskAnalysisRequest()
-    user_id = req.user_id or "default"
+    user_id = _resolve_authorized_user_id(req.user_id, current_user)
     latest = get_latest_health_samples(user_id=user_id)
 
     amb_c = req.ambient_temp_c
@@ -632,15 +718,29 @@ def post_heat_risk_analysis(payload: Optional[HeartRiskAnalysisRequest] = None) 
 # ── Live Monitoring WebSocket Pipeline (Section 5 & 13) ─────────────────────
 
 @router.websocket("/live/ws")
-async def health_live_websocket(websocket: WebSocket):
+async def health_live_websocket(
+    websocket: WebSocket,
+    token: Optional[str] = Query(None),
+):
     """
     Bi-directional streaming WebSocket for real-time live sensor telemetry.
-    Receives live sensor readings from Mobile Bridge and streams risk alerts to Web Dashboard.
+    Channel-isolated and authenticated: only authorized user sockets receive that user's live vitals.
     """
-    await live_manager.connect(websocket)
+    auth_user_id = "default"
+    # Resolve token from query param or cookie
+    raw_token = token or websocket.cookies.get("access_token")
+    if raw_token:
+        payload = decode_access_token(raw_token)
+        if payload and "sub" in payload:
+            auth_user_id = str(payload["sub"])
+
+    await live_manager.connect(websocket, auth_user_id)
     try:
         while True:
             raw_data = await websocket.receive_text()
+            if len(raw_data) > 65536:
+                continue  # Enforce 64KB max packet limit
+
             try:
                 msg = json.loads(raw_data)
             except Exception:
@@ -649,8 +749,8 @@ async def health_live_websocket(websocket: WebSocket):
             msg_type = msg.get("type", "sample")
 
             if msg_type in ("telemetry", "sample", "live_packet"):
-                # Normalize and persist to time-series DB if requested
-                user_id = msg.get("userId", "default")
+                # Enforce server-side user identity to prevent spoofing
+                user_id = auth_user_id
                 samples = msg.get("samples", [])
                 if samples:
                     save_health_samples(samples, user_id=user_id)
@@ -706,7 +806,7 @@ async def health_live_websocket(websocket: WebSocket):
                     humidity_percent=msg.get("humidity", 55.0),
                 )
 
-                # Broadcast live telemetry update and risk assessment to dashboard
+                # Broadcast live telemetry update and risk assessment strictly to this user's channel
                 broadcast_packet = {
                     "type": "live_update",
                     "user_id": user_id,
@@ -723,7 +823,7 @@ async def health_live_websocket(websocket: WebSocket):
                     "risk": risk,
                     "timestamp": datetime.now(timezone.utc).isoformat(),
                 }
-                await live_manager.broadcast(broadcast_packet)
+                await live_manager.broadcast_to_user(user_id, broadcast_packet)
 
             elif msg_type == "ping":
                 await websocket.send_text(json.dumps({"type": "pong", "timestamp": datetime.now(timezone.utc).isoformat()}))

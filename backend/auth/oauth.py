@@ -225,5 +225,7 @@ async def exchange_github_code(code: str) -> Tuple[Optional[Dict[str, Any]], str
             return None, f"GitHub OAuth communication error: {exc}"
 
 
-def oauth_success_redirect(token: str) -> str:
-    return f"{_frontend_base()}/?token={token}"
+def oauth_success_redirect(token: Optional[str] = None) -> str:
+    # Do not leak JWT access tokens in query parameters (browser history, logs, Referer)
+    # The session is securely transported via HttpOnly cookie
+    return f"{_frontend_base()}/?auth_success=1"

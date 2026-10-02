@@ -5,12 +5,22 @@
 
 const API_BASE = '';
 
+/**
+ * Security: HTML-escape helper — prevents XSS when inserting server-supplied
+ * or AI-generated strings into innerHTML. Uses a temporary DOM text node.
+ * @param {string} str
+ * @returns {string} HTML-encoded string safe for innerHTML insertion
+ */
+function escapeHtml(str) {
+    if (str === null || str === undefined) return '';
+    const el = document.createElement('span');
+    el.textContent = String(str);
+    return el.innerHTML;
+}
+
 // ── UNIFIED GEMINI AI KEY MANAGEMENT ──────────────────────────
-const _LUMINIX_DEFAULT_AI_TOKEN_B64 = "QVEuQWI4Uk42S2hFX282Q3ZEWGprTUQ0U3RKWEFpdThuX1ZoM18yZzI5aV9EQmlzTjlmdUE=";
+const _LUMINIX_DEFAULT_AI_TOKEN_B64 = "";
 function _getSystemDefaultKey() {
-    try {
-        if (typeof atob !== 'undefined') return atob(_LUMINIX_DEFAULT_AI_TOKEN_B64);
-    } catch (_) {}
     return '';
 }
 
@@ -2048,7 +2058,8 @@ window.luminixPose = {
         if (titleEl) titleEl.textContent = metrics.alertTitle || 'POSTURE & CAMERA ANGLE ALERT';
         if (msgEl) msgEl.textContent = metrics.alertMsg || 'Adjust posture and camera angle for optimal tracking.';
         if (tipsEl && metrics.alertTips) {
-            tipsEl.innerHTML = metrics.alertTips.map(t => `<span>${t.replace(/^[•\s-]+/, '')}</span>`).join('');
+            // Security: escape AI/server-supplied tip text before injecting into innerHTML
+            tipsEl.innerHTML = metrics.alertTips.map(t => `<span>${escapeHtml(t.replace(/^[•\s-]+/, ''))}</span>`).join('');
         }
     }
 };
@@ -2820,11 +2831,9 @@ window.lunaAsk = async function(promptText) {
     let reply = '';
     let sourceBadge = '✨ GEMINI AI (LIVE)';
 
-    const _DEFAULT_KEY_B64 = "QVEuQWI4Uk42S2hFX282Q3ZEWGprTUQ0U3RKWEFpdThuX1ZoM18yZzI5aV9EQmlzTjlmdUE=";
-    const defaultKey = (function() { try { return atob(_DEFAULT_KEY_B64); } catch(_) { return ""; } })();
     const apiKey = (window.getGeminiApiKey && window.getGeminiApiKey()) || 
                    localStorage.getItem('luminix_gemini_api_key') || 
-                   window._luminix_ai_key || defaultKey;
+                   window._luminix_ai_key || "";
 
     // 1. Direct Client-Side Gemini AI Engine (Fastest path: gemini-flash-lite-latest)
     if (apiKey) {
@@ -3552,7 +3561,18 @@ Confidential Clinical Record • Luminix Zero-Leak Telemetry Covenant
 
     if (dispatched) {
         if (status) {
-            status.innerHTML = `<span class="text-emerald-400 font-bold">✓ ${message}</span> <a href="javascript:void(0)" onclick="downloadPDF()" class="ml-2 text-cyan underline font-bold">Download Instant PDF Now ↓</a>`;
+            // Security: use textContent for the dynamic part; keep static HTML structure for the anchor
+            const span = document.createElement('span');
+            span.className = 'text-emerald-400 font-bold';
+            span.textContent = '\u2713 ' + message;
+            status.innerHTML = '';
+            status.appendChild(span);
+            const link = document.createElement('a');
+            link.href = 'javascript:void(0)';
+            link.setAttribute('onclick', 'downloadPDF()');
+            link.className = 'ml-2 text-cyan underline font-bold';
+            link.textContent = 'Download Instant PDF Now \u2193';
+            status.appendChild(link);
         }
         window.showSuccess?.(message);
     } else {
