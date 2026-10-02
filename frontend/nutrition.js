@@ -1984,11 +1984,13 @@ function extractJsonFromText(rawText) {
 }
 
 async function queryGeminiForRecipes(apiKey, ingredients, cuisine, spiceLevel, customPrompt) {
-    const models = ['gemini-flash-lite-latest', 'gemini-3.5-flash-lite', 'gemini-3.6-flash'];
+    const models = ['gemini-3.8-flash', 'gemini-3.5-flash', 'gemini-2.0-flash', 'gemini-1.5-flash'];
     let langInstruction = '';
-    if (window.luminixI18n && window.luminixI18n.currentLanguage !== 'en') {
-        const langName = window.luminixI18n.languages[window.luminixI18n.currentLanguage]?.name || window.luminixI18n.currentLanguage;
-        langInstruction = `\n- LANGUAGE REQUIREMENT: Write the recipe titles, descriptions, ingredients, and cooking steps in ${langName} (${window.luminixI18n.currentLanguage}).`;
+    const currLang = (typeof window.luminixI18n !== 'undefined' && window.luminixI18n.getCurrentLang) ? window.luminixI18n.getCurrentLang() : 'en';
+    if (currLang && currLang !== 'en') {
+        const langCfg = (typeof window.luminixI18n.getLangConfig === 'function') ? window.luminixI18n.getLangConfig(currLang) : null;
+        const langName = langCfg?.name || currLang;
+        langInstruction = `\n- LANGUAGE REQUIREMENT: Write the recipe titles, descriptions, ingredients, and cooking steps in ${langName} (${currLang}).`;
     }
     const prompt = `You are Chef Luna, an elite culinary master chef and clinical sports nutritionist.
 The user has the following kitchen ingredients available:
@@ -2458,18 +2460,22 @@ window.fetchFridgeRecipes = async function(customPrompt) {
         if (cont) cont.innerHTML = renderRecipeList(recipeResults);
         showToast(`✨ Generated ${((results.recipes || []).length || (results.ai_recipes || []).length)} custom recipes with Gemini AI!`);
     } else {
-        // If Gemini failed (e.g. invalid key or network block), show exact interactive recovery UI
+        // If Gemini failed (e.g. invalid key or network block), show exact interactive recovery UI with Normal Recipe option
         if (cont) {
             cont.innerHTML = `
                 <div class="glass-card p-6 rounded-xl text-center border border-red-500/30 bg-red-950/20 shadow-xl">
                     <span class="text-3xl block mb-2">⚠️</span>
                     <h4 class="text-sm font-bold text-white uppercase mb-1">Could Not Reach Gemini AI</h4>
                     <p class="text-xs text-dim max-w-md mx-auto mb-4">
-                        ${lastError ? lastError.message : 'Please verify your Gemini API key and internet connectivity. Every recipe is generated live with zero predefined answers.'}
+                        ${lastError ? lastError.message : 'Please verify your Gemini API key and internet connectivity. You can also generate recipes using our built-in Clinical Chef engine.'}
                     </p>
                     <div class="flex flex-wrap justify-center gap-3">
+                        <button type="button" onclick="generateNormalChefRecipes()" 
+                            class="btn-primary text-xs px-4 py-2 font-bold text-black bg-emerald-400 hover:bg-emerald-300">
+                            🍲 Generate Normal Chef Recipes (Instant)
+                        </button>
                         <button type="button" onclick="toggleApiKeyInputVisibility(true); document.getElementById('gemini-api-key-inp')?.focus();" 
-                            class="btn-primary text-xs px-4 py-2 font-bold text-black">
+                            class="btn-secondary text-xs px-4 py-2 font-bold text-white">
                             🔑 Update / Paste API Key
                         </button>
                         <button type="button" onclick="fetchFridgeRecipes()" 
@@ -2482,6 +2488,88 @@ window.fetchFridgeRecipes = async function(customPrompt) {
         }
     }
 };
+
+window.generateNormalChefRecipes = function() {
+    const list = Array.from(selectedIngredients).join(', ');
+    const cont = document.getElementById('recipe-results-container');
+    const promptInp = document.getElementById('ai-chef-prompt-inp');
+    const userPrompt = promptInp ? promptInp.value.trim() : '';
+
+    if (!list) {
+        showToast('Please select or add at least one ingredient first!');
+        return;
+    }
+
+    recipeResults = computeClientSmartRecipes(list, selectedCuisine, selectedSpiceLevel, userPrompt);
+    if (cont) cont.innerHTML = renderRecipeList(recipeResults);
+    showToast(`✓ Generated ${recipeResults.recipes.length} recipes with Built-in Clinical Chef!`);
+};
+
+function computeClientSmartRecipes(ingredientsList, cuisine, spiceLevel, userPrompt) {
+    const ingArr = (ingredientsList || '').split(',').map(s => s.trim()).filter(Boolean);
+    const mainIng = ingArr[0] || 'Whole Food';
+    const subIng = ingArr.slice(1, 4).join(', ') || 'fresh herbs and vegetables';
+    const cuisineText = cuisine || 'Clinical Balanced';
+
+    return {
+        status: 'success',
+        source: 'clinical_chef',
+        cuisine: cuisineText,
+        spice_level: spiceLevel,
+        recipes: [
+            {
+                recipe_name: `${cuisineText} Sautéed ${mainIng} & ${ingArr[1] || 'Garden Harvest'} Bowl`,
+                cuisine: cuisineText,
+                spice_level: spiceLevel,
+                prep_time_mins: 10,
+                cook_time_mins: 15,
+                total_time_mins: 25,
+                difficulty: "Easy",
+                servings: 2,
+                calories_per_serving: 410,
+                protein_per_serving_g: 28.0,
+                carbs_per_serving_g: 46.0,
+                fat_per_serving_g: 12.0,
+                fiber_per_serving_g: 5.5,
+                ingredients_needed: ingArr.map(item => `1 portion fresh ${item}`),
+                cooking_steps: [
+                    `Rinse and portion ${ingArr.join(', ')} into uniform sizes for balanced cooking.`,
+                    `Heat 1 tablespoon cooking oil in a wide skillet over medium-high heat.`,
+                    `Sear ${mainIng} for 4-5 minutes until golden and aromatic.`,
+                    `Fold in ${subIng} and cook for an additional 5 minutes with salt and pepper to taste.`
+                ],
+                chef_tips: `Flash sautéing preserves heat-sensitive micronutrients and yields optimal crisp texture.`,
+                summary: `A high-bioavailability ${cuisineText} meal combining ${ingArr.join(', ')} designed for recovery.`,
+                is_ai: false
+            },
+            {
+                recipe_name: `Warm Simmered ${mainIng} & ${ingArr[1] || 'Vegetable'} Ragout`,
+                cuisine: cuisineText,
+                spice_level: spiceLevel,
+                prep_time_mins: 12,
+                cook_time_mins: 20,
+                total_time_mins: 32,
+                difficulty: "Medium",
+                servings: 2,
+                calories_per_serving: 440,
+                protein_per_serving_g: 30.0,
+                carbs_per_serving_g: 50.0,
+                fat_per_serving_g: 13.0,
+                fiber_per_serving_g: 6.0,
+                ingredients_needed: ingArr.map(item => `Measured serving of ${item}`),
+                cooking_steps: [
+                    `In a saucepan, heat aromatic oil and season with ${spiceLevel.toLowerCase()} spices.`,
+                    `Add ${ingArr.join(', ')} and stir gently for 3 minutes.`,
+                    `Pour 1 cup water or vegetable broth, cover, and gently simmer for 15 minutes.`,
+                    `Remove lid, adjust seasoning, and serve immediately in a preheated ceramic bowl.`
+                ],
+                chef_tips: `Low-and-slow reduction extracts rich natural flavors without denaturing essential amino acids.`,
+                summary: `Nutrient-dense slow-simmered comfort bowl integrating all selected pantry staples.`,
+                is_ai: false
+            }
+        ]
+    };
+}
 
 /* ── CLIENT-SIDE NUTRITION FOOD ANALYSIS ENGINE ───────────────────────────── */
 function computeClientFoodAnalysis(rawQuery) {

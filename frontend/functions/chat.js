@@ -49,9 +49,10 @@ CRITICAL RULES:
 6. Format your response cleanly using GitHub-flavored Markdown.`;
 
         const models = [
-            "gemini-flash-lite-latest",
-            "gemini-3.5-flash-lite",
-            "gemini-3.6-flash"
+            "gemini-3.8-flash",
+            "gemini-3.5-flash",
+            "gemini-2.0-flash",
+            "gemini-1.5-flash"
         ];
 
         for (const model of models) {

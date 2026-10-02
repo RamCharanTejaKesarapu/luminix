@@ -19,7 +19,6 @@ function escapeHtml(str) {
 }
 
 // ── UNIFIED GEMINI AI KEY MANAGEMENT ──────────────────────────
-const _LUMINIX_DEFAULT_AI_TOKEN_B64 = "";
 function _getSystemDefaultKey() {
     return '';
 }
@@ -43,6 +42,19 @@ if (!window.setGeminiApiKey) {
         if (typeof window.updateGeminiKeyBadge === 'function') window.updateGeminiKeyBadge();
     };
 }
+
+// Luna AI Chat Mode: 'ai' (Live Gemini API bot) vs 'normal' (Built-in clinical reasoning)
+window.getLunaChatMode = function() {
+    return localStorage.getItem('luminix_luna_chat_mode') || 'ai';
+};
+
+window.setLunaChatMode = function(mode) {
+    const validMode = (mode === 'normal') ? 'normal' : 'ai';
+    localStorage.setItem('luminix_luna_chat_mode', validMode);
+    if (typeof window.updateLunaModeUI === 'function') {
+        window.updateLunaModeUI();
+    }
+};
 
 let currentView = 'dashboard';
 let poseEngine = null;
@@ -2618,7 +2630,7 @@ function renderLuna(container) {
                 <div class="flex items-center justify-between pb-3 mb-2 border-b border-[var(--border-subtle)]">
                     <div class="flex items-center gap-2">
                         <span class="inline-block w-2.5 h-2.5 rounded-full bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.8)] animate-pulse"></span>
-                        <span class="font-mono text-xs text-[var(--bone)] font-semibold tracking-wide">GEMINI AI MODEL: <span id="luna-model-name" class="text-emerald-400 font-bold">gemini-flash-lite-latest (ACTIVE)</span></span>
+                        <span class="font-mono text-xs text-[var(--bone)] font-semibold tracking-wide">GEMINI AI MODEL: <span id="luna-model-name" class="text-emerald-400 font-bold">${window.getLunaChatMode() === 'ai' ? 'gemini-3.8-flash (ACTIVE)' : 'CLINICAL ASSISTANT (BUILT-IN)'}</span></span>
                     </div>
                     <div class="flex items-center gap-2">
                         <button onclick="toggleLunaKeyModal()" class="text-[10px] font-mono px-2.5 py-1 rounded bg-[rgba(255,255,255,0.06)] hover:bg-[rgba(255,255,255,0.12)] text-[var(--bone)] border border-[var(--border-subtle)] flex items-center gap-1.5 transition" title="View or customize your Google Gemini AI API key">
@@ -2673,6 +2685,27 @@ function renderLuna(container) {
                         <button class="text-xs font-mono bg-[rgba(223,231,224,0.06)] hover:bg-[rgba(223,231,224,0.14)] text-[var(--bone)] border border-[var(--border-subtle)] px-3 py-1.5 rounded transition" onclick="lunaAsk('Generate a 1-day high-protein balanced meal plan with exact macros')">${_t('luna.quickMealPlan')}</button>
                         <button class="text-xs font-mono bg-[rgba(223,231,224,0.06)] hover:bg-[rgba(223,231,224,0.14)] text-[var(--bone)] border border-[var(--border-subtle)] px-3 py-1.5 rounded transition" onclick="lunaAsk('How does my sleep score and SpO2 impact workout recovery today?')">${_t('luna.quickSleepVitals')}</button>
                     </div>
+
+                    <!-- AI Mode Toggle: Ask AI Bot (Gemini Live) vs Normal (Built-in Clinical Reasoning) -->
+                    <div class="flex flex-wrap items-center justify-between gap-2 mb-2.5 px-0.5">
+                        <div class="flex items-center gap-2">
+                            <span class="text-[10px] font-mono text-[var(--bone-dim)] uppercase tracking-wider font-semibold">Response Engine:</span>
+                            <div class="inline-flex rounded-full p-0.5 bg-[rgba(5,7,10,0.85)] border border-[var(--border-subtle)]">
+                                <button id="luna-mode-ai-btn" type="button" onclick="setLunaChatMode('ai')" class="px-3 py-1 rounded-full text-[11px] font-mono font-bold transition flex items-center gap-1.5 ${getLunaChatMode() === 'ai' ? 'bg-[var(--vermilion)] text-white shadow-sm' : 'text-[var(--bone-dim)] hover:text-white'}">
+                                    <span>🤖</span> Ask AI Bot
+                                </button>
+                                <button id="luna-mode-normal-btn" type="button" onclick="setLunaChatMode('normal')" class="px-3 py-1 rounded-full text-[11px] font-mono font-bold transition flex items-center gap-1.5 ${getLunaChatMode() === 'normal' ? 'bg-[rgba(255,255,255,0.18)] text-white shadow-sm' : 'text-[var(--bone-dim)] hover:text-white'}">
+                                    <span>🩺</span> Normal
+                                </button>
+                            </div>
+                        </div>
+                        <div id="luna-mode-caption" class="text-[10px] font-mono">
+                            ${getLunaChatMode() === 'ai' 
+                                ? '<span class="inline-block w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse mr-1"></span><span class="text-emerald-400">Live Gemini 3.8 Flash (API Active)</span>' 
+                                : '<span class="inline-block w-1.5 h-1.5 rounded-full bg-blue-400 mr-1"></span><span class="text-blue-400">Normal Clinical Companion (Built-in)</span>'}
+                        </div>
+                    </div>
+
                     <div class="flex gap-2">
                         <input type="text" id="luna-input" placeholder="${_t('luna.inputPlaceholder')}" class="flex-1 bg-[rgba(10,14,18,0.85)] border border-[var(--border-subtle)] text-[var(--bone)] rounded-full px-4 py-2.5 text-sm outline-none focus:border-[var(--vermilion)] placeholder-[var(--muted)]" onkeydown="if(event.key==='Enter')lunaAsk()" />
                         <button onclick="lunaAsk()" class="btn-editorial-primary px-6">${_t('luna.send')}</button>
@@ -2779,6 +2812,30 @@ window.clearLunaApiKey = function() {
         fb.textContent = '✓ Reset to default Gemini token.';
         setTimeout(() => { if (fb) fb.textContent = ''; }, 3000);
     }
+window.updateLunaModeUI = function() {
+    const mode = (typeof window.getLunaChatMode === 'function') ? window.getLunaChatMode() : 'ai';
+    const aiBtn = document.getElementById('luna-mode-ai-btn');
+    const normalBtn = document.getElementById('luna-mode-normal-btn');
+    const caption = document.getElementById('luna-mode-caption');
+    const modelBadge = document.getElementById('luna-model-name');
+
+    if (aiBtn && normalBtn) {
+        if (mode === 'ai') {
+            aiBtn.className = 'px-3 py-1 rounded-full text-[11px] font-mono font-bold transition flex items-center gap-1.5 bg-[var(--vermilion)] text-white shadow-sm';
+            normalBtn.className = 'px-3 py-1 rounded-full text-[11px] font-mono font-bold transition flex items-center gap-1.5 text-[var(--bone-dim)] hover:text-white';
+            if (caption) {
+                caption.innerHTML = '<span class="inline-block w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse mr-1"></span><span class="text-emerald-400">Live Gemini 3.8 Flash (API Active)</span>';
+            }
+            if (modelBadge) modelBadge.textContent = 'gemini-3.8-flash (ACTIVE)';
+        } else {
+            normalBtn.className = 'px-3 py-1 rounded-full text-[11px] font-mono font-bold transition flex items-center gap-1.5 bg-[rgba(255,255,255,0.18)] text-white shadow-sm';
+            aiBtn.className = 'px-3 py-1 rounded-full text-[11px] font-mono font-bold transition flex items-center gap-1.5 text-[var(--bone-dim)] hover:text-white';
+            if (caption) {
+                caption.innerHTML = '<span class="inline-block w-1.5 h-1.5 rounded-full bg-blue-400 mr-1"></span><span class="text-blue-400">Normal Clinical Companion (Built-in)</span>';
+            }
+            if (modelBadge) modelBadge.textContent = 'CLINICAL ASSISTANT (BUILT-IN)';
+        }
+    }
 };
 
 /* ── LUNA AI CONVERSATIONAL REASONING HANDLER ─────────────────────────────── */
@@ -2807,6 +2864,8 @@ window.lunaAsk = async function(promptText) {
     `;
     chat.appendChild(userMsgEl);
 
+    const mode = (typeof window.getLunaChatMode === 'function') ? window.getLunaChatMode() : 'ai';
+
     // 2. Render Luna Analyzing / Thinking Pulse Indicator
     const thinkingEl = document.createElement('div');
     thinkingEl.id = 'luna-thinking';
@@ -2817,7 +2876,7 @@ window.lunaAsk = async function(promptText) {
         </div>
         <div class="bg-[rgba(14,19,26,0.85)] text-[var(--bone-dim)] p-3.5 rounded-xl max-w-md text-xs leading-relaxed border border-[var(--border-subtle)] flex items-center gap-2">
             <span class="inline-block w-2 h-2 rounded-full bg-[var(--vermilion)] animate-ping mr-1"></span>
-            <span>${typeof t === 'function' ? t('luna.thinking') : 'Luna AI is synthesizing response with Google Gemini...'}</span>
+            <span>${mode === 'normal' ? 'Luna Clinical Companion is computing biometric guidance...' : (typeof t === 'function' ? t('luna.thinking') : 'Luna AI Bot is synthesizing response with Google Gemini Live...')}</span>
         </div>
     `;
     chat.appendChild(thinkingEl);
@@ -2829,72 +2888,78 @@ window.lunaAsk = async function(promptText) {
     const wearable = window.wearableState || {};
 
     let reply = '';
-    let sourceBadge = '✨ GEMINI AI (LIVE)';
+    let sourceBadge = '✨ GEMINI AI BOT (LIVE)';
 
     const apiKey = (window.getGeminiApiKey && window.getGeminiApiKey()) || 
                    localStorage.getItem('luminix_gemini_api_key') || 
                    window._luminix_ai_key || "";
 
-    // 1. Direct Client-Side Gemini AI Engine (Fastest path: gemini-flash-lite-latest)
-    if (apiKey) {
-        try {
-            reply = await queryGeminiForLunaChat(apiKey, text, profile, wearable);
-            if (reply) {
-                sourceBadge = '✨ GEMINI AI (LIVE)';
-            }
-        } catch (aiErr) {
-            console.warn('Luna direct Gemini call failed:', aiErr);
-        }
-    }
-
-    // 2. Netlify Serverless Backend (/v1/luna/chat or /.netlify/functions/chat) fallback
-    if (!reply) {
-        const endpoints = [
-            '/.netlify/functions/chat',
-            (typeof API_BASE !== 'undefined' ? API_BASE : '') + '/v1/luna/chat',
-            (typeof API_BASE !== 'undefined' ? API_BASE : '') + '/v1/chat/luna'
-        ];
-        for (const ep of endpoints) {
-            try {
-                const controller = new AbortController();
-                const tid = setTimeout(() => controller.abort(), 9000);
-                const res = await fetch(ep, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    signal: controller.signal,
-                    body: JSON.stringify({
-                        message: text,
-                        apiKey: apiKey,
-                        language: (typeof window.luminixI18n !== 'undefined') ? window.luminixI18n.getCurrentLang() : 'en',
-                        locale: (typeof window.luminixI18n !== 'undefined') ? window.luminixI18n.getCurrentLocale() : 'en-US',
-                        user_context: {
-                            profile: profile,
-                            wearable: {
-                                spo2: wearable.spo2,
-                                heartRate: wearable.heartRate,
-                                sleepHours: wearable.sleepHours,
-                                steps: wearable.steps
-                            }
-                        }
-                    })
-                });
-                clearTimeout(tid);
-                if (res.ok) {
-                    const data = await res.json().catch(() => null);
-                    if (data && data.reply) {
-                        reply = data.reply;
-                        sourceBadge = '✨ GEMINI AI (CLOUD)';
-                        break;
-                    }
-                }
-            } catch (_) {}
-        }
-    }
-
-    // 3. Emergency Dynamic Fallback (Never predefined generic walls of text)
-    if (!reply) {
+    // If mode is 'normal', bypass AI API and use the built-in clinical assistant
+    if (mode === 'normal') {
         reply = computeLunaClientReasoning(text, profile, wearable);
-        sourceBadge = '✨ CLINICAL ASSISTANT';
+        sourceBadge = '🩺 CLINICAL ASSISTANT (NORMAL)';
+    } else {
+        // Mode is 'ai' -> Query live Gemini AI Bot with user API key
+        if (apiKey) {
+            try {
+                reply = await queryGeminiForLunaChat(apiKey, text, profile, wearable);
+                if (reply) {
+                    sourceBadge = '✨ GEMINI AI BOT (LIVE)';
+                }
+            } catch (aiErr) {
+                console.warn('Luna direct Gemini call failed:', aiErr);
+            }
+        }
+
+        // Netlify Serverless Backend fallback (/v1/luna/chat or /.netlify/functions/chat)
+        if (!reply) {
+            const endpoints = [
+                '/.netlify/functions/chat',
+                (typeof API_BASE !== 'undefined' ? API_BASE : '') + '/v1/luna/chat',
+                (typeof API_BASE !== 'undefined' ? API_BASE : '') + '/v1/chat/luna'
+            ];
+            for (const ep of endpoints) {
+                try {
+                    const controller = new AbortController();
+                    const tid = setTimeout(() => controller.abort(), 9000);
+                    const res = await fetch(ep, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        signal: controller.signal,
+                        body: JSON.stringify({
+                            message: text,
+                            apiKey: apiKey,
+                            language: (typeof window.luminixI18n !== 'undefined') ? window.luminixI18n.getCurrentLang() : 'en',
+                            locale: (typeof window.luminixI18n !== 'undefined') ? window.luminixI18n.getCurrentLocale() : 'en-US',
+                            user_context: {
+                                profile: profile,
+                                wearable: {
+                                    spo2: wearable.spo2,
+                                    heartRate: wearable.heartRate,
+                                    sleepHours: wearable.sleepHours,
+                                    steps: wearable.steps
+                                }
+                            }
+                        })
+                    });
+                    clearTimeout(tid);
+                    if (res.ok) {
+                        const data = await res.json().catch(() => null);
+                        if (data && data.reply) {
+                            reply = data.reply;
+                            sourceBadge = '✨ GEMINI AI (CLOUD)';
+                            break;
+                        }
+                    }
+                } catch (_) {}
+            }
+        }
+
+        // Emergency Dynamic Fallback if Gemini is unreachable
+        if (!reply) {
+            reply = computeLunaClientReasoning(text, profile, wearable);
+            sourceBadge = '🩺 CLINICAL ASSISTANT';
+        }
     }
 
     // 4. Remove Thinking Pulse and Render Luna's Response
@@ -2926,9 +2991,10 @@ window.lunaAsk = async function(promptText) {
 /* ── DIRECT CLIENT-SIDE GEMINI AI CHAT ENGINE ────────────────────────────── */
 async function queryGeminiForLunaChat(apiKey, userMessage, profile, wearable) {
     const models = [
-        'gemini-flash-lite-latest',
-        'gemini-3.5-flash-lite',
-        'gemini-3.6-flash'
+        'gemini-3.8-flash',
+        'gemini-3.5-flash',
+        'gemini-2.0-flash',
+        'gemini-1.5-flash'
     ];
     const p = profile || {};
     const w = wearable || window.wearableState || {};

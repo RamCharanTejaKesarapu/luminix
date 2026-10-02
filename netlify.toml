@@ -10,6 +10,13 @@
 [functions]
   directory = "functions"
 
+# Serverless function: serves Firebase public client config from Netlify env vars
+# This is required for Google Sign-In to work on static Netlify hosting
+[[redirects]]
+  from = "/v1/firebase/client-config"
+  to = "/.netlify/functions/firebase-config"
+  status = 200
+
 # Serverless function rewrite for donation note submission
 [[redirects]]
   from = "/v1/creator/donation"
