@@ -1000,6 +1000,13 @@ document.addEventListener('DOMContentLoaded', async () => {
     window.initBanner();
     window.initUTMTracking();
 
+    // Guarantee i18n state and preferred language are fully resolved before initial view render
+    if (window.luminixI18n?.ready) {
+        try {
+            await window.luminixI18n.ready;
+        } catch (_) {}
+    }
+
     if (window.luminixAuth?.handleTokenFromUrl()) {
         await window.luminixAuth.fetchMe();
     }
