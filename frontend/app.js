@@ -2812,6 +2812,8 @@ window.clearLunaApiKey = function() {
         fb.textContent = '✓ Reset to default Gemini token.';
         setTimeout(() => { if (fb) fb.textContent = ''; }, 3000);
     }
+};
+
 window.updateLunaModeUI = function() {
     const mode = (typeof window.getLunaChatMode === 'function') ? window.getLunaChatMode() : 'ai';
     const aiBtn = document.getElementById('luna-mode-ai-btn');
