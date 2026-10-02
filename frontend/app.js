@@ -56,6 +56,46 @@ window.setLunaChatMode = function(mode) {
     }
 };
 
+// ── AI BOT RATE LIMITING: STRICT 5 REQUESTS PER HOUR ON API KEYS ──
+const AI_RATE_LIMIT_MAX = 5;
+const AI_RATE_LIMIT_WINDOW_MS = 60 * 60 * 1000; // 1 hour sliding window
+
+window.getAiKeyUsageHistory = function() {
+    try {
+        const stored = JSON.parse(localStorage.getItem('luminix_ai_key_usage') || '[]');
+        const now = Date.now();
+        const active = stored.filter(ts => typeof ts === 'number' && (now - ts) < AI_RATE_LIMIT_WINDOW_MS);
+        if (active.length !== stored.length) {
+            localStorage.setItem('luminix_ai_key_usage', JSON.stringify(active));
+        }
+        return active;
+    } catch (_) {
+        return [];
+    }
+};
+
+window.recordAiKeyUsage = function() {
+    const history = window.getAiKeyUsageHistory();
+    history.push(Date.now());
+    localStorage.setItem('luminix_ai_key_usage', JSON.stringify(history));
+    if (typeof window.updateLunaModeUI === 'function') {
+        window.updateLunaModeUI();
+    }
+};
+
+window.getAiKeyRemainingQuota = function() {
+    const history = window.getAiKeyUsageHistory();
+    return Math.max(0, AI_RATE_LIMIT_MAX - history.length);
+};
+
+window.getAiKeyResetTimeMinutes = function() {
+    const history = window.getAiKeyUsageHistory();
+    if (!history.length) return 0;
+    const oldest = history[0];
+    const msLeft = (oldest + AI_RATE_LIMIT_WINDOW_MS) - Date.now();
+    return Math.max(1, Math.ceil(msLeft / 60000));
+};
+
 let currentView = 'dashboard';
 let poseEngine = null;
 let cameraInstance = null;
@@ -2825,10 +2865,16 @@ window.updateLunaModeUI = function() {
         if (mode === 'ai') {
             aiBtn.className = 'px-3 py-1 rounded-full text-[11px] font-mono font-bold transition flex items-center gap-1.5 bg-[var(--vermilion)] text-white shadow-sm';
             normalBtn.className = 'px-3 py-1 rounded-full text-[11px] font-mono font-bold transition flex items-center gap-1.5 text-[var(--bone-dim)] hover:text-white';
+            const quota = (typeof window.getAiKeyRemainingQuota === 'function') ? window.getAiKeyRemainingQuota() : 5;
             if (caption) {
-                caption.innerHTML = '<span class="inline-block w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse mr-1"></span><span class="text-emerald-400">Live Gemini 3.8 Flash (API Active)</span>';
+                if (quota > 0) {
+                    caption.innerHTML = `<span class="inline-block w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse mr-1"></span><span class="text-emerald-400">Live Gemini 3.8 Flash (${quota}/5 left this hr)</span>`;
+                } else {
+                    const mins = (typeof window.getAiKeyResetTimeMinutes === 'function') ? window.getAiKeyResetTimeMinutes() : 60;
+                    caption.innerHTML = `<span class="inline-block w-1.5 h-1.5 rounded-full bg-amber-400 mr-1"></span><span class="text-amber-400 font-semibold">Limit: 0/5 left • Resets in ${mins}m</span>`;
+                }
             }
-            if (modelBadge) modelBadge.textContent = 'gemini-3.8-flash (ACTIVE)';
+            if (modelBadge) modelBadge.textContent = `gemini-3.8-flash (ACTIVE • ${quota}/5/hr)`;
         } else {
             normalBtn.className = 'px-3 py-1 rounded-full text-[11px] font-mono font-bold transition flex items-center gap-1.5 bg-[rgba(255,255,255,0.18)] text-white shadow-sm';
             aiBtn.className = 'px-3 py-1 rounded-full text-[11px] font-mono font-bold transition flex items-center gap-1.5 text-[var(--bone-dim)] hover:text-white';
@@ -2901,66 +2947,87 @@ window.lunaAsk = async function(promptText) {
         reply = computeLunaClientReasoning(text, profile, wearable);
         sourceBadge = '🩺 CLINICAL ASSISTANT (NORMAL)';
     } else {
-        // Mode is 'ai' -> Query live Gemini AI Bot with user API key
-        if (apiKey) {
-            try {
-                reply = await queryGeminiForLunaChat(apiKey, text, profile, wearable);
-                if (reply) {
-                    sourceBadge = '✨ GEMINI AI BOT (LIVE)';
-                }
-            } catch (aiErr) {
-                console.warn('Luna direct Gemini call failed:', aiErr);
-            }
-        }
+        // Enforce 5 requests per hour limit on AI Bot
+        const quota = (typeof window.getAiKeyRemainingQuota === 'function') ? window.getAiKeyRemainingQuota() : 5;
+        if (quota <= 0) {
+            const mins = (typeof window.getAiKeyResetTimeMinutes === 'function') ? window.getAiKeyResetTimeMinutes() : 60;
+            reply = `### ⚠️ AI Bot Hourly Limit Reached (5/5 requests used)
 
-        // Netlify Serverless Backend fallback (/v1/luna/chat or /.netlify/functions/chat)
-        if (!reply) {
-            const endpoints = [
-                '/.netlify/functions/chat',
-                (typeof API_BASE !== 'undefined' ? API_BASE : '') + '/v1/luna/chat',
-                (typeof API_BASE !== 'undefined' ? API_BASE : '') + '/v1/chat/luna'
-            ];
-            for (const ep of endpoints) {
+You have used all **5 API requests per hour** for the AI Bot. Your quota will reset in **${mins} minutes**.
+
+---
+#### 🩺 Instant Normal Clinical Guidance:
+${computeLunaClientReasoning(text, profile, wearable)}`;
+            sourceBadge = '🩺 CLINICAL ASSISTANT (QUOTA CAP)';
+        } else {
+            // Mode is 'ai' -> Query live Gemini AI Bot with user API key
+            if (apiKey) {
                 try {
-                    const controller = new AbortController();
-                    const tid = setTimeout(() => controller.abort(), 9000);
-                    const res = await fetch(ep, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        signal: controller.signal,
-                        body: JSON.stringify({
-                            message: text,
-                            apiKey: apiKey,
-                            language: (typeof window.luminixI18n !== 'undefined') ? window.luminixI18n.getCurrentLang() : 'en',
-                            locale: (typeof window.luminixI18n !== 'undefined') ? window.luminixI18n.getCurrentLocale() : 'en-US',
-                            user_context: {
-                                profile: profile,
-                                wearable: {
-                                    spo2: wearable.spo2,
-                                    heartRate: wearable.heartRate,
-                                    sleepHours: wearable.sleepHours,
-                                    steps: wearable.steps
+                    reply = await queryGeminiForLunaChat(apiKey, text, profile, wearable);
+                    if (reply) {
+                        sourceBadge = '✨ GEMINI AI BOT (LIVE)';
+                        if (typeof window.recordAiKeyUsage === 'function') window.recordAiKeyUsage();
+                    }
+                } catch (aiErr) {
+                    console.warn('Luna direct Gemini call failed:', aiErr);
+                }
+            }
+
+            // Netlify Serverless Backend fallback (/v1/luna/chat or /.netlify/functions/chat)
+            if (!reply) {
+                const endpoints = [
+                    '/.netlify/functions/chat',
+                    (typeof API_BASE !== 'undefined' ? API_BASE : '') + '/v1/luna/chat',
+                    (typeof API_BASE !== 'undefined' ? API_BASE : '') + '/v1/chat/luna'
+                ];
+                for (const ep of endpoints) {
+                    try {
+                        const controller = new AbortController();
+                        const tid = setTimeout(() => controller.abort(), 9000);
+                        const res = await fetch(ep, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            signal: controller.signal,
+                            body: JSON.stringify({
+                                message: text,
+                                apiKey: apiKey,
+                                language: (typeof window.luminixI18n !== 'undefined') ? window.luminixI18n.getCurrentLang() : 'en',
+                                locale: (typeof window.luminixI18n !== 'undefined') ? window.luminixI18n.getCurrentLocale() : 'en-US',
+                                user_context: {
+                                    profile: profile,
+                                    wearable: {
+                                        spo2: wearable.spo2,
+                                        heartRate: wearable.heartRate,
+                                        sleepHours: wearable.sleepHours,
+                                        steps: wearable.steps
+                                    }
                                 }
+                            })
+                        });
+                        clearTimeout(tid);
+                        if (res.ok) {
+                            const data = await res.json().catch(() => null);
+                            if (data && data.reply) {
+                                reply = data.reply;
+                                sourceBadge = '✨ GEMINI AI (CLOUD)';
+                                if (typeof window.recordAiKeyUsage === 'function') window.recordAiKeyUsage();
+                                break;
                             }
-                        })
-                    });
-                    clearTimeout(tid);
-                    if (res.ok) {
-                        const data = await res.json().catch(() => null);
-                        if (data && data.reply) {
-                            reply = data.reply;
-                            sourceBadge = '✨ GEMINI AI (CLOUD)';
+                        } else if (res.status === 429) {
+                            const errData = await res.json().catch(() => ({}));
+                            reply = `### ⚠️ AI Bot Hourly Limit Reached (5/5 requests used)\n\n${errData.detail || 'Maximum 5 requests per hour permitted.'}\n\n---\n#### 🩺 Instant Normal Clinical Guidance:\n${computeLunaClientReasoning(text, profile, wearable)}`;
+                            sourceBadge = '🩺 CLINICAL ASSISTANT (QUOTA CAP)';
                             break;
                         }
-                    }
-                } catch (_) {}
+                    } catch (_) {}
+                }
             }
-        }
 
-        // Emergency Dynamic Fallback if Gemini is unreachable
-        if (!reply) {
-            reply = computeLunaClientReasoning(text, profile, wearable);
-            sourceBadge = '🩺 CLINICAL ASSISTANT';
+            // Emergency Dynamic Fallback if Gemini is unreachable
+            if (!reply) {
+                reply = computeLunaClientReasoning(text, profile, wearable);
+                sourceBadge = '🩺 CLINICAL ASSISTANT';
+            }
         }
     }
 

@@ -3,6 +3,24 @@
  * Connects directly to Google Gemini AI models with robust fallbacks.
  */
 
+const rateLimitMap = new Map();
+const RATE_LIMIT_MAX = 5;
+const RATE_LIMIT_WINDOW_MS = 60 * 60 * 1000; // 1 hour
+
+function checkRateLimit(clientId) {
+    const now = Date.now();
+    let timestamps = rateLimitMap.get(clientId) || [];
+    timestamps = timestamps.filter(ts => (now - ts) < RATE_LIMIT_WINDOW_MS);
+    if (timestamps.length >= RATE_LIMIT_MAX) {
+        const oldest = timestamps[0];
+        const resetSeconds = Math.max(1, Math.ceil(((oldest + RATE_LIMIT_WINDOW_MS) - now) / 1000));
+        return { allowed: false, resetSeconds };
+    }
+    timestamps.push(now);
+    rateLimitMap.set(clientId, timestamps);
+    return { allowed: true, remaining: RATE_LIMIT_MAX - timestamps.length };
+}
+
 exports.handler = async function(event, context) {
     if (event.httpMethod === "OPTIONS") {
         return {
@@ -25,6 +43,23 @@ exports.handler = async function(event, context) {
     }
 
     try {
+        const clientIp = (event.headers && (event.headers["x-forwarded-for"] || event.headers["client-ip"])) || "client";
+        const rateCheck = checkRateLimit(clientIp);
+        if (!rateCheck.allowed) {
+            return {
+                statusCode: 429,
+                headers: {
+                    "Content-Type": "application/json",
+                    "Retry-After": String(rateCheck.resetSeconds),
+                    "Access-Control-Allow-Origin": "*"
+                },
+                body: JSON.stringify({
+                    status: "rate_limited",
+                    detail: `AI Bot rate limit reached: maximum 5 requests per hour. Quota resets in ${Math.ceil(rateCheck.resetSeconds / 60)} minutes.`
+                })
+            };
+        }
+
         const body = JSON.parse(event.body || "{}");
         const userMessage = body.message || body.prompt || body.text || "Hello";
         const userContext = body.user_context || {};

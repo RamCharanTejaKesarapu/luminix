@@ -88,7 +88,8 @@ ENDPOINT_RATE_LIMIT_RULES: List[Tuple[str, int, float, str, str]] = [
     ("/v1/auth", 30, 60.0, "auth_general", "General authentication & session sync"),
 
     # 2. Resource-Intensive AI & Generation Endpoints
-    ("/v1/luna/chat", 20, 60.0, "luna_chat", "Conversational AI coaching"),
+    ("/v1/luna/chat", 5, 3600.0, "luna_chat", "Conversational AI coaching (strict max 5 / hr)"),
+    ("/v1/chat/luna", 5, 3600.0, "chat_luna", "Conversational AI coaching alternative (strict max 5 / hr)"),
     ("/v1/nutrition/ai-food-analysis", 15, 60.0, "ai_food_analysis", "Multimodal food vision analysis"),
     ("/v1/video/generate", 5, 60.0, "video_generate", "HD biomechanical video render"),
     ("/v1/report/export-pdf", 10, 60.0, "export_pdf", "Clinical PDF dossier export"),

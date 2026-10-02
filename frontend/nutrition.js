@@ -2372,6 +2372,14 @@ window.fetchFridgeRecipes = async function(customPrompt) {
         return;
     }
 
+    const quota = (typeof window.getAiKeyRemainingQuota === 'function') ? window.getAiKeyRemainingQuota() : 5;
+    if (quota <= 0) {
+        const mins = (typeof window.getAiKeyResetTimeMinutes === 'function') ? window.getAiKeyResetTimeMinutes() : 60;
+        showToast(`⚠️ AI limit reached (5/hr). Resets in ${mins}m. Generating Normal Chef recipes!`);
+        generateNormalChefRecipes();
+        return;
+    }
+
     let secondsElapsed = 0;
     let timerInterval = null;
 
@@ -2457,6 +2465,9 @@ window.fetchFridgeRecipes = async function(customPrompt) {
 
     if (results && ((results.recipes && results.recipes.length) || results.ai_recipes)) {
         recipeResults = results;
+        if (typeof window.recordAiKeyUsage === 'function') {
+            window.recordAiKeyUsage();
+        }
         if (cont) cont.innerHTML = renderRecipeList(recipeResults);
         showToast(`✨ Generated ${((results.recipes || []).length || (results.ai_recipes || []).length)} custom recipes with Gemini AI!`);
     } else {
