@@ -233,10 +233,45 @@ def manifest() -> FileResponse:
 
 @app.api_route("/favicon.ico", methods=["GET", "HEAD"])
 def favicon_ico() -> FileResponse:
+    ico_path = STATIC_DIR / "favicon.ico"
+    if ico_path.is_file():
+        return FileResponse(ico_path, media_type="image/x-icon")
     svg_path = STATIC_DIR / "favicon.svg"
     if svg_path.is_file():
         return FileResponse(svg_path, media_type="image/svg+xml")
     raise HTTPException(status_code=404, detail="favicon missing")
+
+
+@app.api_route("/favicon.svg", methods=["GET", "HEAD"])
+def favicon_svg_direct() -> FileResponse:
+    svg_path = STATIC_DIR / "favicon.svg"
+    if svg_path.is_file():
+        return FileResponse(svg_path, media_type="image/svg+xml")
+    raise HTTPException(status_code=404, detail="favicon.svg missing")
+
+
+@app.api_route("/favicon.png", methods=["GET", "HEAD"])
+def favicon_png_direct() -> FileResponse:
+    png_path = STATIC_DIR / "favicon.png"
+    if png_path.is_file():
+        return FileResponse(png_path, media_type="image/png")
+    raise HTTPException(status_code=404, detail="favicon.png missing")
+
+
+@app.api_route("/favicon-32x32.png", methods=["GET", "HEAD"])
+def favicon_32_direct() -> FileResponse:
+    png_path = STATIC_DIR / "favicon-32x32.png"
+    if png_path.is_file():
+        return FileResponse(png_path, media_type="image/png")
+    raise HTTPException(status_code=404, detail="favicon-32x32.png missing")
+
+
+@app.api_route("/apple-touch-icon.png", methods=["GET", "HEAD"])
+def apple_touch_icon_direct() -> FileResponse:
+    png_path = STATIC_DIR / "apple-touch-icon.png"
+    if png_path.is_file():
+        return FileResponse(png_path, media_type="image/png")
+    raise HTTPException(status_code=404, detail="apple-touch-icon missing")
 
 
 @app.api_route("/robots.txt", methods=["GET", "HEAD"])
